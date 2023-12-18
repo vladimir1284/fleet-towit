@@ -13,3 +13,5 @@ vite.config.ts.timestamp-*
 
 # Sentry Config File
 .sentryclirc
+prisma/dev.db
+prisma/dev.db-journal
