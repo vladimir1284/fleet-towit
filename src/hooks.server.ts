@@ -18,6 +18,19 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const ska_handle = SvelteKitAuth({
+	callbacks: {
+		async signIn({ user }) {
+			if (user.email === 'vladimir.rdguez@gmail.com') {
+				return true;
+			} else {
+				console.log('Unauthorized: ', user);
+				// Return false to display a default error message
+				return false;
+				// Or you can return a URL to redirect to:
+				// return '/unauthorized'
+			}
+		}
+	},
 	adapter: PrismaAdapter(prisma),
 	providers: [
 		Google({ clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET }),
