@@ -2,6 +2,12 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/svelte-logo.svg';
 	import github from '$lib/images/github.svg';
+
+	import '@friendofsvelte/tipex/styles/Tipex.css';
+	import '@friendofsvelte/tipex/styles/ProseMirror.css';
+	import '@friendofsvelte/tipex/styles/Controls.css';
+	import '@friendofsvelte/tipex/styles/EditLink.css';
+	import '@friendofsvelte/tipex/styles/CodeBlock.css';
 </script>
 
 <header>
@@ -18,6 +24,9 @@
 		<ul>
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
+			</li>
+			<li aria-current={$page.url.pathname === '/editor' ? 'page' : undefined}>
+				<a href="/editor">Editor</a>
 			</li>
 			<li aria-current={$page.url.pathname === '/about' ? 'page' : undefined}>
 				<a href="/about">About</a>
