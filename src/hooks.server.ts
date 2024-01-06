@@ -20,7 +20,7 @@ const prisma = new PrismaClient();
 const ska_handle = SvelteKitAuth({
 	callbacks: {
 		async signIn({ user }) {
-			if (user.email === 'vladimir.rdguez@gmail.com') {
+			if (user.email === 'luis.ulloa75360@gmail.com') {
 				return true;
 			} else {
 				console.log('Unauthorized: ', user);
@@ -45,7 +45,14 @@ const ska_handle = SvelteKitAuth({
 			},
 			from: EMAIL_FROM
 		})
-	]
+	],
+	pages: {
+		signIn: '/signin',
+		//signOut: '/auth/signout',
+		//error: '/auth/error', // Error code passed in query string as ?error=
+		//verifyRequest: '/auth/verify-request', // (used for check email message)
+		//newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
+	  }
 });
 
 Sentry.init({

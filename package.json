@@ -47,8 +47,13 @@
 		"@auth/prisma-adapter": "^1.0.11",
 		"@auth/sveltekit": "^0.4.0",
 		"@friendofsvelte/tipex": "0.0.1-act.11",
+		"@popperjs/core": "^2.11.8",
 		"@prisma/client": "^5.7.1",
 		"@sentry/sveltekit": "^7.88.0",
-		"kit-monorepo": "https://github.com/sveltejs/kit/archive/refs/tags/@sveltejs/kit@2.0.6.tar.gz"
+		"flowbite": "^2.2.1",
+		"flowbite-svelte": "^0.44.21",
+		"flowbite-svelte-icons": "^0.4.5",
+		"kit-monorepo": "https://github.com/sveltejs/kit/archive/refs/tags/@sveltejs/kit@2.0.6.tar.gz",
+		"tailwind-merge": "^2.2.0"
 	}
 }
