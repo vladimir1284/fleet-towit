@@ -7,9 +7,11 @@
 	} from 'flowbite-svelte';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
 	import avatar from '$lib/images/test.png';
+	import Notifications from './Notifications.svelte';
 </script>
 
 <div class="flex space-x-4 rtl:space-x-reverse">
+	<Notifications/>
 	<Button class="text-black focus:ring-0 w-10 h-10"  color="none" outline={false} pill={false}>
         Pepe
         <ChevronDownSolid class="w-3 h-3 ms-2 text-black dark:text-white" />
