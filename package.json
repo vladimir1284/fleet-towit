@@ -52,6 +52,7 @@
 		"@sentry/sveltekit": "^7.88.0",
 		"flowbite": "^2.2.1",
 		"flowbite-svelte": "^0.44.21",
+		"flowbite-svelte-blocks": "^0.5.1",
 		"flowbite-svelte-icons": "^0.4.5",
 		"kit-monorepo": "https://github.com/sveltejs/kit/archive/refs/tags/@sveltejs/kit@2.0.6.tar.gz",
 		"sveltekit-superforms": "^1.13.1",

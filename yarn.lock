@@ -1952,12 +1952,22 @@ flatted@^3.2.9:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.2.9.tgz#7eb4c67ca1ba34232ca9d2d93e9886e611ad7daf"
   integrity sha512-36yxDn5H7OFZQla0/jFJmbIKTdZAQHngCedGxiMmpNfEZM0sdEeT+WczLQrjK6D7o2aiyLYDnkw0R3JK0Qv1RQ==
 
-flowbite-svelte-icons@^0.4.5:
+flowbite-svelte-blocks@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/flowbite-svelte-blocks/-/flowbite-svelte-blocks-0.5.1.tgz#3cf97d5e67b1966d0f34c2286d18e1af32b7a599"
+  integrity sha512-SWmfHitd3PW+W+PlSDs+f+cuTUxtiJb0OX1YZ+pNLEKOhyTUPZtRtsGgz8lxZ6jEnp/Ecjys01G5Aok53+FhWQ==
+  dependencies:
+    flowbite "^1.8.1"
+    flowbite-svelte "^0.44.4"
+    flowbite-svelte-icons "^0.4.2"
+    tailwind-merge "^1.14.0"
+
+flowbite-svelte-icons@^0.4.2, flowbite-svelte-icons@^0.4.5:
   version "0.4.5"
   resolved "https://registry.yarnpkg.com/flowbite-svelte-icons/-/flowbite-svelte-icons-0.4.5.tgz#e022d39242b91f98ad10aec0553f86a274514c06"
   integrity sha512-IBudEfw9B4UE2gCRMhbRnyE8p7qq7DDMauy0mPVIShzjaN3yVk2AmAHia1JRe9jUC98Wn7xNk/IdJlXeQj19Iw==
 
-flowbite-svelte@^0.44.21:
+flowbite-svelte@^0.44.21, flowbite-svelte@^0.44.4:
   version "0.44.21"
   resolved "https://registry.yarnpkg.com/flowbite-svelte/-/flowbite-svelte-0.44.21.tgz#e26ce50574f224d9f70acef9462d8bd338b1a468"
   integrity sha512-M3xmu/HUgGHMR+iJNzxd9J3j8o1SzsrbvWlOKQOdIhcsRVNioqfcNvvjKgSciMf8p/GcUQq6AS5UyfIpqo5aGw==
@@ -1966,6 +1976,14 @@ flowbite-svelte@^0.44.21:
     apexcharts "^3.44.0"
     flowbite "^2.2.0"
     tailwind-merge "^2.0.0"
+
+flowbite@^1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/flowbite/-/flowbite-1.8.1.tgz#a1f5fb039c4c275414a457089b4917a67e9153a5"
+  integrity sha512-lXTcO8a6dRTPFpINyOLcATCN/pK1Of/jY4PryklPllAiqH64tSDUsOdQpar3TO59ZXWwugm2e92oaqwH6X90Xg==
+  dependencies:
+    "@popperjs/core" "^2.9.3"
+    mini-svg-data-uri "^1.4.3"
 
 flowbite@^2.2.0, flowbite@^2.2.1:
   version "2.2.1"
@@ -3681,6 +3699,11 @@ svg.select.js@^3.0.1:
   integrity sha512-h5IS/hKkuVCbKSieR9uQCj9w+zLHoPh+ce19bBYyqF53g6mnPB8sAtIbe1s9dh2S2fCmYX2xel1Ln3PJBbK4kw==
   dependencies:
     svg.js "^2.6.5"
+
+tailwind-merge@^1.14.0:
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/tailwind-merge/-/tailwind-merge-1.14.0.tgz#e677f55d864edc6794562c63f5001f45093cdb8b"
+  integrity sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==
 
 tailwind-merge@^2.0.0, tailwind-merge@^2.2.0:
   version "2.2.0"
