@@ -71,7 +71,7 @@ model CompanyUser {
 }
 
 model Client {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(cuid()) /// @zod.custom.omit([model, input])
   name        String
   email       String
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
