@@ -23,7 +23,12 @@
 			</div>
 			<div>
 				<Label for="phone" class="mb-2">Phone number</Label>
-				<Input type="tel" name="phoneNumber" placeholder="123-45-678" />
+				<Input
+					type="tel"
+					name="phoneNumber"
+					bind:value={$form.phoneNumber}
+					placeholder="123-45-678"
+				/>
 			</div>
 			<div>
 				<Label for="email" class="mb-2">E-mail</Label>

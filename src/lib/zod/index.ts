@@ -118,7 +118,7 @@ export type CompanyUser = z.infer<typeof CompanyUserSchema>
 /////////////////////////////////////////
 
 export const ClientSchema = z.object({
-  id: z.number().int(),
+  // omitted: id: z.string().cuid(),
   name: z.string(),
   email: z.string(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
@@ -676,7 +676,7 @@ export const ClientWhereInputSchema: z.ZodType<Prisma.ClientWhereInput> = z.obje
   AND: z.union([ z.lazy(() => ClientWhereInputSchema),z.lazy(() => ClientWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => ClientWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ClientWhereInputSchema),z.lazy(() => ClientWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   email: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   phoneNumber: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
@@ -695,20 +695,20 @@ export const ClientOrderByWithRelationInputSchema: z.ZodType<Prisma.ClientOrderB
   company: z.lazy(() => CompanyOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const ClientWhereUniqueInputSchema: z.ZodType<Prisma.ClientWhereUniqueInput> = z.union([
+export const ClientWhereUniqueInputSchema: z.ZodType<Omit<Prisma.ClientWhereUniqueInput, "id">> = z.union([
   z.object({
-    id: z.number().int(),
+    // omitted: id: z.string().cuid(),
     phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   }),
   z.object({
-    id: z.number().int(),
+    // omitted: id: z.string().cuid(),
   }),
   z.object({
     phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
   }),
 ])
 .and(z.object({
-  id: z.number().int().optional(),
+  // omitted: id: z.string().cuid().optional(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}).optional(),
   AND: z.union([ z.lazy(() => ClientWhereInputSchema),z.lazy(() => ClientWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => ClientWhereInputSchema).array().optional(),
@@ -728,17 +728,15 @@ export const ClientOrderByWithAggregationInputSchema: z.ZodType<Prisma.ClientOrd
   avatar: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   companyId: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => ClientCountOrderByAggregateInputSchema).optional(),
-  _avg: z.lazy(() => ClientAvgOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => ClientMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => ClientMinOrderByAggregateInputSchema).optional(),
-  _sum: z.lazy(() => ClientSumOrderByAggregateInputSchema).optional()
+  _min: z.lazy(() => ClientMinOrderByAggregateInputSchema).optional()
 }).strict();
 
 export const ClientScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.ClientScalarWhereWithAggregatesInput> = z.object({
   AND: z.union([ z.lazy(() => ClientScalarWhereWithAggregatesInputSchema),z.lazy(() => ClientScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   OR: z.lazy(() => ClientScalarWhereWithAggregatesInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ClientScalarWhereWithAggregatesInputSchema),z.lazy(() => ClientScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   email: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   phoneNumber: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
@@ -1111,7 +1109,8 @@ export const CompanyUserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Company
   userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const ClientCreateInputSchema: z.ZodType<Prisma.ClientCreateInput> = z.object({
+export const ClientCreateInputSchema: z.ZodType<Omit<Prisma.ClientCreateInput, "id">> = z.object({
+  // omitted: id: z.string().cuid().optional(),
   name: z.string(),
   email: z.string(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
@@ -1119,8 +1118,8 @@ export const ClientCreateInputSchema: z.ZodType<Prisma.ClientCreateInput> = z.ob
   company: z.lazy(() => CompanyCreateNestedOneWithoutClientsInputSchema)
 }).strict();
 
-export const ClientUncheckedCreateInputSchema: z.ZodType<Prisma.ClientUncheckedCreateInput> = z.object({
-  id: z.number().int().optional(),
+export const ClientUncheckedCreateInputSchema: z.ZodType<Omit<Prisma.ClientUncheckedCreateInput, "id">> = z.object({
+  // omitted: id: z.string().cuid().optional(),
   name: z.string(),
   email: z.string(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
@@ -1128,7 +1127,8 @@ export const ClientUncheckedCreateInputSchema: z.ZodType<Prisma.ClientUncheckedC
   companyId: z.string()
 }).strict();
 
-export const ClientUpdateInputSchema: z.ZodType<Prisma.ClientUpdateInput> = z.object({
+export const ClientUpdateInputSchema: z.ZodType<Omit<Prisma.ClientUpdateInput, "id">> = z.object({
+  // omitted: id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   phoneNumber: z.union([ z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1136,8 +1136,8 @@ export const ClientUpdateInputSchema: z.ZodType<Prisma.ClientUpdateInput> = z.ob
   company: z.lazy(() => CompanyUpdateOneRequiredWithoutClientsNestedInputSchema).optional()
 }).strict();
 
-export const ClientUncheckedUpdateInputSchema: z.ZodType<Prisma.ClientUncheckedUpdateInput> = z.object({
-  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+export const ClientUncheckedUpdateInputSchema: z.ZodType<Omit<Prisma.ClientUncheckedUpdateInput, "id">> = z.object({
+  // omitted: id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   phoneNumber: z.union([ z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1145,8 +1145,8 @@ export const ClientUncheckedUpdateInputSchema: z.ZodType<Prisma.ClientUncheckedU
   companyId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const ClientCreateManyInputSchema: z.ZodType<Prisma.ClientCreateManyInput> = z.object({
-  id: z.number().int().optional(),
+export const ClientCreateManyInputSchema: z.ZodType<Omit<Prisma.ClientCreateManyInput, "id">> = z.object({
+  // omitted: id: z.string().cuid().optional(),
   name: z.string(),
   email: z.string(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
@@ -1154,15 +1154,16 @@ export const ClientCreateManyInputSchema: z.ZodType<Prisma.ClientCreateManyInput
   companyId: z.string()
 }).strict();
 
-export const ClientUpdateManyMutationInputSchema: z.ZodType<Prisma.ClientUpdateManyMutationInput> = z.object({
+export const ClientUpdateManyMutationInputSchema: z.ZodType<Omit<Prisma.ClientUpdateManyMutationInput, "id">> = z.object({
+  // omitted: id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   phoneNumber: z.union([ z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   avatar: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
-export const ClientUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ClientUncheckedUpdateManyInput> = z.object({
-  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+export const ClientUncheckedUpdateManyInputSchema: z.ZodType<Omit<Prisma.ClientUncheckedUpdateManyInput, "id">> = z.object({
+  // omitted: id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   phoneNumber: z.union([ z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1579,17 +1580,6 @@ export const EnumRoleWithAggregatesFilterSchema: z.ZodType<Prisma.EnumRoleWithAg
   _max: z.lazy(() => NestedEnumRoleFilterSchema).optional()
 }).strict();
 
-export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
-}).strict();
-
 export const ClientCountOrderByAggregateInputSchema: z.ZodType<Prisma.ClientCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
@@ -1597,10 +1587,6 @@ export const ClientCountOrderByAggregateInputSchema: z.ZodType<Prisma.ClientCoun
   phoneNumber: z.lazy(() => SortOrderSchema).optional(),
   avatar: z.lazy(() => SortOrderSchema).optional(),
   companyId: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const ClientAvgOrderByAggregateInputSchema: z.ZodType<Prisma.ClientAvgOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const ClientMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ClientMaxOrderByAggregateInput> = z.object({
@@ -1619,26 +1605,6 @@ export const ClientMinOrderByAggregateInputSchema: z.ZodType<Prisma.ClientMinOrd
   phoneNumber: z.lazy(() => SortOrderSchema).optional(),
   avatar: z.lazy(() => SortOrderSchema).optional(),
   companyId: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const ClientSumOrderByAggregateInputSchema: z.ZodType<Prisma.ClientSumOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedIntFilterSchema).optional(),
-  _max: z.lazy(() => NestedIntFilterSchema).optional()
 }).strict();
 
 export const BoolFilterSchema: z.ZodType<Prisma.BoolFilter> = z.object({
@@ -1909,14 +1875,6 @@ export const CompanyUpdateOneRequiredWithoutClientsNestedInputSchema: z.ZodType<
   update: z.union([ z.lazy(() => CompanyUpdateToOneWithWhereWithoutClientsInputSchema),z.lazy(() => CompanyUpdateWithoutClientsInputSchema),z.lazy(() => CompanyUncheckedUpdateWithoutClientsInputSchema) ]).optional(),
 }).strict();
 
-export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> = z.object({
-  set: z.number().optional(),
-  increment: z.number().optional(),
-  decrement: z.number().optional(),
-  multiply: z.number().optional(),
-  divide: z.number().optional()
-}).strict();
-
 export const ClientCreateNestedManyWithoutCompanyInputSchema: z.ZodType<Prisma.ClientCreateNestedManyWithoutCompanyInput> = z.object({
   create: z.union([ z.lazy(() => ClientCreateWithoutCompanyInputSchema),z.lazy(() => ClientCreateWithoutCompanyInputSchema).array(),z.lazy(() => ClientUncheckedCreateWithoutCompanyInputSchema),z.lazy(() => ClientUncheckedCreateWithoutCompanyInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => ClientCreateOrConnectWithoutCompanyInputSchema),z.lazy(() => ClientCreateOrConnectWithoutCompanyInputSchema).array() ]).optional(),
@@ -2181,33 +2139,6 @@ export const NestedEnumRoleWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEn
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
   _min: z.lazy(() => NestedEnumRoleFilterSchema).optional(),
   _max: z.lazy(() => NestedEnumRoleFilterSchema).optional()
-}).strict();
-
-export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedIntFilterSchema).optional(),
-  _max: z.lazy(() => NestedIntFilterSchema).optional()
-}).strict();
-
-export const NestedFloatFilterSchema: z.ZodType<Prisma.NestedFloatFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedFloatFilterSchema) ]).optional(),
 }).strict();
 
 export const NestedBoolFilterSchema: z.ZodType<Prisma.NestedBoolFilter> = z.object({
@@ -2655,15 +2586,16 @@ export const CompanyUncheckedUpdateWithoutClientsInputSchema: z.ZodType<Prisma.C
   users: z.lazy(() => CompanyUserUncheckedUpdateManyWithoutCompanyNestedInputSchema).optional()
 }).strict();
 
-export const ClientCreateWithoutCompanyInputSchema: z.ZodType<Prisma.ClientCreateWithoutCompanyInput> = z.object({
+export const ClientCreateWithoutCompanyInputSchema: z.ZodType<Omit<Prisma.ClientCreateWithoutCompanyInput, "id">> = z.object({
+  // omitted: id: z.string().cuid().optional(),
   name: z.string(),
   email: z.string(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
   avatar: z.string().optional().nullable()
 }).strict();
 
-export const ClientUncheckedCreateWithoutCompanyInputSchema: z.ZodType<Prisma.ClientUncheckedCreateWithoutCompanyInput> = z.object({
-  id: z.number().int().optional(),
+export const ClientUncheckedCreateWithoutCompanyInputSchema: z.ZodType<Omit<Prisma.ClientUncheckedCreateWithoutCompanyInput, "id">> = z.object({
+  // omitted: id: z.string().cuid().optional(),
   name: z.string(),
   email: z.string(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
@@ -2722,7 +2654,7 @@ export const ClientScalarWhereInputSchema: z.ZodType<Prisma.ClientScalarWhereInp
   AND: z.union([ z.lazy(() => ClientScalarWhereInputSchema),z.lazy(() => ClientScalarWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => ClientScalarWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ClientScalarWhereInputSchema),z.lazy(() => ClientScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   email: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   phoneNumber: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
@@ -2850,8 +2782,8 @@ export const CompanyUserUncheckedUpdateManyWithoutUserInputSchema: z.ZodType<Pri
   companyId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const ClientCreateManyCompanyInputSchema: z.ZodType<Prisma.ClientCreateManyCompanyInput> = z.object({
-  id: z.number().int().optional(),
+export const ClientCreateManyCompanyInputSchema: z.ZodType<Omit<Prisma.ClientCreateManyCompanyInput, "id">> = z.object({
+  // omitted: id: z.string().cuid().optional(),
   name: z.string(),
   email: z.string(),
   phoneNumber: z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),
@@ -2864,23 +2796,24 @@ export const CompanyUserCreateManyCompanyInputSchema: z.ZodType<Prisma.CompanyUs
   userId: z.string()
 }).strict();
 
-export const ClientUpdateWithoutCompanyInputSchema: z.ZodType<Prisma.ClientUpdateWithoutCompanyInput> = z.object({
+export const ClientUpdateWithoutCompanyInputSchema: z.ZodType<Omit<Prisma.ClientUpdateWithoutCompanyInput, "id">> = z.object({
+  // omitted: id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   phoneNumber: z.union([ z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   avatar: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
-export const ClientUncheckedUpdateWithoutCompanyInputSchema: z.ZodType<Prisma.ClientUncheckedUpdateWithoutCompanyInput> = z.object({
-  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+export const ClientUncheckedUpdateWithoutCompanyInputSchema: z.ZodType<Omit<Prisma.ClientUncheckedUpdateWithoutCompanyInput, "id">> = z.object({
+  // omitted: id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   phoneNumber: z.union([ z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   avatar: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
-export const ClientUncheckedUpdateManyWithoutCompanyInputSchema: z.ZodType<Prisma.ClientUncheckedUpdateManyWithoutCompanyInput> = z.object({
-  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+export const ClientUncheckedUpdateManyWithoutCompanyInputSchema: z.ZodType<Omit<Prisma.ClientUncheckedUpdateManyWithoutCompanyInput, "id">> = z.object({
+  // omitted: id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   phoneNumber: z.union([ z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"}),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -3539,13 +3472,13 @@ export const CompanyUserDeleteManyArgsSchema: z.ZodType<Prisma.CompanyUserDelete
   where: CompanyUserWhereInputSchema.optional(),
 }).strict() ;
 
-export const ClientCreateArgsSchema: z.ZodType<Prisma.ClientCreateArgs> = z.object({
+export const ClientCreateArgsSchema: z.ZodType<Omit<Prisma.ClientCreateArgs, "data"> & { data: z.infer<typeof ClientCreateInputSchema> | z.infer<typeof ClientUncheckedCreateInputSchema> }> = z.object({
   select: ClientSelectSchema.optional(),
   include: ClientIncludeSchema.optional(),
   data: z.union([ ClientCreateInputSchema,ClientUncheckedCreateInputSchema ]),
 }).strict() ;
 
-export const ClientUpsertArgsSchema: z.ZodType<Prisma.ClientUpsertArgs> = z.object({
+export const ClientUpsertArgsSchema: z.ZodType<Omit<Prisma.ClientUpsertArgs, "create" | "update"> & { create: z.infer<typeof ClientCreateInputSchema> | z.infer<typeof ClientUncheckedCreateInputSchema>, update: z.infer<typeof ClientUpdateInputSchema> | z.infer<typeof ClientUncheckedUpdateInputSchema> }> = z.object({
   select: ClientSelectSchema.optional(),
   include: ClientIncludeSchema.optional(),
   where: ClientWhereUniqueInputSchema,
@@ -3553,7 +3486,7 @@ export const ClientUpsertArgsSchema: z.ZodType<Prisma.ClientUpsertArgs> = z.obje
   update: z.union([ ClientUpdateInputSchema,ClientUncheckedUpdateInputSchema ]),
 }).strict() ;
 
-export const ClientCreateManyArgsSchema: z.ZodType<Prisma.ClientCreateManyArgs> = z.object({
+export const ClientCreateManyArgsSchema: z.ZodType<Omit<Prisma.ClientCreateManyArgs, "data"> & { data: z.infer<typeof ClientCreateManyInputSchema> | z.infer<typeof ClientCreateManyInputSchema>[] }> = z.object({
   data: z.union([ ClientCreateManyInputSchema,ClientCreateManyInputSchema.array() ]),
   skipDuplicates: z.boolean().optional(),
 }).strict() ;
@@ -3564,14 +3497,14 @@ export const ClientDeleteArgsSchema: z.ZodType<Prisma.ClientDeleteArgs> = z.obje
   where: ClientWhereUniqueInputSchema,
 }).strict() ;
 
-export const ClientUpdateArgsSchema: z.ZodType<Prisma.ClientUpdateArgs> = z.object({
+export const ClientUpdateArgsSchema: z.ZodType<Omit<Prisma.ClientUpdateArgs, "data"> & { data: z.infer<typeof ClientUpdateInputSchema> | z.infer<typeof ClientUncheckedUpdateInputSchema> }> = z.object({
   select: ClientSelectSchema.optional(),
   include: ClientIncludeSchema.optional(),
   data: z.union([ ClientUpdateInputSchema,ClientUncheckedUpdateInputSchema ]),
   where: ClientWhereUniqueInputSchema,
 }).strict() ;
 
-export const ClientUpdateManyArgsSchema: z.ZodType<Prisma.ClientUpdateManyArgs> = z.object({
+export const ClientUpdateManyArgsSchema: z.ZodType<Omit<Prisma.ClientUpdateManyArgs, "data"> & { data: z.infer<typeof ClientUpdateManyMutationInputSchema> | z.infer<typeof ClientUncheckedUpdateManyInputSchema> }> = z.object({
   data: z.union([ ClientUpdateManyMutationInputSchema,ClientUncheckedUpdateManyInputSchema ]),
   where: ClientWhereInputSchema.optional(),
 }).strict() ;
