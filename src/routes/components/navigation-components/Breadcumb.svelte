@@ -14,14 +14,19 @@
 			t = t.charAt(0).toUpperCase() + t.slice(1);
 			return { label: t, href: tokenPath };
 		});
-		crumbs.unshift({ label: 'Home', href: '/' });
+		crumbs = crumbs.slice(1);
+		crumbs.unshift({ label: 'Dashboard', href: '/dashboard' });
 	}
 </script>
 
-<Breadcrumb aria-label="Default breadcrumb example">
+<Breadcrumb >
 	{#each crumbs as crumb, i}
-		{#if crumb.label === 'Home'}
-			<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
+		{#if crumb.label === 'Dashboard'}
+			{#if crumbs.length <= 1}
+				<BreadcrumbItem href="/dashboard" home>Welcome back!</BreadcrumbItem>
+			{:else}
+				<BreadcrumbItem href="/dashboard" home>Dashboard</BreadcrumbItem>
+			{/if}
 		{:else}
 			<BreadcrumbItem href={crumb.href}>
 				{crumb.label}

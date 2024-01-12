@@ -1,0 +1,49 @@
+<script>
+	// @ts-nocheck
+	import { Button, Select, FloatingLabelInput } from 'flowbite-svelte';
+	import { EnvelopeSolid } from 'flowbite-svelte-icons';
+	import { superForm } from 'sveltekit-superforms/client';
+	import { createEventDispatcher } from 'svelte';
+	export let data;
+
+	const dispatch = createEventDispatcher();
+
+	const { form, errors, constraints, enhance } = superForm(data.form, {
+		onUpdated: async ({ form }) => {
+			console.log(form);
+			if (form.valid) {
+				dispatch('formvalid', false);
+			}
+		}
+	});
+
+	let show = false;
+	let selectedCompany;
+	let selectedRole;
+	let roles = [
+		{ value: 'ADMIN', name: 'ADMIN' },
+		{ value: 'STAFF', name: 'STAFF' }
+	];
+</script>
+
+<form class="flex flex-col justify-center align-center space-y-6" method="POST" use:enhance>
+	<div class="sm:col-span-2">
+		<FloatingLabelInput
+			style="outlined"
+			class="focus:ring-0 border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500"
+			type="text"
+			name="email"
+			placeholder="Insert your email"
+			required
+			bind:value={$form.email}
+			{...$constraints.email}
+		>
+			<EnvelopeSolid class="w-6 h-6 inline" />
+			Email
+		</FloatingLabelInput>
+		{#if $errors.email}<span class="text-red-600">{$errors.email}</span>{/if}
+	</div>
+	<Select class="mt-2" items={roles} placeholder="Select a role..." bind:value={selectedRole} />
+
+	<Button type="submit" class="w-[50%] mx-auto block">Create user</Button>
+</form>
