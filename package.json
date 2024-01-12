@@ -57,6 +57,7 @@
 		"kit-monorepo": "https://github.com/sveltejs/kit/archive/refs/tags/@sveltejs/kit@2.0.6.tar.gz",
 		"sveltekit-superforms": "^1.13.1",
 		"tailwind-merge": "^2.2.0",
-		"zod": "^3.22.4"
+		"zod": "^3.22.4",
+		"zod-prisma-types": "^3.1.6"
 	}
 }

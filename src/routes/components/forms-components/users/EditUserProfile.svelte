@@ -1,7 +1,7 @@
 <script>
 	// @ts-nocheck
 
-	import { Card, Button, Label, Input, Checkbox, Fileupload, Avatar } from 'flowbite-svelte';
+	import { Card, Button, Label, Input, Checkbox, Fileupload, Avatar, FloatingLabelInput } from 'flowbite-svelte';
 	import { EnvelopeSolid, EyeOutline, EyeSlashOutline, UserSolid } from 'flowbite-svelte-icons';
 	let show = false;
 	/**
@@ -26,7 +26,6 @@
 	}
 </script>
 
-<Card class="w-full" size="lg" padding="md">
 	<form class="flex flex-col space-y-6" action="/">
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white">Sign up to our platform</h3>
 		<div id="container">
@@ -35,46 +34,47 @@
 				<Avatar class="min-w-[10.5em] min-h-[1em]" id="avatar" size="xl" src={imageUrl} />
 			</Label>
 			<div id="inputs">
-				<Label class="space-y-2">
-					<span>First name</span>
-					<Input
+					<FloatingLabelInput
+						style="outlined"
 						class="focus:ring-0 border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500"
 						type="text"
 						name="first-name"
-						placeholder="Insert your first name"
 						required
-					>
-						<UserSolid slot="left" class="w-4 h-4" />
-					</Input>
-				</Label>
+					>	
+					<UserSolid class="w-6 h-6 inline" />
+					First name
+				</FloatingLabelInput>
 				<Label class="space-y-2">
 					<span>Last name</span>
-					<Input
+					<FloatingLabelInput
+						style="outlined"
 						class="focus:ring-0 border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500"
 						type="text"
-						name="last-name"
-						placeholder="Insert your last name"
 						required
 					>
-						<UserSolid slot="left" class="w-4 h-4" />
-					</Input>
+					<UserSolid class="w-6 h-6 inline" />
+					Last name
+					</FloatingLabelInput>
 				</Label>
 				<Label class="space-y-2">
 					<span>Email</span>
-					<Input
+					<FloatingLabelInput
+						style="outlined"
 						class="focus:ring-0 border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500"
 						type="email"
 						name="email"
 						placeholder="Insert your email"
 						required
-					>
-						<EnvelopeSolid slot="left" class="w-4 h-4" />
-					</Input>
+					>	
+						<EnvelopeSolid class="w-6 h-6 inline" />
+						Email
+					</FloatingLabelInput>
 				</Label>
 
 				<Label class="space-y-2">
 					<span>Your password</span>
-					<Input
+					<FloatingLabelInput 
+						style="outlined"
 						class="focus:ring-2 border-blue-500 focus:outline-2 focus:ring-2 focus:ring-blue-500"
 						type={show ? 'text' : 'password'}
 						name="password"
@@ -88,32 +88,9 @@
 								<EyeSlashOutline class="w-6 h-6" />
 							{/if}
 						</button>
-					</Input>
+					</FloatingLabelInput>
 				</Label>
 			</div>
 		</div>
-		<Button type="submit" color="blue" class="w-full color-blue">Create account</Button>
-		<Label class="text-sm items-center font-medium text-gray-500 ">
-			Already have an account? <a
-				href="/signin"
-				class="text-blue-500 hover:underline dark:text-primary-500"
-			>
-				Sign in
-			</a>
-		</Label>
+		<Button type="submit" class="w-full color-blue">Create user</Button>
 	</form>
-</Card>
-
-<style>
-	#container {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-around;
-	}
-	#inputs {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		justify-content: space-around;
-	}
-</style>

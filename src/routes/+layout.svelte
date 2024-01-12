@@ -7,7 +7,7 @@
 </svelte:head>
 
 <div class="flex w-full h-full justify-center items-center">
-	<main class="flex w-full h-full justify-center items-center" >
+	<main class="flex flex-col min-w-full min-h-full justify-center items-center" >
 		<slot />
 	</main>
 </div>

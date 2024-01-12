@@ -3,11 +3,11 @@ CREATE TYPE "Role" AS ENUM ('STAFF', 'ADMIN');
 
 -- CreateTable
 CREATE TABLE "Account" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
     "type" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
-    "providerAccountId" TEXT NOT NULL,
+    "providerAccountId" INTEGER NOT NULL,
     "refresh_token" TEXT,
     "access_token" TEXT,
     "expires_at" INTEGER,
@@ -21,9 +21,9 @@ CREATE TABLE "Account" (
 
 -- CreateTable
 CREATE TABLE "Session" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "sessionToken" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
@@ -31,7 +31,7 @@ CREATE TABLE "Session" (
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT,
     "email" TEXT,
     "emailVerified" TIMESTAMP(3),
@@ -49,31 +49,31 @@ CREATE TABLE "VerificationToken" (
 
 -- CreateTable
 CREATE TABLE "CompanyUser" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'STAFF',
-    "companyId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "companyId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "CompanyUser_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Client" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phoneNumber" TEXT NOT NULL,
     "avatar" TEXT,
-    "companyId" TEXT NOT NULL,
+    "companyId" INTEGER NOT NULL,
 
     CONSTRAINT "Client_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Company" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "isAdmin" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
@@ -112,20 +112,23 @@ ALTER TABLE "CompanyUser" ADD CONSTRAINT "CompanyUser_userId_fkey" FOREIGN KEY (
 -- AddForeignKey
 ALTER TABLE "Client" ADD CONSTRAINT "Client_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
+-- RLS
 ALTER TABLE "CompanyUser" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "Client" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE "Company" ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY tenant_isolation_policy ON "CompanyUser" USING ("companyId" = current_setting('app.current_company_id', TRUE)::text);
+CREATE POLICY tenant_isolation_policy ON "CompanyUser" USING ("companyId" = current_setting('app.current_company_id', TRUE)::int);
 
-CREATE POLICY tenant_isolation_policy ON "Client" USING ("companyId" = current_setting('app.current_company_id', TRUE)::text);
+CREATE POLICY tenant_isolation_policy ON "Client" USING ("companyId" = current_setting('app.current_company_id', TRUE)::int);
 
-CREATE POLICY tenant_isolation_policy ON "Company" USING ("id" = current_setting('app.current_company_id', TRUE)::text);
+CREATE POLICY tenant_isolation_policy ON "Company" USING ("id" = current_setting('app.current_company_id', TRUE)::int);
 
 CREATE POLICY bypass_rls_policy ON "CompanyUser" USING (current_setting('app.bypass_rls', TRUE)::text = 'on');
 
 CREATE POLICY bypass_rls_policy ON "Client" USING (current_setting('app.bypass_rls', TRUE)::text = 'on');
 
 CREATE POLICY bypass_rls_policy ON "Company" USING (current_setting('app.bypass_rls', TRUE)::text = 'on');
+
+CREATE POLICY user_company_isolation_policy ON "CompanyUser" USING ("userId" = current_setting('app.current_user_id', TRUE)::int)

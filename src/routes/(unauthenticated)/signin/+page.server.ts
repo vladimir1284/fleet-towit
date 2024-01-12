@@ -1,12 +1,31 @@
 import { z } from 'zod';
 import { superValidate } from 'sveltekit-superforms/server';
-
-const schema = z.object({
-    email: z.string().email(),
-    password: z.string().min(1)
-});
+import { fail } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types.js';
+import { UserSchema } from '$lib/zod/index.js';
 
 export const load = (async () => {
-    const form = await superValidate(schema);
-    return { form };
-});
+    // Server API:
+    const form = await superValidate(UserSchema);
+    // Unless you throw, always return { form } in load and form actions.
+    return { form: form } 
+
+  }) satisfies PageServerLoad
+
+export const actions = {
+    default: async ({request}) => {
+        const form = await superValidate(request, UserSchema);
+        if (!form.valid) {
+            console.log('validation fail')
+            // Again, return { form } and things will just work.
+            return fail(400, { form });
+          }
+        console.log('validation passed')
+        form.valid = true
+        return {form}
+    } 
+}
+
+
+
+

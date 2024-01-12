@@ -25,7 +25,7 @@ export function forCompany(companyId: string) {
         $allModels: {
           async $allOperations({ args, query }) {
             const [, result] = await prisma.$transaction([
-              prisma.$executeRaw`SELECT set_config('app.current_company_id', ${companyId}, TRUE)`,
+              prisma.$executeRaw`SELECT set_config('app.current_company_id',  ${""+companyId+""}, TRUE)`,
               query(args),
             ]);
             return result;

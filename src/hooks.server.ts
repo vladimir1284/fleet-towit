@@ -33,7 +33,7 @@ const ska_handle = SvelteKitAuth({
 	},
 	adapter: PrismaAdapter(prisma),
 	providers: [
-		Google({ clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET }),
+		Google({ clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET}),
 		EmailProvider({
 			server: {
 				host: SMTP_HOST,
@@ -50,8 +50,8 @@ const ska_handle = SvelteKitAuth({
 		signIn: '/signin',
 		//signOut: '/auth/signout',
 		//error: '/auth/error', // Error code passed in query string as ?error=
-		//verifyRequest: '/auth/verify-request', // (used for check email message)
-		newUser: '/signup' // New users will be directed here on first sign in (leave the property out if not of interest)
+		verifyRequest: '/verifyRequest', // (used for check email message)
+		//newUser: '/signup' // New users will be directed here on first sign in (leave the property out if not of interest)
 	  }
 });
 
