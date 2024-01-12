@@ -20,7 +20,8 @@ const prisma = new PrismaClient();
 const ska_handle = SvelteKitAuth({
 	callbacks: {
 		async signIn({ user }) {
-			if (user.email === 'luis.ulloa75360@gmail.com') {
+			let guest = await prisma.user.findFirst({where:{email: user.email}})
+			if (guest) {
 				return true;
 			} else {
 				console.log('Unauthorized: ', user);
