@@ -3,10 +3,18 @@ const prisma = new PrismaClient();
 async function main() {
 	const admin_user = await prisma.user.create({
 		data: {
-			name: 'admin'
+			firstName: 'admin',
+			email: 'vladimir.rdguez@gmail.com'
 		}
 	});
-	console.log(admin_user);
+	const admin_company = await prisma.company.create({
+		data: {
+			name: 'admin',
+			email: 'vladimir.rdguez@gmail.com',
+			isAdmin: true
+		}
+	});
+	console.log(admin_user, admin_company);
 }
 main()
 	.then(async () => {

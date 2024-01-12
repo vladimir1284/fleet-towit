@@ -82,10 +82,10 @@ export const UserSchema = z.object({
   /**
    * .omit([model, input])
    */
-  id: z.number().int().optional(),
+  id: z.number().int(),
   firstName: z.string().nullable(),
   lastName: z.string().nullable(),
-  email: z.string().email().nullable(),
+  email: z.string().nullable(),
   emailVerified: z.coerce.date().nullable(),
   image: z.string().nullable(),
 })
@@ -138,9 +138,9 @@ export type Client = z.infer<typeof ClientSchema>
 /////////////////////////////////////////
 
 export const CompanySchema = z.object({
-  id: z.number().int().optional(),
+  id: z.number().int(),
   name: z.string(),
-  email: z.string().email().nullable(),
+  email: z.string().nullable(),
   isAdmin: z.boolean(),
 })
 
