@@ -20,7 +20,7 @@ model Account {
   userId            Int
   type              String
   provider          String
-  providerAccountId Int
+  providerAccountId String
   refresh_token     String?
   access_token      String?
   expires_at        Int?
