@@ -1,13 +1,13 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { bypassPrisma } from "../src/lib/prisma";
+
 async function main() {
-	const admin_user = await prisma.user.create({
+	const admin_user = await bypassPrisma.user.create({
 		data: {
 			firstName: 'admin',
 			email: 'vladimir.rdguez@gmail.com'
 		}
 	});
-	const admin_company = await prisma.company.create({
+	const admin_company = await bypassPrisma.company.create({
 		data: {
 			name: 'admin',
 			email: 'vladimir.rdguez@gmail.com',
@@ -18,10 +18,10 @@ async function main() {
 }
 main()
 	.then(async () => {
-		await prisma.$disconnect();
+		await bypassPrisma.$disconnect();
 	})
 	.catch(async (e) => {
 		console.error(e);
-		await prisma.$disconnect();
+		await bypassPrisma.$disconnect();
 		process.exit(1);
 	});
