@@ -13,8 +13,8 @@ datasource db {
 }
 
 model Account {
-  id                Int     @id @default(autoincrement())
-  userId            Int
+  id                String  @id @default(cuid())
+  userId            String
   type              String
   provider          String
   providerAccountId String
@@ -25,61 +25,61 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Client {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(cuid())
   email       String
   phoneNumber String  @unique
   avatar      String?
-  companyId   Int
+  companyId   String
   firstName   String
   lastName    String
-  Company     Company @relation(fields: [companyId], references: [id])
+  company     Company @relation(fields: [companyId], references: [id])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Company {
-  id          Int           @id @default(autoincrement())
+  id          String        @id @default(cuid())
   name        String
   email       String?
   isAdmin     Boolean       @default(false)
-  Client      Client[]
-  CompanyUser CompanyUser[]
+  client      Client[]
+  companyUser CompanyUser[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model CompanyUser {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(cuid())
   role      Role    @default(STAFF)
-  companyId Int
-  userId    Int
-  Company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  User      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId String
+  userId    String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Session {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       Int
+  userId       String
   expires      DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
+  id            String        @id @default(cuid())
   email         String?       @unique
   emailVerified DateTime?
   image         String?
   firstName     String?
   lastName      String?
-  Account       Account[]
-  CompanyUser   CompanyUser[]
-  Session       Session[]
+  account       Account[]
+  companyUser   CompanyUser[]
+  session       Session[]
 }
 
 model VerificationToken {
