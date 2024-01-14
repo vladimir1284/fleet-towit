@@ -2,25 +2,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-	const admin_user = await prismaINSERT INTO User (
-		id,
-		email,
-		emailVerified,
-		image,
-		firstName,
-		lastName
-	  )
-	VALUES (
-		id:integer,
-		'email:text',
-		'emailVerified:timestamp without time zone',
-		'image:text',
-		'firstName:text',
-		'lastName:text'
-	  );.user.create({
+	const admin_user = await prisma.user.create({
 		data: {
 			firstName: 'admin',
-			email: 'vladimir.rdguez@gmail.com'
+			email: 'gissell1184@gmail.com'
 		}
 	});
 	const admin_company = await prisma.company.create({

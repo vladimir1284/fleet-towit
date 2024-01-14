@@ -20,7 +20,7 @@ const prisma = new PrismaClient();
 const ska_handle = SvelteKitAuth({
 	callbacks: {
 		async signIn({ user }) {
-			let guest = await prisma.user.findFirst({where:{email: user.email}})
+			let guest = await prisma.user.findFirst({ where: { email: user.email } });
 			if (guest) {
 				return true;
 			} else {
@@ -34,7 +34,10 @@ const ska_handle = SvelteKitAuth({
 	},
 	adapter: PrismaAdapter(prisma),
 	providers: [
-		Google({ clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET}),
+		Google({
+			clientId: GOOGLE_CLIENT_ID,
+			clientSecret: GOOGLE_CLIENT_SECRET
+		}),
 		EmailProvider({
 			server: {
 				host: SMTP_HOST,
@@ -51,9 +54,9 @@ const ska_handle = SvelteKitAuth({
 		signIn: '/signin',
 		//signOut: '/auth/signout',
 		//error: '/auth/error', // Error code passed in query string as ?error=
-		verifyRequest: '/verifyRequest', // (used for check email message)
+		verifyRequest: '/verifyRequest' // (used for check email message)
 		//newUser: '/signup' // New users will be directed here on first sign in (leave the property out if not of interest)
-	  }
+	}
 });
 
 Sentry.init({
