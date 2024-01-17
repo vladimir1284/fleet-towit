@@ -36,7 +36,8 @@ const ska_handle = SvelteKitAuth({
 	providers: [
 		Google({
 			clientId: GOOGLE_CLIENT_ID,
-			clientSecret: GOOGLE_CLIENT_SECRET
+			clientSecret: GOOGLE_CLIENT_SECRET,
+			allowDangerousEmailAccountLinking: true
 		}),
 		EmailProvider({
 			server: {
@@ -47,7 +48,8 @@ const ska_handle = SvelteKitAuth({
 					pass: SMTP_PASSWORD
 				}
 			},
-			from: EMAIL_FROM
+			from: EMAIL_FROM,
+			allowDangerousEmailAccountLinking: true
 		})
 	],
 	pages: {
