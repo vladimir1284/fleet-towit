@@ -13,7 +13,7 @@
 		Alert
 	} from 'flowbite-svelte';
 	import { TrashBinSolid, FileEditSolid, CheckSolid } from 'flowbite-svelte-icons';
-    import CreateUserForm from '../../../components/forms-components/users/CreateUserForm.svelte';
+    import CreateUserForm from '$lib/components/forms-components/users/CreateUserForm.svelte';
 	import type { PageData } from './$types';
 	export let data: PageData;
 
