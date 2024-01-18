@@ -3,12 +3,12 @@
 	import {
 		Modal,
 	} from 'flowbite-svelte';
-    import CreateUserForm from '../../../../../components/forms-components/users/CreateUserForm.svelte';
-	import type { PageData } from './$types';
+    import CreateUserForm from '$lib/components/forms-components/users/CreateUserForm.svelte';
+	import type { PageData } from '../$types';
 	export let data: PageData;
 
 	let showAlert = false;
-	let popupModal = false;
+	let popupModal = true;
 
 	function handleCloseModal(event) {
 		popupModal = event.detail;

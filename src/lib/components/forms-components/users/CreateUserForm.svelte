@@ -25,6 +25,7 @@
 </script>
 
 <form class="flex flex-col justify-center align-center space-y-6" method="POST" use:enhance>
+	<input hidden name="id" bind:value={$form.id}/>
 	<div class="sm:col-span-2">
 		<FloatingLabelInput
 			style="outlined"

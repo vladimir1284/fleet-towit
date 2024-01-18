@@ -8,7 +8,8 @@ import { z } from 'zod';
 
 let fixSchema = z.object({
   role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
-  email: z.string().email()
+  email: z.string().email(),
+  id: z.string().optional()
 })
 
 export const load = (async () => {

@@ -59,7 +59,7 @@
 					<TableBodyCell>{user.user.firstName || '-'}</TableBodyCell>
 					<TableBodyCell>{user.role}</TableBodyCell>
 					<TableBodyCell class=" flex w-32 justify-between">
-						<a href={'./users/'+user.id+'/update'}>
+						<a href={'./users/update/'+user.id}>
 							<FileEditSolid class="text-gray-400" />
 						</a>
 						<a href={'./user/delete/'+user.id}>
