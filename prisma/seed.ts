@@ -1,13 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { createCompanyUser } from "$lib/actions/admin";
+import { bypassPrisma } from '$lib/prisma';
+const prisma = bypassPrisma
 
 async function main() {
-	const admin_user = await prisma.user.create({
-		data: {
-			firstName: 'admin',
-			email: 'gissell1184@gmail.com'
-		}
-	});
 	const admin_company = await prisma.company.create({
 		data: {
 			name: 'admin',
@@ -15,7 +11,10 @@ async function main() {
 			isAdmin: true
 		}
 	});
-	console.log(admin_user, admin_company);
+	//const admin_user = await createCompanyUser({email: 'gissell1184@gmail.com', companyId: admin_company.id})
+	const admin_user = await createCompanyUser({email: 'gsg2604@gmail.com', companyId: admin_company.id})
+	const admin_user_1 = await createCompanyUser({email: 'luis.ulloa75360@gmail.com', companyId: admin_company.id})
+
 }
 main()
 	.then(async () => {

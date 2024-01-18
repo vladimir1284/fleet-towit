@@ -2,7 +2,7 @@
 
 import { expect, test, vi } from 'vitest'
 import { bypassPrisma, companyPrisma, prisma } from '../src/lib/prisma';
-import { Prisma, PrismaPromise } from '@prisma/client';
+import type { Prisma, PrismaPromise } from '@prisma/client';
 
 let company: any
 let user: any
@@ -18,12 +18,12 @@ async function runTest(promise: any, expectedError:string = 'UNEXPECTED') {
     let status:STATUS = STATUS.INITIAL;
     let result:any = null;
     await promise
-        .then((res) => {
+        .then((res: any) => {
             status = STATUS.DONE;
             result = res
             
         })
-        .catch((e) => {
+        .catch((e: any) => {
             if (e.message.includes(expectedError)) {
                 status = STATUS.EXPECT_ERROR
             } else {

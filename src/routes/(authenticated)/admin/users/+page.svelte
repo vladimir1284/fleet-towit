@@ -58,8 +58,12 @@
 					<TableBodyCell>{user.user.firstName || '-'}</TableBodyCell>
 					<TableBodyCell>{user.role}</TableBodyCell>
 					<TableBodyCell class=" flex w-32 justify-between">
-						<FileEditSolid class="text-gray-400" />
-						<TrashBinSolid class="text-red-500" />
+						<a href={'./user/edit/'+user.id}>
+							<FileEditSolid class="text-gray-400" />
+						</a>
+						<a href={'./user/delete/'+user.id}>
+							<TrashBinSolid class="text-red-500" />
+						</a>
 					</TableBodyCell>
 				</TableBodyRow>
 				{/each}

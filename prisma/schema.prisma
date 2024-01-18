@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,7 +20,7 @@ model Account {
   userId            String
   type              String
   provider          String
-  providerAccountId String
+  providerAccountId Int
   refresh_token     String?
   access_token      String?
   expires_at        Int?
@@ -25,61 +28,29 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Client {
-  id          String  @id @default(cuid())
-  email       String
-  phoneNumber String  @unique
-  avatar      String?
-  companyId   String
-  firstName   String
-  lastName    String
-  company     Company @relation(fields: [companyId], references: [id])
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Company {
-  id          String        @id @default(cuid())
-  name        String
-  email       String?
-  isAdmin     Boolean       @default(false)
-  client      Client[]
-  companyUser CompanyUser[]
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model CompanyUser {
-  id        String  @id @default(cuid())
-  role      Role    @default(STAFF)
-  companyId String
-  userId    String
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime
+  expires      DateTime 
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String        @id @default(cuid())
+  id            String        @id @default(cuid()) /// @zod.custom.omit([model, input])
+  name          String?
   email         String?       @unique
   emailVerified DateTime?
   image         String?
-  firstName     String?
-  lastName      String?
-  account       Account[]
-  companyUser   CompanyUser[]
-  session       Session[]
+  accounts      Account[]
+  sessions      Session[]
+  companyUsers  CompanyUser[]
 }
 
 model VerificationToken {
@@ -88,6 +59,35 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model CompanyUser {
+  id        String  @id @default(cuid())
+  role      Role    @default(STAFF)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Client {
+  id          String     @id @default(cuid())
+  name        String
+  email       String
+  phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
+  avatar      String?
+  companyId   String
+  company     Company @relation(fields: [companyId], references: [id])
+
+}
+
+model Company {
+  id      String      @id @default(cuid())
+  name    String
+  email   String?
+  isAdmin Boolean  @default(false)
+  clients Client[]
+  users   CompanyUser[]
 }
 
 enum Role {

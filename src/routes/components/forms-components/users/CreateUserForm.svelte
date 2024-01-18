@@ -43,7 +43,7 @@
 		</FloatingLabelInput>
 		{#if $errors.email}<span class="text-red-600">{$errors.email}</span>{/if}
 	</div>
-	<Select class="mt-2" items={roles} placeholder="Select a role..." bind:value={selectedRole} />
+	<Select class="mt-2" items={roles} name='role' placeholder="Select a role..." bind:value={$form.role} />
 
 	<Button type="submit" class="w-[50%] mx-auto block">Create user</Button>
 </form>

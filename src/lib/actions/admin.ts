@@ -5,6 +5,8 @@ import { Role } from "@prisma/client";
 
 type createCompanyType = {name: string, email?: string | null};
 type createUserType = {email: string, companyId: string, userRole?: Role};
+type editCompanyType = createCompanyType & {companyId: string};
+type editUserType = createUserType & {companyUserId: string}
 
 export const createCompany = async({name, email=null, }: createCompanyType) => {
     let obj = await bypassPrisma.company.create({data:{
@@ -25,6 +27,20 @@ export const createCompanyUser = async({email, companyId, userRole=Role.STAFF}: 
         role: userRole
     }})
 
+    return companyUser
+}
+
+export const updateCompany = async({companyId, name, email}: editCompanyType) => {
+    let company = await bypassPrisma.company.update({where:{id: companyId}, data:{name: name, email: email}})
+    return company
+}
+
+export const updateCompanyUser = async({companyUserId, email, companyId, userRole}: editUserType) => {
+    let user = await bypassPrisma.user.findUnique({where:{email: email}})
+    if (!user) {
+        user = await bypassPrisma.user.create({data: {email: email}})
+    } 
+    let companyUser = await bypassPrisma.companyUser.update({where:{id: companyUserId}, data:{companyId, role: userRole, userId: user.id}})
     return companyUser
 }
 
