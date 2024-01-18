@@ -4,8 +4,12 @@ import type { PageServerLoad } from './$types.js';
 import { CompanySchema } from '$lib/zod/index';
 import { listCompanies, createCompany } from '$lib/actions/admin.js';
 
+let ExtendedCompanySchema = CompanySchema.extend({
+  id: CompanySchema.shape.id.optional()
+})
+
 export const load = (async () => {
-    const form = await superValidate(CompanySchema);
+    const form = await superValidate(ExtendedCompanySchema);
     let companies = await listCompanies();
     return { form: form, companies: companies } 
 
@@ -13,7 +17,7 @@ export const load = (async () => {
 
 export const actions = {
     default: async ({request}) => {
-      const form = await superValidate(request, CompanySchema);
+      const form = await superValidate(request, ExtendedCompanySchema);
       console.log(form)
         if (!form.valid) {
             console.log('validation fail')

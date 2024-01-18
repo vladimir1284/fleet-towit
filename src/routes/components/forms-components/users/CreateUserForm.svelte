@@ -17,9 +17,7 @@
 		}
 	});
 
-	let show = false;
-	let selectedCompany;
-	let selectedRole;
+	
 	let roles = [
 		{ value: 'ADMIN', name: 'ADMIN' },
 		{ value: 'STAFF', name: 'STAFF' }

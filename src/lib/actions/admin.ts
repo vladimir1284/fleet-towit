@@ -54,6 +54,10 @@ export const deleteUser = async({companyUserId}: {companyUserId: string}) => {
     return true
 }
 
+export const getCompanyUser = async({companyUserId}: {companyUserId: string}) => {
+    let companyUser = await bypassPrisma.companyUser.findUnique({})
+}
+
 export const listCompanies = async() => {
     let companies = await bypassPrisma.company.findMany();
     let augmentedCompanies = await Promise.all(companies.map(async(company) => { 

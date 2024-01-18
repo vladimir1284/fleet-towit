@@ -11,10 +11,11 @@ let fixSchema = z.object({
   email: z.string().email()
 })
 
-export const load = (async () => {
+export const load = (async ({ params }) => {
     const adminCompany = await getAdminCompany();
     let userCompanyList = await listCompanyUsers({companyId: adminCompany?.id || ''})
     
+
     const form = await superValidate(fixSchema);
     return { form: form, users: userCompanyList} 
 

@@ -2,6 +2,7 @@
 	import { Section, News, HeroHeader, HeroBody } from 'flowbite-svelte-blocks';
 	import { Button } from 'flowbite-svelte';
 	import { ArrowRightSolid } from 'flowbite-svelte-icons';
+	
 </script>
 
 <Section name="heroVisual">

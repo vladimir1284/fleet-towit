@@ -28,7 +28,8 @@
 			showAlert = false;
 		}, 4000);
 	}
-    $: console.log(popupModal)
+
+    
 </script>
 
 <Modal size="xs" padding="md" bind:open={popupModal}>
@@ -58,7 +59,7 @@
 					<TableBodyCell>{user.user.firstName || '-'}</TableBodyCell>
 					<TableBodyCell>{user.role}</TableBodyCell>
 					<TableBodyCell class=" flex w-32 justify-between">
-						<a href={'./user/edit/'+user.id}>
+						<a href={'./users/'+user.id+'/update'}>
 							<FileEditSolid class="text-gray-400" />
 						</a>
 						<a href={'./user/delete/'+user.id}>
