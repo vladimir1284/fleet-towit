@@ -13,7 +13,7 @@
 		Alert
 	} from 'flowbite-svelte';
 	import { TrashBinSolid, FileEditSolid, InfoCircleSolid,CheckSolid  } from 'flowbite-svelte-icons';
-	import CreateCompanyForm from '../../../components/forms-components/companies/CreateCompanyForm.svelte';
+	import CreateCompanyForm from '$lib/components/forms-components/companies/CreateCompanyForm.svelte';
 	import type { PageData } from './$types';
 	export let data: PageData;
 

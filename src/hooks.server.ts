@@ -10,7 +10,8 @@ import {
 	SMTP_PORT,
 	SMTP_USER,
 	SMTP_PASSWORD,
-	EMAIL_FROM
+	EMAIL_FROM,
+	ENVIRONMENT
 } from '$env/static/private';
 import EmailProvider from '@auth/core/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
@@ -60,12 +61,12 @@ const ska_handle = SvelteKitAuth({
 		//newUser: '/signup' // New users will be directed here on first sign in (leave the property out if not of interest)
 	}
 });
-
-Sentry.init({
-	dsn: 'https://264c6d3e8448a85d1a3717e5ef22a502@o4506418139299840.ingest.sentry.io/4506418143035392',
-	tracesSampleRate: 1.0
-});
-
+if (ENVIRONMENT==="Production") {
+	Sentry.init({
+		dsn: 'https://264c6d3e8448a85d1a3717e5ef22a502@o4506418139299840.ingest.sentry.io/4506418143035392',
+		tracesSampleRate: 1.0
+	});		
+}
 // If you have custom handlers, make sure to place them after `sentryHandle()` in the `sequence` function.
 export const handle = sequence(sentryHandle(), ska_handle);
 

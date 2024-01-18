@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Header from '../components/navigation-components/Header.svelte';
+	import Header from '$lib/components/navigation-components/Header.svelte';
 </script>
 
 <svelte:head>
