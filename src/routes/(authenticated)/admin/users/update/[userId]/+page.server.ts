@@ -1,6 +1,6 @@
 import { superValidate } from 'sveltekit-superforms/server';
 import { fail, redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from '../$types.js';
+import type { PageServerLoad } from './$types.js';
 //import { UserSchema, CompanyUserSchema } from '$lib/zod/index.js';
 import { getAdminCompany, updateCompanyUser, getCompanyUser} from '$lib/actions/admin.js';
 import { Role } from '@prisma/client';
@@ -19,7 +19,7 @@ export const load = (async ({params}) => {
     
 
     let user = await getCompanyUser({companyUserId: params.userId})
-    let data: fixSchemaType = {email: user.user?.email || '', role: user.role, id: user.id} 
+    let data: fixSchemaType = {email: user.user?.email || '', role: user.role || 'STAFF', id: user.id} 
 
     const form = await superValidate(data, fixSchema);
     return { form: form} 

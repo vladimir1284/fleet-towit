@@ -33,11 +33,11 @@ export const actions = {
         console.log('validation passed')
         let user = await createCompanyUser({
           email: form.data.email,
-          companyId: adminCompany?.id,
+          companyId: adminCompany?.id || '',
           userRole: Role[form.data.role]
         })
         form.valid = true
-        let userCompanyList = await listCompanyUsers({companyId: adminCompany?.id})
+        let userCompanyList = await listCompanyUsers({companyId: adminCompany?.id||''});
         return {form, users: userCompanyList}
     } 
 }
