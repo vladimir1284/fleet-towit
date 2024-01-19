@@ -1,23 +1,28 @@
 import { superValidate } from 'sveltekit-superforms/server';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 //import { UserSchema, CompanyUserSchema } from '$lib/zod/index.js';
-import { getAdminCompany, listCompanyUsers, createCompanyUser} from '$lib/actions/admin.js';
+import { getAdminCompany, updateCompanyUser, getCompanyUser} from '$lib/actions/admin.js';
 import { Role } from '@prisma/client';
 import { z } from 'zod';
 
 let fixSchema = z.object({
   role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
   email: z.string().email(),
-  id: z.string().optional()
+  id: z.string().optional(),
 })
 
-export const load = (async () => {
+type fixSchemaType = z.infer<typeof fixSchema> 
+
+export const load = (async ({params}) => {
     const adminCompany = await getAdminCompany();
-    let userCompanyList = await listCompanyUsers({companyId: adminCompany?.id || ''})
     
-    const form = await superValidate(fixSchema);
-    return { form: form, users: userCompanyList} 
+
+    let user = await getCompanyUser({companyUserId: params.userId})
+    let data: fixSchemaType = {email: user.user?.email || '', role: user.role || 'STAFF', id: user.id} 
+
+    const form = await superValidate(data, fixSchema);
+    return { form: form} 
 
   }) satisfies PageServerLoad
 
@@ -31,14 +36,14 @@ export const actions = {
             return fail(400, { form });
           }
         console.log('validation passed')
-        let user = await createCompanyUser({
+        updateCompanyUser({
+          companyUserId: form.data.id||'',
           email: form.data.email,
-          companyId: adminCompany?.id || '',
+          companyId: adminCompany?.id||'',
           userRole: Role[form.data.role]
         })
         form.valid = true
-        let userCompanyList = await listCompanyUsers({companyId: adminCompany?.id||''});
-        return {form, users: userCompanyList}
+        throw redirect(307, '/admin/users')
     } 
 }
 

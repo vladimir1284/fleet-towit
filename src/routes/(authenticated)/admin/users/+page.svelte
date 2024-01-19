@@ -14,11 +14,16 @@
 	} from 'flowbite-svelte';
 	import { TrashBinSolid, FileEditSolid, CheckSolid } from 'flowbite-svelte-icons';
     import CreateUserForm from '$lib/components/forms-components/users/CreateUserForm.svelte';
+    import DeleteUserForm from '$lib/components/forms-components/users/DeleteUserForm.svelte';
 	import type { PageData } from './$types';
+	import { invalidate } from '$app/navigation';
+
 	export let data: PageData;
 
 	let showAlert = false;
 	let popupModal = false;
+	let deleteModal = false;
+	let selectedId = '';
 
 	function handleCloseModal(event) {
 		popupModal = event.detail;
@@ -27,13 +32,30 @@
 		setTimeout(() => {
 			showAlert = false;
 		}, 4000);
+	};
+
+	function handleDelete(userId) {
+		deleteModal = true;
+		selectedId = userId
 	}
-    $: console.log(popupModal)
+
+	async function handleCloseDeleteModal(event) {
+		deleteModal = event.detail;
+		await invalidate('./users');
+    
+	};
+
+    
 </script>
 
 <Modal size="xs" padding="md" bind:open={popupModal}>
 	<CreateUserForm data={data} on:formvalid={handleCloseModal} />
 </Modal>
+
+<Modal size="xs" padding="md" bind:open={deleteModal}>
+	<DeleteUserForm data={selectedId} on:formvalid={handleCloseDeleteModal} />
+</Modal>
+
 
 <div>
 	<Card size="9xl">
@@ -55,15 +77,13 @@
 				{#each data.users as user}
 				<TableBodyRow>
 					<TableBodyCell>{user.user.email}</TableBodyCell>
-					<TableBodyCell>{user.user.firstName || '-'}</TableBodyCell>
+					<TableBodyCell>{user.user.name || '-'}</TableBodyCell>
 					<TableBodyCell>{user.role}</TableBodyCell>
 					<TableBodyCell class=" flex w-32 justify-between">
-						<a href={'./user/edit/'+user.id}>
+						<a href={'./users/update/'+user.id}>
 							<FileEditSolid class="text-gray-400" />
 						</a>
-						<a href={'./user/delete/'+user.id}>
-							<TrashBinSolid class="text-red-500" />
-						</a>
+							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(user.id)}/>
 					</TableBodyCell>
 				</TableBodyRow>
 				{/each}
