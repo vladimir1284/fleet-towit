@@ -72,6 +72,7 @@ const handleAuth = (async(...args) => {
 			//error: '/auth/error', // Error code passed in query string as ?error=
 			verifyRequest: '/verifyRequest'
 		},
+		trustHost: true
 	})(...args)
 }) satisfies Handle;
 
