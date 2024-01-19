@@ -17,18 +17,17 @@
 }
 
 body {
-	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	background-color: #eaeaea;
 	margin: 0;
-	background-attachment: fixed;
-	background-color: var(--color-bg-1);
-	background-size: 100vw 100vh;
-	background-image: radial-gradient(
-			50% 50% at 50% 50%,
-			rgba(255, 255, 255, 0.75) 0%,
-			rgba(255, 255, 255, 0) 100%
-		),
-		linear-gradient(180deg, var(--color-bg-0) 0%, var(--color-bg-1) 15%, var(--color-bg-2) 50%);
+	-ms-overflow-style: none;
+	scrollbar-width: none;
 }
+
+body::-webkit-scrollbar {
+	display: none;
+   }
 
 h1,
 h2,
@@ -41,8 +40,8 @@ p {
 }
 
 a {
-	color: var(--color-theme-1);
-	text-decoration: none;
+	color: var(--color-theme-2);
+	text-decoration: var(--color-theme-2);
 }
 
 a:hover {

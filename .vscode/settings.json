@@ -5,7 +5,8 @@
 			"server": "localhost",
 			"port": 5432,
 			"driver": "PostgreSQL",
-			"name": "fleet",
+			"name": "localhost",
+			"group": "fleet",
 			"database": "fleet",
 			"username": "postgres"
 		}

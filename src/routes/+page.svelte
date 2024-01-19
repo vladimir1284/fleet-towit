@@ -1,59 +1,23 @@
 <script>
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+	import { Section, News, HeroHeader, HeroBody } from 'flowbite-svelte-blocks';
+	import { Button } from 'flowbite-svelte';
+	import { ArrowRightSolid } from 'flowbite-svelte-icons';
+	
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-</svelte:head>
-
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
-
-<style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
-</style>
+<Section name="heroVisual">
+	<div class="mr-auto place-self-center md:col-span-2">
+		<HeroHeader
+			h1Class="max-w-2xl mb-4 text-4xl font-extrabold tracking-tight leading-none md:text-5xl xl:text-6xl dark:text-white"
+			pClass="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400"
+		>
+			<svelte:fragment slot="h1">Custom text</svelte:fragment>
+			<svelte:fragment slot="paragraph">Custom text.</svelte:fragment>
+			<a href="/signin"
+				><Button size="xl" color="blue" class="inline-flex items-center justify-center mr-3"
+					>Sign in<ArrowRightSolid size="md" class="ml-2 -mr-1" /></Button
+				>
+			</a>
+		</HeroHeader>
+	</div>
+</Section>
