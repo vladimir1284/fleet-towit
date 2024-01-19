@@ -1,0 +1,2 @@
+import{s as o,l as n,m as i,i as c,z as s,d as m}from"../chunks/scheduler.RAkbNlF_.js";import{S as p,i as l}from"../chunks/index.5brJxJeu.js";function f(a){let t;return{c(){t=n("service programs")},l(e){t=i(e,"service programs")},m(e,r){c(e,t,r)},p:s,i:s,o:s,d(e){e&&m(t)}}}class x extends p{constructor(t){super(),l(this,t,null,f,o,{})}}export{x as component};
+//# sourceMappingURL=16.67KYPbu_.js.map
