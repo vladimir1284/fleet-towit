@@ -23,6 +23,8 @@ body {
 	margin: 0;
 	-ms-overflow-style: none;
 	scrollbar-width: none;
+	max-width: 99vw;
+	max-height: 99vh;
 }
 
 body::-webkit-scrollbar {

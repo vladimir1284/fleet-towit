@@ -3,7 +3,7 @@
 	import {
 		Modal,
 	} from 'flowbite-svelte';
-    import CreateUserForm from '$lib/components/forms-components/users/CreateUserForm.svelte';
+    import CreateCompanyForm from '$lib/components/forms-components/companies/CreateCompanyForm.svelte';
 	import type { PageData } from '../$types';
 	export let data: PageData;
 
@@ -22,5 +22,5 @@
 </script>
 
 <Modal size="xs" padding="md" bind:open={popupModal}>
-	<CreateUserForm data={data} on:formvalid={handleCloseModal} />
+	<CreateCompanyForm data={data} on:formvalid={handleCloseModal} />
 </Modal>

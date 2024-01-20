@@ -19,6 +19,7 @@ import {
 import EmailProvider from '@auth/core/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
+import { getCompanyUsers } from '$lib/actions/user';
 const prisma = new PrismaClient();
 
 const handleAuth = (async(...args) => {
@@ -38,11 +39,13 @@ const handleAuth = (async(...args) => {
 				}
 			},
 			async session({ session, user }) {
+				const companyUsers = await getCompanyUsers({userId: user.id})
 				session.user = {
 					id: user.id,
 					name: user.name,
 					email: user.email,
-					image: user.image
+					image: user.image,
+					companyUsers
 				};
 				event.locals.session = session;
 				return session;
@@ -71,7 +74,8 @@ const handleAuth = (async(...args) => {
 		pages: {
 			signIn: '/signin',
 			//error: '/auth/error', // Error code passed in query string as ?error=
-			verifyRequest: '/verifyRequest'
+			verifyRequest: '/verifyRequest',
+			logOut: '/logout'
 		},
 		trustHost: true,
 		secret: AUTH_SECRET
