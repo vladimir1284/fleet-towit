@@ -14,6 +14,7 @@ async function main() {
 	});
 	const admin_user_0 = await createCompanyUser({email: 'gissell1184@gmail.com', userRole: Role.ADMIN, companyId: admin_company.id})
 	const admin_user_1 = await createCompanyUser({email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, companyId: admin_company.id})
+	const admin_user_2 = await createCompanyUser({email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, companyId: admin_company.id})
 }
 main()
 	.then(async () => {
