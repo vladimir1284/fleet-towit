@@ -50,7 +50,12 @@ export const deleteCompany = async({companyId}:{companyId: string} ) => {
 }
 
 export const deleteUser = async({companyUserId}: {companyUserId: string}) => {
+    const companyUser = await bypassPrisma.companyUser.findUnique({where: {id: companyUserId}})
     await bypassPrisma.companyUser.delete({where:{id: companyUserId}})
+    const restCompanyUsers = await bypassPrisma.companyUser.findMany({where: {userId: companyUser?.userId}})
+    if (!restCompanyUsers.length) {
+        await bypassPrisma.user.delete({where: {id: companyUser?.userId}})
+    }
     return true
 }
 
@@ -74,6 +79,11 @@ export const listCompanies = async() => {
         return {...company, owner}
      }))
     return companies
+}
+
+export const getCompany = async({companyId}:{companyId: string}) => {
+    const company = await bypassPrisma.company.findUnique({where: {id: companyId}})
+    return company
 }
 
 export const listCompanyUsers = async({companyId}:{companyId: string}) => {

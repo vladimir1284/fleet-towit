@@ -83,11 +83,21 @@
 		},
 		yaxis: {
 			show: true
-		}
+		},responsive: [{
+            breakpoint: 640,
+            options: {
+                chart: {
+                    width: '100%'
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }]
 	};
 </script>
 
-<Card size="lg" padding="lg" class="w-[9xl]  h-[25%]">
+<Card size="lg" padding="lg" class="w-full md:w-auto h-auto">
 	<div class="flex justify-between">
 		<div>
 			<h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">Monthly history</h5>

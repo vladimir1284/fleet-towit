@@ -25,7 +25,6 @@ export const actions = {
     default: async ({request}) => {
       const form = await superValidate(request, fixSchema);
       const adminCompany = await getAdminCompany();
-      console.log(form)
         if (!form.valid) {
             console.log('validation fail')
             return fail(400, { form });

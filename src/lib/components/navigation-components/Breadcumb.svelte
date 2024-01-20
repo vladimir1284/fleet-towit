@@ -19,7 +19,7 @@
 	}
 </script>
 
-<Breadcrumb >
+<Breadcrumb class="hidden sm:block sm:block" id="hide-on-mobile-landscape">
 	{#each crumbs as crumb, i}
 		{#if crumb.label === 'Dashboard'}
 			{#if crumbs.length <= 1}

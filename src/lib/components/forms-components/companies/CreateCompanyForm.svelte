@@ -10,7 +10,6 @@
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
-			console.log(form);
 			if (form.valid) {
 				dispatch('formvalid', false);
 			}
@@ -18,8 +17,9 @@
 	});
 </script>
 
-<form action="/admin/companies" method="POST" use:enhance>
+<form method="POST" use:enhance>
 	<div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
+		<input hidden name="id" bind:value={$form.id}/>
 		<div class="sm:col-span-2">
 			<FloatingLabelInput
 				style="outlined"

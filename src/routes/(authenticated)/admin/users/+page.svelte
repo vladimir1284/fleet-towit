@@ -16,7 +16,6 @@
     import CreateUserForm from '$lib/components/forms-components/users/CreateUserForm.svelte';
     import DeleteUserForm from '$lib/components/forms-components/users/DeleteUserForm.svelte';
 	import type { PageData } from './$types';
-	import { invalidate } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -41,7 +40,7 @@
 
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
-		await invalidate('./users');
+		location.reload();
     
 	};
 

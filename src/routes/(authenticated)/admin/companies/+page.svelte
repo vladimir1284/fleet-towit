@@ -12,13 +12,16 @@
 		Modal,
 		Alert
 	} from 'flowbite-svelte';
-	import { TrashBinSolid, FileEditSolid, InfoCircleSolid,CheckSolid  } from 'flowbite-svelte-icons';
+	import { TrashBinSolid, FileEditSolid, CheckSolid  } from 'flowbite-svelte-icons';
 	import CreateCompanyForm from '$lib/components/forms-components/companies/CreateCompanyForm.svelte';
+	import DeleteCompanyForm from '$lib/components/forms-components/companies/DeleteCompanyForm.svelte';
 	import type { PageData } from './$types';
 	export let data: PageData;
 
 	let showAlert = false;
 	let popupModal = false;
+	let deleteModal = false;
+	let selectedId = '';
 
 	function handleCloseModal(event) {
 		popupModal = event.detail;
@@ -28,10 +31,25 @@
 			showAlert = false;
 		}, 4000);
 	}
+
+	function handleDelete(userId) {
+		deleteModal = true;
+		selectedId = userId
+	}
+
+	async function handleCloseDeleteModal(event) {
+		deleteModal = event.detail;
+		location.reload();
+	};
+
 </script>
 
 <Modal bind:open={popupModal} size="xs">
 	<CreateCompanyForm data={data} on:formvalid={handleCloseModal} />
+</Modal>
+
+<Modal size="xs" padding="md" bind:open={deleteModal}>
+	<DeleteCompanyForm data={selectedId} on:formvalid={handleCloseDeleteModal} />
 </Modal>
 
 <div>
@@ -57,10 +75,12 @@
 					<TableBodyCell class="text-center">{company.name}</TableBodyCell>
 					<TableBodyCell class="text-center">{company.email}</TableBodyCell>
 					<TableBodyCell class="text-center">{company.owner?.email || "-"}</TableBodyCell>
-					<TableBodyCell class="text-center"><a class="cursor-pointer">See users</a></TableBodyCell>
+					<TableBodyCell class="text-center"><a class="cursor-pointer" href="./companies">See users</a></TableBodyCell>
 					<TableBodyCell class=" flex w-32 justify-between">
-						<FileEditSolid class="text-gray-400" />
-						<TrashBinSolid class="text-red-500" />
+						<a  href={'./companies/update/'+company.id} >
+							<FileEditSolid class="text-gray-400"/>
+						</a>
+						<TrashBinSolid class="text-red-500" on:click={() => handleDelete(company.id)}/>
 					</TableBodyCell>
 				</TableBodyRow>
 				{/each}

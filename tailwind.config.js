@@ -23,6 +23,11 @@ const config = {
         },
 			}
 		}
+	},
+	variants: {
+		extend: {
+		  display: ['orientation'],
+		},
 	}
 };
 

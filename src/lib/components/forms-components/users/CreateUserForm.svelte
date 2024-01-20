@@ -10,7 +10,6 @@
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
-			console.log(form);
 			if (form.valid) {
 				dispatch('formvalid', false);
 			}
