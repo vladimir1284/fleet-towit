@@ -72,9 +72,8 @@ const handleAuth = (async(...args) => {
 		],
 		pages: {
 			signIn: '/signin',
-			//error: '/auth/error', // Error code passed in query string as ?error=
+			error: '/error', // Error code passed in query string as ?error=
 			verifyRequest: '/verifyRequest',
-			logOut: '/logout'
 		},
 	})(...args)
 }) satisfies Handle;

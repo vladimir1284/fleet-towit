@@ -2,20 +2,18 @@
 	import { Card, Button, Label, Input, Checkbox } from 'flowbite-svelte';
 	import { EnvelopeSolid, EyeOutline, EyeSlashOutline, GoogleSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
-	
+
 	import { signIn } from '@auth/sveltekit/client';
 
 	export let data;
 
-	
 	let show = false;
-	let useMagicLink = false;
-	
+	let useMagicLink = true;
+
 	const { form, errors, constraints, enhance } = superForm(data.form, {
-		onUpdated: async({form}) => {
-			console.log(form)
+		onUpdated: async ({ form }) => {
 			if (form.valid) {
-				signIn('email', {email: form.data.email, callbackUrl: "/dashboard"} )
+				signIn('email', { email: form.data.email, callbackUrl: '/dashboard' });
 			}
 		}
 	});
@@ -41,42 +39,42 @@
 		</Label>
 		{#if $errors.email}<span class="text-red-600">{$errors.email}</span>{/if}
 		{#if !useMagicLink}
-
-		<Label class="space-y-2">
-			<span>Your password</span>
-			<Input
-				class="focus:ring-2 border-blue-500 focus:outline-2 focus:ring-2 focus:ring-blue-500"
-				type={show ? 'text' : 'password'}
-				name="password"
-				placeholder="Insert password"
-				required
-				aria-invalid={$errors.password ? 'true' : undefined}
-				bind:value = {$form.password}
-				{...$constraints.password}
-			>
-				<button slot="right" on:click={() => (show = !show)} class="pointer-events-auto">
-					{#if show}
-						<EyeOutline class="w-6 h-6" />
-					{:else}
-						<!-- svelte-ignore missing-declaration -->
-						<EyeSlashOutline class="w-6 h-6" />
-					{/if}
-				</button>
-			</Input>
-		</Label>
-		{#if $errors.password}<span class="text-red-600">{$errors.password}</span>{/if}
+			<Label class="space-y-2">
+				<span>Your password</span>
+				<Input
+					class="focus:ring-2 border-blue-500 focus:outline-2 focus:ring-2 focus:ring-blue-500"
+					type={show ? 'text' : 'password'}
+					name="password"
+					placeholder="Insert password"
+					required
+					aria-invalid={$errors.password ? 'true' : undefined}
+					bind:value={$form.password}
+					{...$constraints.password}
+				>
+					<button slot="right" on:click={() => (show = !show)} class="pointer-events-auto">
+						{#if show}
+							<EyeOutline class="w-6 h-6" />
+						{:else}
+							<EyeSlashOutline class="w-6 h-6" />
+						{/if}
+					</button>
+				</Input>
+			</Label>
+			{#if $errors.password}<span class="text-red-600">{$errors.password}</span>{/if}
 		{/if}
 		<div class="flex items-start">
-			<Checkbox color="blue" on:change={() => (useMagicLink = !useMagicLink)}>Receive access token</Checkbox>
+			<Checkbox color="blue" checked={useMagicLink} on:change={() => (useMagicLink = !useMagicLink)}
+				>Receive access token</Checkbox
+			>
 		</div>
 		<Button type="submit" color="blue" class="w-full color-blue">Login to your account</Button>
-		<Label >
-			<GoogleSolid class="w-6 h-6" on:click={()=>{signIn("google")}}  />
+		<Label>
+			<GoogleSolid
+				class="w-6 h-6"
+				on:click={() => {
+					signIn('google');
+				}}
+			/>
 		</Label>
-		<div class="text-sm font-medium text-gray-500 dark:text-gray-300">
-			Not registered? <a href="/signup" class="text-blue-500 hover:underline dark:text-primary-500">
-				Create account
-			</a>
-		</div>
 	</form>
 </Card>

@@ -1,13 +1,13 @@
 <script>
 	// @ts-nocheck
-	import { Button, Select, FloatingLabelInput } from 'flowbite-svelte';
+	import { Button } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
 	export let data;
 	const dispatch = createEventDispatcher();
 
     const handleSubmit = async (event) => {
        event.preventDefault();
-       const response = await fetch(`./users/delete/${data}`, {
+       const response = await fetch(`./${data}`, {
            method: 'DELETE',
        });
        if (!response.ok) {

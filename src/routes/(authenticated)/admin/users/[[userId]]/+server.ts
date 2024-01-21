@@ -1,6 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { deleteUser, getCompanyUser } from '$lib/actions/admin';
-import { json } from '@sveltejs/kit';
+import { deleteUser } from '$lib/actions/admin';
 
 export const DELETE: RequestHandler = async ({ params }) => {
     try {
