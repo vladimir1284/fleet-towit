@@ -24,13 +24,13 @@
 			<ChevronDownSolid class="w-3 h-3 ms-2 text-black dark:text-white" />
 		</Button>
 		<Dropdown>
-			<div slot="header" class="px-4 py-2">
+			<div slot="header" class="px-4 py-2" >
 				<span class="block text-sm text-gray-900 dark:text-white">{userData.email}</span>
 				<span class="block truncate text-xs font-small">{userData?.companyUsers[0].company.name}</span>
 			</div>
 			<DropdownItem>Dashboard</DropdownItem>
-			<DropdownItem>Settings</DropdownItem>
+			<DropdownItem href="/profile">Profile</DropdownItem>
 			<DropdownItem on:click={handleSignOut}>Sign out</DropdownItem>
 		</Dropdown>
-	<Avatar src={avatar} rounded />
+	<Avatar src="https://minios3.crabdance.com/develop/Planet9_Wallpaper_5000x2813.jpg " rounded />
 </div>

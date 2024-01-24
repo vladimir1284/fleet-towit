@@ -3,7 +3,7 @@
 	import Breadcumb from './Breadcumb.svelte';
 	import ProfileHeader from '../profile-components/ProfileHeader.svelte';
 	import Navlinks from './Navlinks.svelte';
-	import Notifications from '../profile-components/Notifications.svelte'
+	import Notifications from '../profile-components/Notifications.svelte';
 
 	/**
 	 * @type {any}

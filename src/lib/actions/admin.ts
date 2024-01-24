@@ -1,6 +1,4 @@
 import { bypassPrisma } from "$lib/prisma";
-import email from "@auth/sveltekit/providers/email";
-import { string } from "zod";
 import { Role } from "@prisma/client";
 
 type createCompanyType = {name: string, email?: string | null};
