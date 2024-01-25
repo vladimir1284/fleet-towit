@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
 	// @ts-nocheck
 	import { Button, Select, FloatingLabelInput } from 'flowbite-svelte';
 	import { EnvelopeSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { createEventDispatcher } from 'svelte';
 	export let data;
+	export let companiesList = [];
 
 	const dispatch = createEventDispatcher();
 
@@ -20,10 +21,11 @@
 		{ value: 'ADMIN', name: 'ADMIN' },
 		{ value: 'STAFF', name: 'STAFF' }
 	];
-	let companies = [];
-	
-	data?.companies.forEach(element => {
-		companies.push({value: element.id, name: element.name})
+	console.log(companiesList);
+
+	let companiesSelector = [];
+	companiesList?.forEach(element => {
+		companiesSelector.push({value: element.id, name: element.name})
 	});
 </script>
 
@@ -54,7 +56,7 @@
 	/>
 	<Select
 		class="mt-2"
-		items={companies}
+		items={companiesSelector}
 		name="companyId"
 		placeholder="Select a company..."
 		bind:value={$form.companyId}

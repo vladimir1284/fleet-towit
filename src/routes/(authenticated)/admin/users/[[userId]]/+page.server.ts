@@ -1,11 +1,11 @@
 import { superValidate } from 'sveltekit-superforms/server';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import { getAdminCompany, listCompanyUsersOnCompany, createCompanyUser, listCompanies, listAllCompanyUsers, updateCompanyUser, getCompanyUser} from '$lib/actions/admin.js';
+import {  createCompanyUser, listAllCompanyUsers, updateCompanyUser, getCompanyUser} from '$lib/actions/admin.js';
 import { Role } from '@prisma/client';
 import { z } from 'zod';
 
-let fixSchema = z.object({
+const fixSchema = z.object({
   role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
   email: z.string().email(),
   companyId: z.string(),
@@ -17,13 +17,12 @@ type fixSchemaType = z.infer<typeof fixSchema>
 export const load = (async ({params}) => {
     let form = await superValidate(fixSchema);
     if(params.userId){
-        let user = await getCompanyUser({companyUserId: params.userId || ''})
-        let data: fixSchemaType = {email: user.user?.email || '', role: user.role || 'STAFF', id: user.id, companyId: user.companyId || ''} 
+        const user = await getCompanyUser({companyUserId: params.userId || ''})
+        const data: fixSchemaType = {email: user.user?.email || '', role: user.role || 'STAFF', id: user.id, companyId: user.companyId || ''} 
         form = await superValidate(data, fixSchema); 
     }
-    let userCompanyList = await listAllCompanyUsers();
-    let companies = await listCompanies();
-    return { form: form, users: userCompanyList, companies: companies} 
+
+    return {form: form} 
 
   }) satisfies PageServerLoad
 
@@ -37,14 +36,14 @@ export const actions = {
           }
         console.log('validation passed')
         if (!form.data.id){
-            let user = await createCompanyUser({
+            await createCompanyUser({
               email: form.data.email,
               companyId: form.data.companyId,
               userRole: Role[form.data.role]
             })
             form.valid = true
         }else {
-            updateCompanyUser({
+            await updateCompanyUser({
                 companyUserId: form.data.id,
                 email: form.data.email,
                 companyId: form.data.companyId,
@@ -52,7 +51,7 @@ export const actions = {
               })
             form.valid = true
         }
-        let userCompanyList = await listAllCompanyUsers();
+        const userCompanyList = await listAllCompanyUsers();
         return {form, users: userCompanyList}
     } 
 }

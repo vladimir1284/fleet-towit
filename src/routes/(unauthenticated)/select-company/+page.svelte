@@ -2,15 +2,16 @@
 	//@ts-nocheck
 	import { Card, Button } from 'flowbite-svelte';
 	import type { PageData } from './$types';
-	//import  { companyActor } from '$lib/store/context-store';
+	import  { companyActor } from '$lib/store/context-store';
 	import { goto } from '$app/navigation';
 	export let data: PageData;
 
 	async function handleSelectCompany(company) {
-		/*companyActor.send({
-			type: 'UPDATE_OBJECT',
-			newObject: company
-		});*/
+		console.log('sasasas', company)
+		companyActor.send({
+			type: 'company.update',
+			value: company
+		});
 		await goto('/dashboard');
 	}
 </script>

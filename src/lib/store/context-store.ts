@@ -1,4 +1,8 @@
-/*import { createMachine, createActor, assign } from 'xstate';
+import { createMachine, createActor, assign } from 'xstate';
+
+function saveToSessionStorage(key: string, value: any) {
+  sessionStorage.setItem(key, JSON.stringify(value));
+}
 
 const userStateMachine = createMachine({
   context: {
@@ -14,16 +18,21 @@ const userStateMachine = createMachine({
 });
 
 const companyStateMachine = createMachine({
+  id: 'company',
   context: {
-    currentCompany: null,
+    currentCompany: {},
   },
   on: {
-        update: {
-            actions: assign({
-                currentCompany: ({event}) => event.currentCompany,
-            })
-      },
+    'company.update': {
+      actions: assign({
+        currentCompany: ({event}) => {
+          const currentCompany = event.value;
+          saveToSessionStorage('currentCompany', currentCompany);
+          return currentCompany;
+        }
+      })
     },
+ },
 });
 
 
@@ -31,7 +40,7 @@ const userActor = createActor(userStateMachine).start();
 const companyActor = createActor(companyStateMachine).start();
 
 companyActor.subscribe((state) => {
-    console.log('STATE CHANGED', state.context.currentCompany);
+    console.log('STATE CHANGED', state);
 });
 
 userActor.subscribe((state) => {
@@ -40,6 +49,3 @@ userActor.subscribe((state) => {
 
 export {userActor}
 export {companyActor}
-
-
-*/
