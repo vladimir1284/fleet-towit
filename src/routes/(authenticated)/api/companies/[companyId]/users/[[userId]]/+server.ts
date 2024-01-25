@@ -21,11 +21,19 @@ export const GET: RequestHandler = async({ params, locals }) =>  {
     if (!session?.user) {
         return new Response('Forbidden', {status: 403})
     }
-    const users = await bypassPrisma.companyUser.findMany({where: {companyId: params.companyId}})
-    const augmentedUsers = await Promise.all(users.map(async(user) => {
-        const realUser = await bypassPrisma.user.findUnique({where: {id: user.userId}})
-        return {...user, user: realUser}
-    }))
-    return new Response( JSON.stringify(augmentedUsers,), {status: 200})
+    const users = await bypassPrisma.companyUser.findMany({where: {companyId: params.companyId}
+        ,
+    select:{
+        role:true,
+        id: true,
+        company:true,
+        user: true
+    }
+})
+    // const augmentedUsers = await Promise.all(users.map(async(user) => {
+    //     const realUser = await bypassPrisma.user.findUnique({where: {id: user.userId}})
+    //     return {...user, user: realUser}
+    // }))
+    return new Response( JSON.stringify(users,), {status: 200})
 }
 

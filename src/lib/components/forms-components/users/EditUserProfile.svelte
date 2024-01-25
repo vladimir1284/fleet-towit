@@ -55,7 +55,7 @@
 	enctype="multipart/form-data"
 	on:submit={handleSubmit}
 >
-	<h3 class="text-xl font-medium text-gray-900 dark:text-white">Sign up to our platform</h3>
+	<h3 class="text-xl font-medium text-gray-900 dark:text-white">Edit your profile information</h3>
 	<div id="container">
 		<Label class="space-y-2" size="xl">
 			<Fileupload class="hidden" name="image" for="avatar" on:change={handleFileChange} />

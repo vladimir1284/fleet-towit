@@ -32,5 +32,5 @@
 			<DropdownItem href="/profile">Profile</DropdownItem>
 			<DropdownItem on:click={handleSignOut}>Sign out</DropdownItem>
 		</Dropdown>
-	<Avatar src="https://minios3.crabdance.com/develop/Planet9_Wallpaper_5000x2813.jpg " rounded />
+	<Avatar src="https://minios3.crabdance.com/develop/{userData.image} " rounded />
 </div>
