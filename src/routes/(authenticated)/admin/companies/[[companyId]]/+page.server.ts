@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types.js';
 import { listCompanies, createCompany, getCompany, updateCompany } from '$lib/actions/admin.js';
 import { z } from 'zod';
 
-let fixSchema = z.object({
+const fixSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   id: z.string().optional(),
@@ -15,8 +15,8 @@ type fixSchemaType = z.infer<typeof fixSchema>
 export const load = (async ({ params }) => {
   let form = await superValidate(fixSchema);
   if (params.companyId) {
-    let company = await getCompany({ companyId: params.companyId || '' });
-    let data: fixSchemaType = { email: company?.email || '', name: company?.name || '', id: company?.id }
+    const company = await getCompany({ companyId: params.companyId || '' });
+    const data: fixSchemaType = { email: company?.email || '', name: company?.name || '', id: company?.id }
     form = await superValidate(data, fixSchema);
   }
   const companies = await listCompanies();

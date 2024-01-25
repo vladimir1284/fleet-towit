@@ -35,8 +35,6 @@
 		try {
 			console.log('cargando');
 			const response = await fetch('/api/companies');
-			console.log('Response status:', response.status);
-			console.log('Response headers:', response.headers);
 			companies = [...(await response.json())];
 			let usersList = await Promise.all(
 				companies.map(async (company) => {
@@ -50,8 +48,6 @@
 					return augmentedCompanyUser;
 				})
 			);
-			console.log('Fetched data:', usersList);
-			console.log('company data:', companies);
 			users = [...usersList.flat()];
 			loading = false; 
 		} catch (error) {
@@ -71,6 +67,7 @@
 	function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('User created succesfully!');
+		location.reload();
 	}
 
 	async function handleEdit(userId) {
@@ -81,8 +78,8 @@
 
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
-		await goto('/admin/users');
 		handleAlert('User edited succesfully!');
+		location.reload();
 		
 	}
 
@@ -94,15 +91,14 @@
 
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
-		await goto('/admin/users');
 		handleAlert('User deleted succesfully!');
+		location.reload();
 	}
 </script>
 
 {#if loading}
 	<p>Loading...</p>
 {:else}
-	<!-- Your table or other content goes here -->
 	<Modal size="xs" padding="md" bind:open={createModal}>
 		<CreateUserForm data={data} companiesList={companies} on:formvalid={handleCloseModal} />
 	</Modal>
