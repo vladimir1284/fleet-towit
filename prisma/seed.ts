@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
 const prisma = bypassPrisma
 
 async function main() {
-	const existingAdminCompany = await prisma.company.findUnique({
+	const existingAdminCompany = await prisma.company.findFirst({
         where: {
             name: 'admin'
         }

@@ -65,7 +65,7 @@
 		"svelte-xstate": "^1.0.1",
 		"sveltekit-superforms": "^1.13.1",
 		"tailwind-merge": "^2.2.0",
-		"xstate": "^5.5.1",
+		"xstate": "^5.5.2",
 		"zod": "^3.22.4",
 		"zod-prisma-types": "^3.1.6"
 	}
