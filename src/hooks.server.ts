@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/sveltekit';
 import { type Handle } from '@sveltejs/kit';
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/core/providers/google';
+import { userContext } from '$lib/store/context-store';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -45,7 +46,7 @@ const handleAuth = (async(...args) => {
 					name: user.name,
 					email: user.email,
 					image: user.image,
-					companyUsers
+					companyUsers,
 				};
 				event.locals.session = session;
 				return session;
@@ -73,9 +74,8 @@ const handleAuth = (async(...args) => {
 		],
 		pages: {
 			signIn: '/signin',
-			//error: '/auth/error', // Error code passed in query string as ?error=
+			error: '/error', // Error code passed in query string as ?error=
 			verifyRequest: '/verifyRequest',
-			logOut: '/logout'
 		},
 		trustHost: true,
 		secret: AUTH_SECRET

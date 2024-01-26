@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
 	// @ts-nocheck
 	import { Button, Select, FloatingLabelInput } from 'flowbite-svelte';
 	import { EnvelopeSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { createEventDispatcher } from 'svelte';
 	export let data;
+	export let companiesList = [];
 
 	const dispatch = createEventDispatcher();
 
@@ -16,15 +17,20 @@
 		}
 	});
 
-	
 	let roles = [
 		{ value: 'ADMIN', name: 'ADMIN' },
 		{ value: 'STAFF', name: 'STAFF' }
 	];
+	console.log(companiesList);
+
+	let companiesSelector = [];
+	companiesList?.forEach(element => {
+		companiesSelector.push({value: element.id, name: element.name})
+	});
 </script>
 
 <form class="flex flex-col justify-center align-center space-y-6" method="POST" use:enhance>
-	<input hidden name="id" bind:value={$form.id}/>
+	<input hidden name="id" bind:value={$form.id} />
 	<div class="sm:col-span-2">
 		<FloatingLabelInput
 			style="outlined"
@@ -41,7 +47,19 @@
 		</FloatingLabelInput>
 		{#if $errors.email}<span class="text-red-600">{$errors.email}</span>{/if}
 	</div>
-	<Select class="mt-2" items={roles} name='role' placeholder="Select a role..." bind:value={$form.role} />
-
-	<Button type="submit" class="w-[50%] mx-auto block">Create user</Button>
+	<Select
+		class="mt-2"
+		items={roles}
+		name="role"
+		placeholder="Select a role..."
+		bind:value={$form.role}
+	/>
+	<Select
+		class="mt-2"
+		items={companiesSelector}
+		name="companyId"
+		placeholder="Select a company..."
+		bind:value={$form.companyId}
+	/>
+	<Button type="submit" class="w-[50%] mx-auto block">{!$form.id ? 'Create' : 'Update'} user</Button>
 </form>

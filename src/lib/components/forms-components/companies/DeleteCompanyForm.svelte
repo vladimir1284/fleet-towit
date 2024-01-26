@@ -7,7 +7,7 @@
 
     const handleSubmit = async (event) => {
        event.preventDefault();
-       const response = await fetch(`./companies/delete/${data}`, {
+       const response = await fetch(`./${data}`, {
            method: 'DELETE',
        });
        if (!response.ok) {

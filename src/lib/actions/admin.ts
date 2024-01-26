@@ -1,6 +1,4 @@
 import { bypassPrisma } from "$lib/prisma";
-import email from "@auth/sveltekit/providers/email";
-import { string } from "zod";
 import { Role } from "@prisma/client";
 
 type createCompanyType = {name: string, email?: string | null};
@@ -86,11 +84,21 @@ export const getCompany = async({companyId}:{companyId: string}) => {
     return company
 }
 
-export const listCompanyUsers = async({companyId}:{companyId: string}) => {
+export const listCompanyUsersOnCompany = async({companyId}:{companyId: string}) => {
     let _users = await bypassPrisma.companyUser.findMany({where:{companyId: companyId}});
     let users = await Promise.all(_users.map(async(user) => {
         let _user = await bypassPrisma.user.findUnique({where:{id: user.userId}})
         return {...user, user: _user}
+    }))
+    return users
+}
+
+export const listAllCompanyUsers = async() => {
+    let _users = await bypassPrisma.companyUser.findMany();
+    let users = await Promise.all(_users.map(async(user) => {
+        let _user = await bypassPrisma.user.findUnique({where:{id: user.userId}})
+        let _company = await bypassPrisma.company.findUnique({where:{id: user.companyId}})
+        return {...user, user: _user, company: _company}
     }))
     return users
 }

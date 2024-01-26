@@ -1,8 +1,11 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { deleteUser, getCompanyUser } from '$lib/actions/admin';
-import { json } from '@sveltejs/kit';
+import { deleteUser } from '$lib/actions/admin';
 
-export const DELETE: RequestHandler = async ({ params }) => {
+export const DELETE: RequestHandler = async ({ params, locals }) => {
+    const session = await locals.getSession()
+    if (!session?.user) {
+        return new Response('Forbidden', {status: 403})
+    }
     try {
         await deleteUser({ companyUserId: params.userId || '' });
         return new Response(null, { status: 204 });
