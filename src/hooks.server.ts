@@ -14,7 +14,8 @@ import {
 	SMTP_USER,
 	SMTP_PASSWORD,
 	EMAIL_FROM,
-	//ENVIRONMENT
+	ENVIRONMENT,
+	AUTH_SECRET
 } from '$env/static/private';
 import EmailProvider from '@auth/core/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
@@ -76,15 +77,17 @@ const handleAuth = (async(...args) => {
 			error: '/error', // Error code passed in query string as ?error=
 			verifyRequest: '/verifyRequest',
 		},
+		trustHost: true,
+		secret: AUTH_SECRET
 	})(...args)
 }) satisfies Handle;
 
-/*if (ENVIRONMENT==="Production") {
+if (ENVIRONMENT==="Production") {
 	Sentry.init({
 		dsn: 'https://264c6d3e8448a85d1a3717e5ef22a502@o4506418139299840.ingest.sentry.io/4506418143035392',
 		tracesSampleRate: 1.0
 	});		
-}*/
+}
 // If you have custom handlers, make sure to place them after `sentryHandle()` in the `sequence` function.
 export const handle = sequence(sentryHandle(), handleAuth);
 
