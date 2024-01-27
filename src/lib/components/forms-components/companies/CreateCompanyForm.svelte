@@ -1,5 +1,5 @@
 <script async lang="ts">
-	import { Button, Label, FloatingLabelInput } from 'flowbite-svelte';
+	import { Button, FloatingLabelInput } from 'flowbite-svelte';
 	import { EnvelopeSolid, BuildingSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { createEventDispatcher } from 'svelte';

@@ -5,7 +5,7 @@
 	export let userData;
 </script>
 
-{#if userData.companyUsers[0].role === 'ADMIN' || userData.companyUsers[0].role === 'OWNER'}
+{#if userData.tenantUsers[0].role === 'ADMIN' || userData.tenantUsers[0].role === 'OWNER'}
 	<AdminNavLink/>
 {:else}
 	<UserNavLink/>

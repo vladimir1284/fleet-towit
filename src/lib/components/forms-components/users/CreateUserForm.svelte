@@ -5,7 +5,7 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import { createEventDispatcher } from 'svelte';
 	export let data;
-	export let companiesList = [];
+	export let tenantsList = [];
 
 	const dispatch = createEventDispatcher();
 
@@ -21,11 +21,10 @@
 		{ value: 'ADMIN', name: 'ADMIN' },
 		{ value: 'STAFF', name: 'STAFF' }
 	];
-	console.log(companiesList);
 
-	let companiesSelector = [];
-	companiesList?.forEach(element => {
-		companiesSelector.push({value: element.id, name: element.name})
+	let tenantsSelector = [];
+	tenantsList?.forEach(element => {
+		tenantsSelector.push({value: element.id, name: element.name})
 	});
 </script>
 
@@ -56,10 +55,10 @@
 	/>
 	<Select
 		class="mt-2"
-		items={companiesSelector}
-		name="companyId"
+		items={tenantsSelector}
+		name="tenantId"
 		placeholder="Select a company..."
-		bind:value={$form.companyId}
+		bind:value={$form.tenantId}
 	/>
 	<Button type="submit" class="w-[50%] mx-auto block">{!$form.id ? 'Create' : 'Update'} user</Button>
 </form>

@@ -1,6 +1,6 @@
 import { createMachine, createActor, assign } from 'xstate';
 
-function saveToSessionStorage(key: string, value: any) {
+function saveToSessionStorage(key: string, value: unknown) {
   sessionStorage.setItem(key, JSON.stringify(value));
 }
 

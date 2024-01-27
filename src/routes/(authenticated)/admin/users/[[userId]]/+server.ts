@@ -7,7 +7,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
         return new Response('Forbidden', {status: 403})
     }
     try {
-        await deleteUser({ companyUserId: params.userId || '' });
+        await deleteUser({ tenantUserId: params.userId || '' });
         return new Response(null, { status: 204 });
     } catch (error) {
         console.error(error);

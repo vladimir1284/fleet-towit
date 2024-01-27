@@ -20,7 +20,7 @@
 	import { onMount } from 'svelte';
 
 	export let data: PageData;
-	let companies = [];
+	let tenants = [];
 	let showAlert = false;
 	let createModal = false;
 	let editModal = false;
@@ -31,9 +31,8 @@
 
 	onMount(async () => {
 		try {
-			console.log('cargando');
-			const response = await fetch('/api/companies');
-			companies = [...(await response.json())];
+			const response = await fetch('/api/tenants');
+			tenants = [...(await response.json())];
 			loading = false;
 		} catch (error) {
 			console.error('Error:', error);
@@ -55,9 +54,9 @@
 		location.reload();
 	}
 
-	async function handleEdit(companyId) {
-		await goto('/admin/companies/' + companyId);
-		selectedId = companyId;
+	async function handleEdit(tenantId) {
+		await goto('/admin/tenants/' + tenantId);
+		selectedId = tenantId;
 		editModal = true;
 	}
 
@@ -67,9 +66,9 @@
 		location.reload();
 	}
 
-	async function handleDelete(companyId) {
-		await goto('/admin/companies/' + companyId);
-		selectedId = companyId;
+	async function handleDelete(tenantId) {
+		await goto('/admin/tenants/' + tenantId);
+		selectedId = tenantId;
 		deleteModal = true;
 	}
 
@@ -109,24 +108,24 @@
 				>
 			</caption>
 			<TableHead>
-				<TableHeadCell class="text-center">COMPANY NAME</TableHeadCell>
-				<TableHeadCell class="text-center">COMPANY EMAIL</TableHeadCell>
-				<TableHeadCell class="text-center">COMPANY OWNER</TableHeadCell>
-				<TableHeadCell class="text-center">COMPANY USERS</TableHeadCell>
+				<TableHeadCell class="text-center">TENANT NAME</TableHeadCell>
+				<TableHeadCell class="text-center">TENANT EMAIL</TableHeadCell>
+				<TableHeadCell class="text-center">TENANT OWNER</TableHeadCell>
+				<TableHeadCell class="text-center">TENANT USERS</TableHeadCell>
 				<TableHeadCell class="text-center"></TableHeadCell>
 			</TableHead>
 			<TableBody class="divide-y">
-				{#each companies as company}
+				{#each tenants as tenant}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">{company.name}</TableBodyCell>
-						<TableBodyCell class="text-center">{company.email}</TableBodyCell>
-						<TableBodyCell class="text-center">{company.owner?.email || '-'}</TableBodyCell>
+						<TableBodyCell class="text-center">{tenant.name}</TableBodyCell>
+						<TableBodyCell class="text-center">{tenant.email}</TableBodyCell>
+						<TableBodyCell class="text-center">{tenant.owner?.email || '-'}</TableBodyCell>
 						<TableBodyCell class="text-center"
 							><a class="cursor-pointer" href="./companies">See users</a></TableBodyCell
 						>
 						<TableBodyCell class=" flex w-32 justify-between">
-							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(company.id)} />
-							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(company.id)} />
+							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(tenant.id)} />
+							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(tenant.id)} />
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}

@@ -8,7 +8,7 @@ export const DELETE: RequestHandler = async ({ params, locals}) => {
         return new Response('Forbidden', {status: 403})
     }
     try {
-        await deleteUser({ companyUserId: params.userId || '' });
+        await deleteUser({ tenantUserId: params.userId || '' });
         return new Response(null, { status: 204 });
     } catch (error) {
         console.error(error);
@@ -21,19 +21,14 @@ export const GET: RequestHandler = async({ params, locals }) =>  {
     if (!session?.user) {
         return new Response('Forbidden', {status: 403})
     }
-    const users = await bypassPrisma.companyUser.findMany({where: {companyId: params.companyId}
-        ,
+    const users = await bypassPrisma.tenantUser.findMany({where: {tenantId: params.tenantId},
     select:{
         role:true,
         id: true,
-        company:true,
+        tenant:true,
         user: true
     }
 })
-    // const augmentedUsers = await Promise.all(users.map(async(user) => {
-    //     const realUser = await bypassPrisma.user.findUnique({where: {id: user.userId}})
-    //     return {...user, user: realUser}
-    // }))
-    return new Response( JSON.stringify(users,), {status: 200})
+    return new Response( JSON.stringify(users), {status: 200})
 }
 

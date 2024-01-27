@@ -20,7 +20,7 @@
 	import { onMount } from 'svelte';
 
 	export let data: PageData;
-	let companies = [];
+	let tenants = [];
 	let users = [];
 	let showAlert = false;
 	let createModal = false;
@@ -34,18 +34,18 @@
 	onMount(async () => {
 		try {
 			console.log('cargando');
-			const response = await fetch('/api/companies');
-			companies = [...(await response.json())];
+			const response = await fetch('/api/tenants');
+			tenants = [...(await response.json())];
 			let usersList = await Promise.all(
-				companies.map(async (company) => {
-					let tempList = await fetch(`/api/companies/${company.id}/users`);
-					let companyUsersList = await tempList.json();
-					let augmentedCompanyUser = await Promise.all(
-						companyUsersList.map(async (_user) => {
-							return {..._user, company}
+				tenants.map(async (tenant) => {
+					let tempList = await fetch(`/api/tenants/${tenant.id}/users`);
+					let tenantUsersList = await tempList.json();
+					let augmentedTenantUser = await Promise.all(
+						tenantUsersList.map(async (_user) => {
+							return {..._user, tenant}
 						})
 					);
-					return augmentedCompanyUser;
+					return augmentedTenantUser;	
 				})
 			);
 			users = [...usersList.flat()];
@@ -100,11 +100,11 @@
 	<p>Loading...</p>
 {:else}
 	<Modal size="xs" padding="md" bind:open={createModal}>
-		<CreateUserForm data={data} companiesList={companies} on:formvalid={handleCloseModal} />
+		<CreateUserForm data={data} tenantsList={tenants} on:formvalid={handleCloseModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={editModal} on:close={handleCloseEditModal}>
-		<CreateUserForm data={data} companiesList={companies} on:formvalid={handleCloseEditModal} />
+		<CreateUserForm data={data} tenantsList={tenants} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
@@ -133,7 +133,7 @@
 						<TableBodyRow>
 							<TableBodyCell class="text-center">{user.user.email}</TableBodyCell>
 							<TableBodyCell class="text-center">{user.user.name || '-'}</TableBodyCell>
-							<TableBodyCell class="text-center">{user.company?.name}</TableBodyCell>
+							<TableBodyCell class="text-center">{user.tenant?.name}</TableBodyCell>
 							<TableBodyCell class="text-center">{user.role}</TableBodyCell>
 							<TableBodyCell class=" flex w-32 justify-between">
 								<FileEditSolid class="text-gray-400" on:click={() => handleEdit(user.id)} />
