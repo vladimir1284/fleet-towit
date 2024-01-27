@@ -8,4 +8,5 @@ export const load: PageServerLoad = async (event) => {
     else{
         throw redirect(307, '/dashboard')
     }
+    throw redirect(307, '/dashboard')
   };

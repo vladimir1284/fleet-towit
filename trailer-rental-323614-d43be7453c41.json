@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "trailer-rental-323614",
+  "private_key_id": "d43be7453c417e55f863a45ea193055296a7ba0c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCkDPuajPuFEM8W\nLpzYGApfSJrywsIIKb1czDz77NC187N/GZG5C6YTCI2pDRwSo01OpH0cTp6JyrqH\nqNKLpa9LuU576Inj2R1QVQScixV5fnoslaE3h1DQMJACPDKAGr9uY2elBuk/rJ77\nfgdeZOfZ5gPHOUVHoLTOK9BjcsSZThmH/oGjVTUYUUx2YhUskZ92ME0kp6daQxJM\nhcVWChwCqomSUiBWqXQXNufAyirXcg3hZ4WVzJHTlLpiz3WiWN/UzHq6J5YoZovf\nPWDAPRWF9q3OYZLqsn5605thj8t4ULv5+zStyUFnHxjmr2eLWAY21+77slHwgwJl\n1N8scuOtAgMBAAECggEADWtYydcWUaz4PPtco0pEz5pdPxZChXpBQ3NF2iIQc5B8\nYnKkFTPi+/kYj2zOBadGkQmLCL2p9yG2eZeMJithiBX1LypshyRw4wFFXTcnr0vI\nMNf05gQuDo2pELRoZCAWqzAQn8hNhwLMRsxpIWYAgjZFdlk/YHaApmx2ltVMnYag\nmvoHZRbzz/g1gsOSLI6tolPWS60CtxBsfIcbPE++5QvbW0OScKHHaE0A6jy8v2gg\nzJXxfnJ6M8xX3pJujP1Y1fpI3kDvia4wrSDbmfqJK2GCyCSlnleUewqhBD/uQJ9R\n1sexYu+CItZLSxicrNDmPORFj5DE4kbgP7lq+WrWSQKBgQDb+8QDwOKhpcs7y4KO\nL2u0vG8du4DcM5Y16vwC48oNTm/vcJ92oS1lXKBiQI0JxO1If8wquW7OeXNi3c2o\nNh3c2WgJkHGYpzqmQ9ReNRYB2/h2A7r5Zczc5RUlL7kevlzftOWgfE0ex1SQ3uOZ\n7i84W4Hd7xvBaHJZtj8Dq25sBQKBgQC+6OQLhLMigNQkaiXh5YNwpQwPXzA41xaT\nYHyyzp8TfDr/J8UaDdlddTYHuU/y1igi4B7zVFrmE0Q8wxNYhvD3i6oW2B5I7Miy\nY4BwD53xZK3KQz8aNsykFQpVogZfNnUKy+O6jHu62zUK0LizcdgF+Pt/Tob7zGxN\nwFnFSm/RiQKBgGDXlfQdDuggp7acIc5cW+sF5VjOeaz23NLBrs3K3+E5vZdIGjtM\nO0LbIxP93NkHI3p+IDBSz8//sWc9w9KgeEcIQn+rYgbU38HgLHaIojaRUvEJNV+j\njCtWgheLydAZ96LX7RrYfc7l63mXVdUnAQyrZCGCqNJdG7IYw+bmqkbNAoGAY12W\nbIRaNKg3QujY5NXv7u6I82tJDxysjHLZFLxEwgCUOIA7r87rhyBdyfFjMnLTGyvq\nEB6k3UHD75hddmNuAnp4QkGkqbJM18TAchM+0wjjB/auXneNVg35fg7CIEaY7tCm\nrE84i05TMljm+cdUd+9a/60gxuhkqqdmUjDnOHkCgYBVrTRAjFvO9YnczZT4c1Ba\nuxmBlS7SEse5E0dyevsO7tPBtDbeHpwPB6M9PfyVPG5RHfXNrDqb0froFhBMya0M\nk5xHrvpOtahjl2ZkI7jv2cutrLNwekp3eJC8X5NboE7+uRdVisjvrJReej4zz/XG\nblMnNcwEO176Lt9DGu0IrQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "trailer-rental@trailer-rental-323614.iam.gserviceaccount.com",
+  "client_id": "101254832424590742867",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/trailer-rental%40trailer-rental-323614.iam.gserviceaccount.com"
+}
