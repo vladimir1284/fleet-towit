@@ -1,9 +1,53 @@
 import { z } from 'zod';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 /////////////////////////////////////////
 // HELPER FUNCTIONS
 /////////////////////////////////////////
+
+// JSON
+//------------------------------------------------------
+
+export type NullableJsonInput = Prisma.JsonValue | null | 'JsonNull' | 'DbNull' | Prisma.NullTypes.DbNull | Prisma.NullTypes.JsonNull;
+
+export const transformJsonNull = (v?: NullableJsonInput) => {
+  if (!v || v === 'DbNull') return Prisma.DbNull;
+  if (v === 'JsonNull') return Prisma.JsonNull;
+  return v;
+};
+
+export const JsonValueSchema: z.ZodType<Prisma.JsonValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.literal(null),
+    z.record(z.lazy(() => JsonValueSchema.optional())),
+    z.array(z.lazy(() => JsonValueSchema)),
+  ])
+);
+
+export type JsonValueType = z.infer<typeof JsonValueSchema>;
+
+export const NullableJsonValue = z
+  .union([JsonValueSchema, z.literal('DbNull'), z.literal('JsonNull')])
+  .nullable()
+  .transform((v) => transformJsonNull(v));
+
+export type NullableJsonValueType = z.infer<typeof NullableJsonValue>;
+
+export const InputJsonValueSchema: z.ZodType<Prisma.InputJsonValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.object({ toJSON: z.function(z.tuple([]), z.any()) }),
+    z.record(z.lazy(() => z.union([InputJsonValueSchema, z.literal(null)]))),
+    z.array(z.lazy(() => z.union([InputJsonValueSchema, z.literal(null)]))),
+  ])
+);
+
+export type InputJsonValueType = z.infer<typeof InputJsonValueSchema>;
 
 
 /////////////////////////////////////////
@@ -26,15 +70,31 @@ export const ClientScalarFieldEnumSchema = z.enum(['id','name','email','phoneNum
 
 export const CompanyScalarFieldEnumSchema = z.enum(['id','name','email','isAdmin']);
 
+export const VehicleScalarFieldEnumSchema = z.enum(['id','type','year','make','model','trim','plate','vin','odometer','nickname','spare_tires','extraFields']);
+
+export const VehiclePictureScalarFieldEnumSchema = z.enum(['id','image','vehicleId','pinned']);
+
+export const DocumentScalarFieldEnumSchema = z.enum(['id','file','name','note','document_type','expiration_date','remainder_days','isActive','createdAt','vehicleId','extraFields']);
+
+export const DocumentTagScalarFieldEnumSchema = z.enum(['id','name','documentId']);
+
 export const SortOrderSchema = z.enum(['asc','desc']);
+
+export const NullableJsonNullValueInputSchema = z.enum(['DbNull','JsonNull',]).transform((value) => value === 'JsonNull' ? Prisma.JsonNull : value === 'DbNull' ? Prisma.DbNull : value);
 
 export const QueryModeSchema = z.enum(['default','insensitive']);
 
 export const NullsOrderSchema = z.enum(['first','last']);
 
+export const JsonNullValueFilterSchema = z.enum(['DbNull','JsonNull','AnyNull',]).transform((value) => value === 'JsonNull' ? Prisma.JsonNull : value === 'DbNull' ? Prisma.JsonNull : value === 'AnyNull' ? Prisma.AnyNull : value);
+
 export const RoleSchema = z.enum(['STAFF','ADMIN','OWNER']);
 
 export type RoleType = `${z.infer<typeof RoleSchema>}`
+
+export const TypeSchema = z.enum(['ATV','Boat','Bus','Car','Chassis','Equipment','Forklift','Freightliner','Generator','Machinery','Motorcycle','Plane','RV','SUV','Tractor','Trailer','Truck','Van','Custom']);
+
+export type TypeType = `${z.infer<typeof TypeSchema>}`
 
 /////////////////////////////////////////
 // MODELS
@@ -143,6 +203,72 @@ export const CompanySchema = z.object({
 })
 
 export type Company = z.infer<typeof CompanySchema>
+
+/////////////////////////////////////////
+// VEHICLE SCHEMA
+/////////////////////////////////////////
+
+export const VehicleSchema = z.object({
+  type: TypeSchema,
+  id: z.number().int(),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: JsonValueSchema,
+})
+
+export type Vehicle = z.infer<typeof VehicleSchema>
+
+/////////////////////////////////////////
+// VEHICLE PICTURE SCHEMA
+/////////////////////////////////////////
+
+export const VehiclePictureSchema = z.object({
+  id: z.number().int(),
+  image: z.string(),
+  vehicleId: z.number().int(),
+  pinned: z.boolean(),
+})
+
+export type VehiclePicture = z.infer<typeof VehiclePictureSchema>
+
+/////////////////////////////////////////
+// DOCUMENT SCHEMA
+/////////////////////////////////////////
+
+export const DocumentSchema = z.object({
+  id: z.number().int(),
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().nullable(),
+  remainder_days: z.number().int().nullable(),
+  isActive: z.boolean(),
+  createdAt: z.coerce.date(),
+  vehicleId: z.number().int(),
+  extraFields: JsonValueSchema,
+})
+
+export type Document = z.infer<typeof DocumentSchema>
+
+/////////////////////////////////////////
+// DOCUMENT TAG SCHEMA
+/////////////////////////////////////////
+
+export const DocumentTagSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  documentId: z.number().int(),
+})
+
+export type DocumentTag = z.infer<typeof DocumentTagSchema>
 
 /////////////////////////////////////////
 // SELECT & INCLUDE
@@ -317,6 +443,125 @@ export const CompanySelectSchema: z.ZodType<Prisma.CompanySelect> = z.object({
   clients: z.union([z.boolean(),z.lazy(() => ClientFindManyArgsSchema)]).optional(),
   users: z.union([z.boolean(),z.lazy(() => CompanyUserFindManyArgsSchema)]).optional(),
   _count: z.union([z.boolean(),z.lazy(() => CompanyCountOutputTypeArgsSchema)]).optional(),
+}).strict()
+
+// VEHICLE
+//------------------------------------------------------
+
+export const VehicleIncludeSchema: z.ZodType<Prisma.VehicleInclude> = z.object({
+  vehiclePictures: z.union([z.boolean(),z.lazy(() => VehiclePictureFindManyArgsSchema)]).optional(),
+  documents: z.union([z.boolean(),z.lazy(() => DocumentFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => VehicleCountOutputTypeArgsSchema)]).optional(),
+}).strict()
+
+export const VehicleArgsSchema: z.ZodType<Prisma.VehicleDefaultArgs> = z.object({
+  select: z.lazy(() => VehicleSelectSchema).optional(),
+  include: z.lazy(() => VehicleIncludeSchema).optional(),
+}).strict();
+
+export const VehicleCountOutputTypeArgsSchema: z.ZodType<Prisma.VehicleCountOutputTypeDefaultArgs> = z.object({
+  select: z.lazy(() => VehicleCountOutputTypeSelectSchema).nullish(),
+}).strict();
+
+export const VehicleCountOutputTypeSelectSchema: z.ZodType<Prisma.VehicleCountOutputTypeSelect> = z.object({
+  vehiclePictures: z.boolean().optional(),
+  documents: z.boolean().optional(),
+}).strict();
+
+export const VehicleSelectSchema: z.ZodType<Prisma.VehicleSelect> = z.object({
+  id: z.boolean().optional(),
+  type: z.boolean().optional(),
+  year: z.boolean().optional(),
+  make: z.boolean().optional(),
+  model: z.boolean().optional(),
+  trim: z.boolean().optional(),
+  plate: z.boolean().optional(),
+  vin: z.boolean().optional(),
+  odometer: z.boolean().optional(),
+  nickname: z.boolean().optional(),
+  spare_tires: z.boolean().optional(),
+  extraFields: z.boolean().optional(),
+  vehiclePictures: z.union([z.boolean(),z.lazy(() => VehiclePictureFindManyArgsSchema)]).optional(),
+  documents: z.union([z.boolean(),z.lazy(() => DocumentFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => VehicleCountOutputTypeArgsSchema)]).optional(),
+}).strict()
+
+// VEHICLE PICTURE
+//------------------------------------------------------
+
+export const VehiclePictureIncludeSchema: z.ZodType<Prisma.VehiclePictureInclude> = z.object({
+  vehicle: z.union([z.boolean(),z.lazy(() => VehicleArgsSchema)]).optional(),
+}).strict()
+
+export const VehiclePictureArgsSchema: z.ZodType<Prisma.VehiclePictureDefaultArgs> = z.object({
+  select: z.lazy(() => VehiclePictureSelectSchema).optional(),
+  include: z.lazy(() => VehiclePictureIncludeSchema).optional(),
+}).strict();
+
+export const VehiclePictureSelectSchema: z.ZodType<Prisma.VehiclePictureSelect> = z.object({
+  id: z.boolean().optional(),
+  image: z.boolean().optional(),
+  vehicleId: z.boolean().optional(),
+  pinned: z.boolean().optional(),
+  vehicle: z.union([z.boolean(),z.lazy(() => VehicleArgsSchema)]).optional(),
+}).strict()
+
+// DOCUMENT
+//------------------------------------------------------
+
+export const DocumentIncludeSchema: z.ZodType<Prisma.DocumentInclude> = z.object({
+  vehicle: z.union([z.boolean(),z.lazy(() => VehicleArgsSchema)]).optional(),
+  tags: z.union([z.boolean(),z.lazy(() => DocumentTagFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => DocumentCountOutputTypeArgsSchema)]).optional(),
+}).strict()
+
+export const DocumentArgsSchema: z.ZodType<Prisma.DocumentDefaultArgs> = z.object({
+  select: z.lazy(() => DocumentSelectSchema).optional(),
+  include: z.lazy(() => DocumentIncludeSchema).optional(),
+}).strict();
+
+export const DocumentCountOutputTypeArgsSchema: z.ZodType<Prisma.DocumentCountOutputTypeDefaultArgs> = z.object({
+  select: z.lazy(() => DocumentCountOutputTypeSelectSchema).nullish(),
+}).strict();
+
+export const DocumentCountOutputTypeSelectSchema: z.ZodType<Prisma.DocumentCountOutputTypeSelect> = z.object({
+  tags: z.boolean().optional(),
+}).strict();
+
+export const DocumentSelectSchema: z.ZodType<Prisma.DocumentSelect> = z.object({
+  id: z.boolean().optional(),
+  file: z.boolean().optional(),
+  name: z.boolean().optional(),
+  note: z.boolean().optional(),
+  document_type: z.boolean().optional(),
+  expiration_date: z.boolean().optional(),
+  remainder_days: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  vehicleId: z.boolean().optional(),
+  extraFields: z.boolean().optional(),
+  vehicle: z.union([z.boolean(),z.lazy(() => VehicleArgsSchema)]).optional(),
+  tags: z.union([z.boolean(),z.lazy(() => DocumentTagFindManyArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => DocumentCountOutputTypeArgsSchema)]).optional(),
+}).strict()
+
+// DOCUMENT TAG
+//------------------------------------------------------
+
+export const DocumentTagIncludeSchema: z.ZodType<Prisma.DocumentTagInclude> = z.object({
+  document: z.union([z.boolean(),z.lazy(() => DocumentArgsSchema)]).optional(),
+}).strict()
+
+export const DocumentTagArgsSchema: z.ZodType<Prisma.DocumentTagDefaultArgs> = z.object({
+  select: z.lazy(() => DocumentTagSelectSchema).optional(),
+  include: z.lazy(() => DocumentTagIncludeSchema).optional(),
+}).strict();
+
+export const DocumentTagSelectSchema: z.ZodType<Prisma.DocumentTagSelect> = z.object({
+  id: z.boolean().optional(),
+  name: z.boolean().optional(),
+  documentId: z.boolean().optional(),
+  document: z.union([z.boolean(),z.lazy(() => DocumentArgsSchema)]).optional(),
 }).strict()
 
 
@@ -803,6 +1048,302 @@ export const CompanyScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Compa
   isAdmin: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
 }).strict();
 
+export const VehicleWhereInputSchema: z.ZodType<Prisma.VehicleWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => VehicleWhereInputSchema),z.lazy(() => VehicleWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => VehicleWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => VehicleWhereInputSchema),z.lazy(() => VehicleWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  type: z.union([ z.lazy(() => EnumTypeFilterSchema),z.lazy(() => TypeSchema) ]).optional(),
+  year: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  make: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  model: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  trim: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  plate: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  vin: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  odometer: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  nickname: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  spare_tires: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  extraFields: z.lazy(() => JsonNullableFilterSchema).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureListRelationFilterSchema).optional(),
+  documents: z.lazy(() => DocumentListRelationFilterSchema).optional()
+}).strict();
+
+export const VehicleOrderByWithRelationInputSchema: z.ZodType<Prisma.VehicleOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  year: z.lazy(() => SortOrderSchema).optional(),
+  make: z.lazy(() => SortOrderSchema).optional(),
+  model: z.lazy(() => SortOrderSchema).optional(),
+  trim: z.lazy(() => SortOrderSchema).optional(),
+  plate: z.lazy(() => SortOrderSchema).optional(),
+  vin: z.lazy(() => SortOrderSchema).optional(),
+  odometer: z.lazy(() => SortOrderSchema).optional(),
+  nickname: z.lazy(() => SortOrderSchema).optional(),
+  spare_tires: z.lazy(() => SortOrderSchema).optional(),
+  extraFields: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureOrderByRelationAggregateInputSchema).optional(),
+  documents: z.lazy(() => DocumentOrderByRelationAggregateInputSchema).optional()
+}).strict();
+
+export const VehicleWhereUniqueInputSchema: z.ZodType<Prisma.VehicleWhereUniqueInput> = z.object({
+  id: z.number().int()
+})
+.and(z.object({
+  id: z.number().int().optional(),
+  AND: z.union([ z.lazy(() => VehicleWhereInputSchema),z.lazy(() => VehicleWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => VehicleWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => VehicleWhereInputSchema),z.lazy(() => VehicleWhereInputSchema).array() ]).optional(),
+  type: z.union([ z.lazy(() => EnumTypeFilterSchema),z.lazy(() => TypeSchema) ]).optional(),
+  year: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  make: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  model: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  trim: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  plate: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  vin: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  odometer: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  nickname: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  spare_tires: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  extraFields: z.lazy(() => JsonNullableFilterSchema).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureListRelationFilterSchema).optional(),
+  documents: z.lazy(() => DocumentListRelationFilterSchema).optional()
+}).strict());
+
+export const VehicleOrderByWithAggregationInputSchema: z.ZodType<Prisma.VehicleOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  year: z.lazy(() => SortOrderSchema).optional(),
+  make: z.lazy(() => SortOrderSchema).optional(),
+  model: z.lazy(() => SortOrderSchema).optional(),
+  trim: z.lazy(() => SortOrderSchema).optional(),
+  plate: z.lazy(() => SortOrderSchema).optional(),
+  vin: z.lazy(() => SortOrderSchema).optional(),
+  odometer: z.lazy(() => SortOrderSchema).optional(),
+  nickname: z.lazy(() => SortOrderSchema).optional(),
+  spare_tires: z.lazy(() => SortOrderSchema).optional(),
+  extraFields: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  _count: z.lazy(() => VehicleCountOrderByAggregateInputSchema).optional(),
+  _avg: z.lazy(() => VehicleAvgOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => VehicleMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => VehicleMinOrderByAggregateInputSchema).optional(),
+  _sum: z.lazy(() => VehicleSumOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const VehicleScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.VehicleScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => VehicleScalarWhereWithAggregatesInputSchema),z.lazy(() => VehicleScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => VehicleScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => VehicleScalarWhereWithAggregatesInputSchema),z.lazy(() => VehicleScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  type: z.union([ z.lazy(() => EnumTypeWithAggregatesFilterSchema),z.lazy(() => TypeSchema) ]).optional(),
+  year: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  make: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  model: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  trim: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  plate: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  vin: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  odometer: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  nickname: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  spare_tires: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  extraFields: z.lazy(() => JsonNullableWithAggregatesFilterSchema).optional()
+}).strict();
+
+export const VehiclePictureWhereInputSchema: z.ZodType<Prisma.VehiclePictureWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => VehiclePictureWhereInputSchema),z.lazy(() => VehiclePictureWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => VehiclePictureWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => VehiclePictureWhereInputSchema),z.lazy(() => VehiclePictureWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  image: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  pinned: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  vehicle: z.union([ z.lazy(() => VehicleRelationFilterSchema),z.lazy(() => VehicleWhereInputSchema) ]).optional(),
+}).strict();
+
+export const VehiclePictureOrderByWithRelationInputSchema: z.ZodType<Prisma.VehiclePictureOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  image: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  pinned: z.lazy(() => SortOrderSchema).optional(),
+  vehicle: z.lazy(() => VehicleOrderByWithRelationInputSchema).optional()
+}).strict();
+
+export const VehiclePictureWhereUniqueInputSchema: z.ZodType<Prisma.VehiclePictureWhereUniqueInput> = z.object({
+  id: z.number().int()
+})
+.and(z.object({
+  id: z.number().int().optional(),
+  AND: z.union([ z.lazy(() => VehiclePictureWhereInputSchema),z.lazy(() => VehiclePictureWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => VehiclePictureWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => VehiclePictureWhereInputSchema),z.lazy(() => VehiclePictureWhereInputSchema).array() ]).optional(),
+  image: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  pinned: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  vehicle: z.union([ z.lazy(() => VehicleRelationFilterSchema),z.lazy(() => VehicleWhereInputSchema) ]).optional(),
+}).strict());
+
+export const VehiclePictureOrderByWithAggregationInputSchema: z.ZodType<Prisma.VehiclePictureOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  image: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  pinned: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => VehiclePictureCountOrderByAggregateInputSchema).optional(),
+  _avg: z.lazy(() => VehiclePictureAvgOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => VehiclePictureMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => VehiclePictureMinOrderByAggregateInputSchema).optional(),
+  _sum: z.lazy(() => VehiclePictureSumOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const VehiclePictureScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.VehiclePictureScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => VehiclePictureScalarWhereWithAggregatesInputSchema),z.lazy(() => VehiclePictureScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => VehiclePictureScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => VehiclePictureScalarWhereWithAggregatesInputSchema),z.lazy(() => VehiclePictureScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  image: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  pinned: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
+}).strict();
+
+export const DocumentWhereInputSchema: z.ZodType<Prisma.DocumentWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  file: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  note: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  document_type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  expiration_date: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
+  remainder_days: z.union([ z.lazy(() => IntNullableFilterSchema),z.number() ]).optional().nullable(),
+  isActive: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  extraFields: z.lazy(() => JsonNullableFilterSchema).optional(),
+  vehicle: z.union([ z.lazy(() => VehicleRelationFilterSchema),z.lazy(() => VehicleWhereInputSchema) ]).optional(),
+  tags: z.lazy(() => DocumentTagListRelationFilterSchema).optional()
+}).strict();
+
+export const DocumentOrderByWithRelationInputSchema: z.ZodType<Prisma.DocumentOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  file: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  note: z.lazy(() => SortOrderSchema).optional(),
+  document_type: z.lazy(() => SortOrderSchema).optional(),
+  expiration_date: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  remainder_days: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  extraFields: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  vehicle: z.lazy(() => VehicleOrderByWithRelationInputSchema).optional(),
+  tags: z.lazy(() => DocumentTagOrderByRelationAggregateInputSchema).optional()
+}).strict();
+
+export const DocumentWhereUniqueInputSchema: z.ZodType<Prisma.DocumentWhereUniqueInput> = z.object({
+  id: z.number().int()
+})
+.and(z.object({
+  id: z.number().int().optional(),
+  AND: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
+  file: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  note: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  document_type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  expiration_date: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
+  remainder_days: z.union([ z.lazy(() => IntNullableFilterSchema),z.number().int() ]).optional().nullable(),
+  isActive: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  extraFields: z.lazy(() => JsonNullableFilterSchema).optional(),
+  vehicle: z.union([ z.lazy(() => VehicleRelationFilterSchema),z.lazy(() => VehicleWhereInputSchema) ]).optional(),
+  tags: z.lazy(() => DocumentTagListRelationFilterSchema).optional()
+}).strict());
+
+export const DocumentOrderByWithAggregationInputSchema: z.ZodType<Prisma.DocumentOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  file: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  note: z.lazy(() => SortOrderSchema).optional(),
+  document_type: z.lazy(() => SortOrderSchema).optional(),
+  expiration_date: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  remainder_days: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  extraFields: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  _count: z.lazy(() => DocumentCountOrderByAggregateInputSchema).optional(),
+  _avg: z.lazy(() => DocumentAvgOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => DocumentMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => DocumentMinOrderByAggregateInputSchema).optional(),
+  _sum: z.lazy(() => DocumentSumOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const DocumentScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.DocumentScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  file: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  note: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  document_type: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  expiration_date: z.union([ z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),z.coerce.date() ]).optional().nullable(),
+  remainder_days: z.union([ z.lazy(() => IntNullableWithAggregatesFilterSchema),z.number() ]).optional().nullable(),
+  isActive: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  extraFields: z.lazy(() => JsonNullableWithAggregatesFilterSchema).optional()
+}).strict();
+
+export const DocumentTagWhereInputSchema: z.ZodType<Prisma.DocumentTagWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentTagWhereInputSchema),z.lazy(() => DocumentTagWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentTagWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentTagWhereInputSchema),z.lazy(() => DocumentTagWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  documentId: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  document: z.union([ z.lazy(() => DocumentRelationFilterSchema),z.lazy(() => DocumentWhereInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentTagOrderByWithRelationInputSchema: z.ZodType<Prisma.DocumentTagOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  documentId: z.lazy(() => SortOrderSchema).optional(),
+  document: z.lazy(() => DocumentOrderByWithRelationInputSchema).optional()
+}).strict();
+
+export const DocumentTagWhereUniqueInputSchema: z.ZodType<Prisma.DocumentTagWhereUniqueInput> = z.object({
+  id: z.number().int()
+})
+.and(z.object({
+  id: z.number().int().optional(),
+  AND: z.union([ z.lazy(() => DocumentTagWhereInputSchema),z.lazy(() => DocumentTagWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentTagWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentTagWhereInputSchema),z.lazy(() => DocumentTagWhereInputSchema).array() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  documentId: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  document: z.union([ z.lazy(() => DocumentRelationFilterSchema),z.lazy(() => DocumentWhereInputSchema) ]).optional(),
+}).strict());
+
+export const DocumentTagOrderByWithAggregationInputSchema: z.ZodType<Prisma.DocumentTagOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  documentId: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => DocumentTagCountOrderByAggregateInputSchema).optional(),
+  _avg: z.lazy(() => DocumentTagAvgOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => DocumentTagMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => DocumentTagMinOrderByAggregateInputSchema).optional(),
+  _sum: z.lazy(() => DocumentTagSumOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const DocumentTagScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.DocumentTagScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentTagScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentTagScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentTagScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentTagScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentTagScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  name: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  documentId: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+}).strict();
+
 export const AccountCreateInputSchema: z.ZodType<Prisma.AccountCreateInput> = z.object({
   id: z.string().cuid().optional(),
   type: z.string(),
@@ -1231,6 +1772,297 @@ export const CompanyUncheckedUpdateManyInputSchema: z.ZodType<Prisma.CompanyUnch
   isAdmin: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
+export const VehicleCreateInputSchema: z.ZodType<Prisma.VehicleCreateInput> = z.object({
+  type: z.lazy(() => TypeSchema),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureCreateNestedManyWithoutVehicleInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutVehicleInputSchema).optional()
+}).strict();
+
+export const VehicleUncheckedCreateInputSchema: z.ZodType<Prisma.VehicleUncheckedCreateInput> = z.object({
+  id: z.number().int().optional(),
+  type: z.lazy(() => TypeSchema),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureUncheckedCreateNestedManyWithoutVehicleInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutVehicleInputSchema).optional()
+}).strict();
+
+export const VehicleUpdateInputSchema: z.ZodType<Prisma.VehicleUpdateInput> = z.object({
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureUpdateManyWithoutVehicleNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutVehicleNestedInputSchema).optional()
+}).strict();
+
+export const VehicleUncheckedUpdateInputSchema: z.ZodType<Prisma.VehicleUncheckedUpdateInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureUncheckedUpdateManyWithoutVehicleNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutVehicleNestedInputSchema).optional()
+}).strict();
+
+export const VehicleCreateManyInputSchema: z.ZodType<Prisma.VehicleCreateManyInput> = z.object({
+  id: z.number().int().optional(),
+  type: z.lazy(() => TypeSchema),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const VehicleUpdateManyMutationInputSchema: z.ZodType<Prisma.VehicleUpdateManyMutationInput> = z.object({
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const VehicleUncheckedUpdateManyInputSchema: z.ZodType<Prisma.VehicleUncheckedUpdateManyInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const VehiclePictureCreateInputSchema: z.ZodType<Prisma.VehiclePictureCreateInput> = z.object({
+  image: z.string(),
+  pinned: z.boolean().optional(),
+  vehicle: z.lazy(() => VehicleCreateNestedOneWithoutVehiclePicturesInputSchema)
+}).strict();
+
+export const VehiclePictureUncheckedCreateInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedCreateInput> = z.object({
+  id: z.number().int().optional(),
+  image: z.string(),
+  vehicleId: z.number().int(),
+  pinned: z.boolean().optional()
+}).strict();
+
+export const VehiclePictureUpdateInputSchema: z.ZodType<Prisma.VehiclePictureUpdateInput> = z.object({
+  image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  pinned: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  vehicle: z.lazy(() => VehicleUpdateOneRequiredWithoutVehiclePicturesNestedInputSchema).optional()
+}).strict();
+
+export const VehiclePictureUncheckedUpdateInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedUpdateInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vehicleId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  pinned: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const VehiclePictureCreateManyInputSchema: z.ZodType<Prisma.VehiclePictureCreateManyInput> = z.object({
+  id: z.number().int().optional(),
+  image: z.string(),
+  vehicleId: z.number().int(),
+  pinned: z.boolean().optional()
+}).strict();
+
+export const VehiclePictureUpdateManyMutationInputSchema: z.ZodType<Prisma.VehiclePictureUpdateManyMutationInput> = z.object({
+  image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  pinned: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const VehiclePictureUncheckedUpdateManyInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedUpdateManyInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vehicleId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  pinned: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentCreateInputSchema: z.ZodType<Prisma.DocumentCreateInput> = z.object({
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehicle: z.lazy(() => VehicleCreateNestedOneWithoutDocumentsInputSchema),
+  tags: z.lazy(() => DocumentTagCreateNestedManyWithoutDocumentInputSchema).optional()
+}).strict();
+
+export const DocumentUncheckedCreateInputSchema: z.ZodType<Prisma.DocumentUncheckedCreateInput> = z.object({
+  id: z.number().int().optional(),
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  vehicleId: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  tags: z.lazy(() => DocumentTagUncheckedCreateNestedManyWithoutDocumentInputSchema).optional()
+}).strict();
+
+export const DocumentUpdateInputSchema: z.ZodType<Prisma.DocumentUpdateInput> = z.object({
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehicle: z.lazy(() => VehicleUpdateOneRequiredWithoutDocumentsNestedInputSchema).optional(),
+  tags: z.lazy(() => DocumentTagUpdateManyWithoutDocumentNestedInputSchema).optional()
+}).strict();
+
+export const DocumentUncheckedUpdateInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  vehicleId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  tags: z.lazy(() => DocumentTagUncheckedUpdateManyWithoutDocumentNestedInputSchema).optional()
+}).strict();
+
+export const DocumentCreateManyInputSchema: z.ZodType<Prisma.DocumentCreateManyInput> = z.object({
+  id: z.number().int().optional(),
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  vehicleId: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const DocumentUpdateManyMutationInputSchema: z.ZodType<Prisma.DocumentUpdateManyMutationInput> = z.object({
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const DocumentUncheckedUpdateManyInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateManyInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  vehicleId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const DocumentTagCreateInputSchema: z.ZodType<Prisma.DocumentTagCreateInput> = z.object({
+  name: z.string(),
+  document: z.lazy(() => DocumentCreateNestedOneWithoutTagsInputSchema)
+}).strict();
+
+export const DocumentTagUncheckedCreateInputSchema: z.ZodType<Prisma.DocumentTagUncheckedCreateInput> = z.object({
+  id: z.number().int().optional(),
+  name: z.string(),
+  documentId: z.number().int()
+}).strict();
+
+export const DocumentTagUpdateInputSchema: z.ZodType<Prisma.DocumentTagUpdateInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document: z.lazy(() => DocumentUpdateOneRequiredWithoutTagsNestedInputSchema).optional()
+}).strict();
+
+export const DocumentTagUncheckedUpdateInputSchema: z.ZodType<Prisma.DocumentTagUncheckedUpdateInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  documentId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentTagCreateManyInputSchema: z.ZodType<Prisma.DocumentTagCreateManyInput> = z.object({
+  id: z.number().int().optional(),
+  name: z.string(),
+  documentId: z.number().int()
+}).strict();
+
+export const DocumentTagUpdateManyMutationInputSchema: z.ZodType<Prisma.DocumentTagUpdateManyMutationInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentTagUncheckedUpdateManyInputSchema: z.ZodType<Prisma.DocumentTagUncheckedUpdateManyInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  documentId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
 export const StringFilterSchema: z.ZodType<Prisma.StringFilter> = z.object({
   equals: z.string().optional(),
   in: z.string().array().optional(),
@@ -1654,6 +2486,293 @@ export const BoolWithAggregatesFilterSchema: z.ZodType<Prisma.BoolWithAggregates
   _max: z.lazy(() => NestedBoolFilterSchema).optional()
 }).strict();
 
+export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
+}).strict();
+
+export const EnumTypeFilterSchema: z.ZodType<Prisma.EnumTypeFilter> = z.object({
+  equals: z.lazy(() => TypeSchema).optional(),
+  in: z.lazy(() => TypeSchema).array().optional(),
+  notIn: z.lazy(() => TypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => TypeSchema),z.lazy(() => NestedEnumTypeFilterSchema) ]).optional(),
+}).strict();
+
+export const JsonNullableFilterSchema: z.ZodType<Prisma.JsonNullableFilter> = z.object({
+  equals: InputJsonValueSchema.optional(),
+  path: z.string().array().optional(),
+  string_contains: z.string().optional(),
+  string_starts_with: z.string().optional(),
+  string_ends_with: z.string().optional(),
+  array_contains: InputJsonValueSchema.optional().nullable(),
+  array_starts_with: InputJsonValueSchema.optional().nullable(),
+  array_ends_with: InputJsonValueSchema.optional().nullable(),
+  lt: InputJsonValueSchema.optional(),
+  lte: InputJsonValueSchema.optional(),
+  gt: InputJsonValueSchema.optional(),
+  gte: InputJsonValueSchema.optional(),
+  not: InputJsonValueSchema.optional()
+}).strict();
+
+export const VehiclePictureListRelationFilterSchema: z.ZodType<Prisma.VehiclePictureListRelationFilter> = z.object({
+  every: z.lazy(() => VehiclePictureWhereInputSchema).optional(),
+  some: z.lazy(() => VehiclePictureWhereInputSchema).optional(),
+  none: z.lazy(() => VehiclePictureWhereInputSchema).optional()
+}).strict();
+
+export const DocumentListRelationFilterSchema: z.ZodType<Prisma.DocumentListRelationFilter> = z.object({
+  every: z.lazy(() => DocumentWhereInputSchema).optional(),
+  some: z.lazy(() => DocumentWhereInputSchema).optional(),
+  none: z.lazy(() => DocumentWhereInputSchema).optional()
+}).strict();
+
+export const VehiclePictureOrderByRelationAggregateInputSchema: z.ZodType<Prisma.VehiclePictureOrderByRelationAggregateInput> = z.object({
+  _count: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentOrderByRelationAggregateInputSchema: z.ZodType<Prisma.DocumentOrderByRelationAggregateInput> = z.object({
+  _count: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehicleCountOrderByAggregateInputSchema: z.ZodType<Prisma.VehicleCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  year: z.lazy(() => SortOrderSchema).optional(),
+  make: z.lazy(() => SortOrderSchema).optional(),
+  model: z.lazy(() => SortOrderSchema).optional(),
+  trim: z.lazy(() => SortOrderSchema).optional(),
+  plate: z.lazy(() => SortOrderSchema).optional(),
+  vin: z.lazy(() => SortOrderSchema).optional(),
+  odometer: z.lazy(() => SortOrderSchema).optional(),
+  nickname: z.lazy(() => SortOrderSchema).optional(),
+  spare_tires: z.lazy(() => SortOrderSchema).optional(),
+  extraFields: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehicleAvgOrderByAggregateInputSchema: z.ZodType<Prisma.VehicleAvgOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  year: z.lazy(() => SortOrderSchema).optional(),
+  odometer: z.lazy(() => SortOrderSchema).optional(),
+  spare_tires: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehicleMaxOrderByAggregateInputSchema: z.ZodType<Prisma.VehicleMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  year: z.lazy(() => SortOrderSchema).optional(),
+  make: z.lazy(() => SortOrderSchema).optional(),
+  model: z.lazy(() => SortOrderSchema).optional(),
+  trim: z.lazy(() => SortOrderSchema).optional(),
+  plate: z.lazy(() => SortOrderSchema).optional(),
+  vin: z.lazy(() => SortOrderSchema).optional(),
+  odometer: z.lazy(() => SortOrderSchema).optional(),
+  nickname: z.lazy(() => SortOrderSchema).optional(),
+  spare_tires: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehicleMinOrderByAggregateInputSchema: z.ZodType<Prisma.VehicleMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  year: z.lazy(() => SortOrderSchema).optional(),
+  make: z.lazy(() => SortOrderSchema).optional(),
+  model: z.lazy(() => SortOrderSchema).optional(),
+  trim: z.lazy(() => SortOrderSchema).optional(),
+  plate: z.lazy(() => SortOrderSchema).optional(),
+  vin: z.lazy(() => SortOrderSchema).optional(),
+  odometer: z.lazy(() => SortOrderSchema).optional(),
+  nickname: z.lazy(() => SortOrderSchema).optional(),
+  spare_tires: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehicleSumOrderByAggregateInputSchema: z.ZodType<Prisma.VehicleSumOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  year: z.lazy(() => SortOrderSchema).optional(),
+  odometer: z.lazy(() => SortOrderSchema).optional(),
+  spare_tires: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedIntFilterSchema).optional(),
+  _max: z.lazy(() => NestedIntFilterSchema).optional()
+}).strict();
+
+export const EnumTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumTypeWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => TypeSchema).optional(),
+  in: z.lazy(() => TypeSchema).array().optional(),
+  notIn: z.lazy(() => TypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => TypeSchema),z.lazy(() => NestedEnumTypeWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumTypeFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumTypeFilterSchema).optional()
+}).strict();
+
+export const JsonNullableWithAggregatesFilterSchema: z.ZodType<Prisma.JsonNullableWithAggregatesFilter> = z.object({
+  equals: InputJsonValueSchema.optional(),
+  path: z.string().array().optional(),
+  string_contains: z.string().optional(),
+  string_starts_with: z.string().optional(),
+  string_ends_with: z.string().optional(),
+  array_contains: InputJsonValueSchema.optional().nullable(),
+  array_starts_with: InputJsonValueSchema.optional().nullable(),
+  array_ends_with: InputJsonValueSchema.optional().nullable(),
+  lt: InputJsonValueSchema.optional(),
+  lte: InputJsonValueSchema.optional(),
+  gt: InputJsonValueSchema.optional(),
+  gte: InputJsonValueSchema.optional(),
+  not: InputJsonValueSchema.optional(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedJsonNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedJsonNullableFilterSchema).optional()
+}).strict();
+
+export const VehicleRelationFilterSchema: z.ZodType<Prisma.VehicleRelationFilter> = z.object({
+  is: z.lazy(() => VehicleWhereInputSchema).optional(),
+  isNot: z.lazy(() => VehicleWhereInputSchema).optional()
+}).strict();
+
+export const VehiclePictureCountOrderByAggregateInputSchema: z.ZodType<Prisma.VehiclePictureCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  image: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  pinned: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehiclePictureAvgOrderByAggregateInputSchema: z.ZodType<Prisma.VehiclePictureAvgOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehiclePictureMaxOrderByAggregateInputSchema: z.ZodType<Prisma.VehiclePictureMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  image: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  pinned: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehiclePictureMinOrderByAggregateInputSchema: z.ZodType<Prisma.VehiclePictureMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  image: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  pinned: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const VehiclePictureSumOrderByAggregateInputSchema: z.ZodType<Prisma.VehiclePictureSumOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentTagListRelationFilterSchema: z.ZodType<Prisma.DocumentTagListRelationFilter> = z.object({
+  every: z.lazy(() => DocumentTagWhereInputSchema).optional(),
+  some: z.lazy(() => DocumentTagWhereInputSchema).optional(),
+  none: z.lazy(() => DocumentTagWhereInputSchema).optional()
+}).strict();
+
+export const DocumentTagOrderByRelationAggregateInputSchema: z.ZodType<Prisma.DocumentTagOrderByRelationAggregateInput> = z.object({
+  _count: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentCountOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  file: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  note: z.lazy(() => SortOrderSchema).optional(),
+  document_type: z.lazy(() => SortOrderSchema).optional(),
+  expiration_date: z.lazy(() => SortOrderSchema).optional(),
+  remainder_days: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional(),
+  extraFields: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentAvgOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentAvgOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  remainder_days: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentMaxOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  file: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  note: z.lazy(() => SortOrderSchema).optional(),
+  document_type: z.lazy(() => SortOrderSchema).optional(),
+  expiration_date: z.lazy(() => SortOrderSchema).optional(),
+  remainder_days: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentMinOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  file: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  note: z.lazy(() => SortOrderSchema).optional(),
+  document_type: z.lazy(() => SortOrderSchema).optional(),
+  expiration_date: z.lazy(() => SortOrderSchema).optional(),
+  remainder_days: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentSumOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentSumOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  remainder_days: z.lazy(() => SortOrderSchema).optional(),
+  vehicleId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentRelationFilterSchema: z.ZodType<Prisma.DocumentRelationFilter> = z.object({
+  is: z.lazy(() => DocumentWhereInputSchema).optional(),
+  isNot: z.lazy(() => DocumentWhereInputSchema).optional()
+}).strict();
+
+export const DocumentTagCountOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentTagCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  documentId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentTagAvgOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentTagAvgOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  documentId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentTagMaxOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentTagMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  documentId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentTagMinOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentTagMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  documentId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentTagSumOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentTagSumOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  documentId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
 export const UserCreateNestedOneWithoutAccountsInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutAccountsInput> = z.object({
   create: z.union([ z.lazy(() => UserCreateWithoutAccountsInputSchema),z.lazy(() => UserUncheckedCreateWithoutAccountsInputSchema) ]).optional(),
   connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutAccountsInputSchema).optional(),
@@ -1966,6 +3085,186 @@ export const CompanyUserUncheckedUpdateManyWithoutCompanyNestedInputSchema: z.Zo
   deleteMany: z.union([ z.lazy(() => CompanyUserScalarWhereInputSchema),z.lazy(() => CompanyUserScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
+export const VehiclePictureCreateNestedManyWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureCreateNestedManyWithoutVehicleInput> = z.object({
+  create: z.union([ z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema).array(),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => VehiclePictureCreateManyVehicleInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const DocumentCreateNestedManyWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentCreateNestedManyWithoutVehicleInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutVehicleInputSchema),z.lazy(() => DocumentCreateWithoutVehicleInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyVehicleInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const VehiclePictureUncheckedCreateNestedManyWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedCreateNestedManyWithoutVehicleInput> = z.object({
+  create: z.union([ z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema).array(),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => VehiclePictureCreateManyVehicleInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const DocumentUncheckedCreateNestedManyWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUncheckedCreateNestedManyWithoutVehicleInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutVehicleInputSchema),z.lazy(() => DocumentCreateWithoutVehicleInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyVehicleInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const EnumTypeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumTypeFieldUpdateOperationsInput> = z.object({
+  set: z.lazy(() => TypeSchema).optional()
+}).strict();
+
+export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> = z.object({
+  set: z.number().optional(),
+  increment: z.number().optional(),
+  decrement: z.number().optional(),
+  multiply: z.number().optional(),
+  divide: z.number().optional()
+}).strict();
+
+export const VehiclePictureUpdateManyWithoutVehicleNestedInputSchema: z.ZodType<Prisma.VehiclePictureUpdateManyWithoutVehicleNestedInput> = z.object({
+  create: z.union([ z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema).array(),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => VehiclePictureUpsertWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUpsertWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => VehiclePictureCreateManyVehicleInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => VehiclePictureUpdateWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUpdateWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => VehiclePictureUpdateManyWithWhereWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUpdateManyWithWhereWithoutVehicleInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => VehiclePictureScalarWhereInputSchema),z.lazy(() => VehiclePictureScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const DocumentUpdateManyWithoutVehicleNestedInputSchema: z.ZodType<Prisma.DocumentUpdateManyWithoutVehicleNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutVehicleInputSchema),z.lazy(() => DocumentCreateWithoutVehicleInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DocumentUpsertWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => DocumentUpsertWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyVehicleInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DocumentUpdateWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => DocumentUpdateWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DocumentUpdateManyWithWhereWithoutVehicleInputSchema),z.lazy(() => DocumentUpdateManyWithWhereWithoutVehicleInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const VehiclePictureUncheckedUpdateManyWithoutVehicleNestedInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedUpdateManyWithoutVehicleNestedInput> = z.object({
+  create: z.union([ z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema).array(),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => VehiclePictureCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => VehiclePictureUpsertWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUpsertWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => VehiclePictureCreateManyVehicleInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => VehiclePictureWhereUniqueInputSchema),z.lazy(() => VehiclePictureWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => VehiclePictureUpdateWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUpdateWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => VehiclePictureUpdateManyWithWhereWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUpdateManyWithWhereWithoutVehicleInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => VehiclePictureScalarWhereInputSchema),z.lazy(() => VehiclePictureScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const DocumentUncheckedUpdateManyWithoutVehicleNestedInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateManyWithoutVehicleNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutVehicleInputSchema),z.lazy(() => DocumentCreateWithoutVehicleInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutVehicleInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DocumentUpsertWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => DocumentUpsertWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyVehicleInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DocumentUpdateWithWhereUniqueWithoutVehicleInputSchema),z.lazy(() => DocumentUpdateWithWhereUniqueWithoutVehicleInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DocumentUpdateManyWithWhereWithoutVehicleInputSchema),z.lazy(() => DocumentUpdateManyWithWhereWithoutVehicleInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const VehicleCreateNestedOneWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleCreateNestedOneWithoutVehiclePicturesInput> = z.object({
+  create: z.union([ z.lazy(() => VehicleCreateWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutVehiclePicturesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => VehicleCreateOrConnectWithoutVehiclePicturesInputSchema).optional(),
+  connect: z.lazy(() => VehicleWhereUniqueInputSchema).optional()
+}).strict();
+
+export const VehicleUpdateOneRequiredWithoutVehiclePicturesNestedInputSchema: z.ZodType<Prisma.VehicleUpdateOneRequiredWithoutVehiclePicturesNestedInput> = z.object({
+  create: z.union([ z.lazy(() => VehicleCreateWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutVehiclePicturesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => VehicleCreateOrConnectWithoutVehiclePicturesInputSchema).optional(),
+  upsert: z.lazy(() => VehicleUpsertWithoutVehiclePicturesInputSchema).optional(),
+  connect: z.lazy(() => VehicleWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => VehicleUpdateToOneWithWhereWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUpdateWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUncheckedUpdateWithoutVehiclePicturesInputSchema) ]).optional(),
+}).strict();
+
+export const VehicleCreateNestedOneWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleCreateNestedOneWithoutDocumentsInput> = z.object({
+  create: z.union([ z.lazy(() => VehicleCreateWithoutDocumentsInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutDocumentsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => VehicleCreateOrConnectWithoutDocumentsInputSchema).optional(),
+  connect: z.lazy(() => VehicleWhereUniqueInputSchema).optional()
+}).strict();
+
+export const DocumentTagCreateNestedManyWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagCreateNestedManyWithoutDocumentInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema).array(),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentTagCreateManyDocumentInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const DocumentTagUncheckedCreateNestedManyWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUncheckedCreateNestedManyWithoutDocumentInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema).array(),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentTagCreateManyDocumentInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const VehicleUpdateOneRequiredWithoutDocumentsNestedInputSchema: z.ZodType<Prisma.VehicleUpdateOneRequiredWithoutDocumentsNestedInput> = z.object({
+  create: z.union([ z.lazy(() => VehicleCreateWithoutDocumentsInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutDocumentsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => VehicleCreateOrConnectWithoutDocumentsInputSchema).optional(),
+  upsert: z.lazy(() => VehicleUpsertWithoutDocumentsInputSchema).optional(),
+  connect: z.lazy(() => VehicleWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => VehicleUpdateToOneWithWhereWithoutDocumentsInputSchema),z.lazy(() => VehicleUpdateWithoutDocumentsInputSchema),z.lazy(() => VehicleUncheckedUpdateWithoutDocumentsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentTagUpdateManyWithoutDocumentNestedInputSchema: z.ZodType<Prisma.DocumentTagUpdateManyWithoutDocumentNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema).array(),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DocumentTagUpsertWithWhereUniqueWithoutDocumentInputSchema),z.lazy(() => DocumentTagUpsertWithWhereUniqueWithoutDocumentInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentTagCreateManyDocumentInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DocumentTagUpdateWithWhereUniqueWithoutDocumentInputSchema),z.lazy(() => DocumentTagUpdateWithWhereUniqueWithoutDocumentInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DocumentTagUpdateManyWithWhereWithoutDocumentInputSchema),z.lazy(() => DocumentTagUpdateManyWithWhereWithoutDocumentInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DocumentTagScalarWhereInputSchema),z.lazy(() => DocumentTagScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const DocumentTagUncheckedUpdateManyWithoutDocumentNestedInputSchema: z.ZodType<Prisma.DocumentTagUncheckedUpdateManyWithoutDocumentNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema).array(),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema),z.lazy(() => DocumentTagCreateOrConnectWithoutDocumentInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DocumentTagUpsertWithWhereUniqueWithoutDocumentInputSchema),z.lazy(() => DocumentTagUpsertWithWhereUniqueWithoutDocumentInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentTagCreateManyDocumentInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DocumentTagWhereUniqueInputSchema),z.lazy(() => DocumentTagWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DocumentTagUpdateWithWhereUniqueWithoutDocumentInputSchema),z.lazy(() => DocumentTagUpdateWithWhereUniqueWithoutDocumentInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DocumentTagUpdateManyWithWhereWithoutDocumentInputSchema),z.lazy(() => DocumentTagUpdateManyWithWhereWithoutDocumentInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DocumentTagScalarWhereInputSchema),z.lazy(() => DocumentTagScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const DocumentCreateNestedOneWithoutTagsInputSchema: z.ZodType<Prisma.DocumentCreateNestedOneWithoutTagsInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutTagsInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutTagsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => DocumentCreateOrConnectWithoutTagsInputSchema).optional(),
+  connect: z.lazy(() => DocumentWhereUniqueInputSchema).optional()
+}).strict();
+
+export const DocumentUpdateOneRequiredWithoutTagsNestedInputSchema: z.ZodType<Prisma.DocumentUpdateOneRequiredWithoutTagsNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutTagsInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutTagsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => DocumentCreateOrConnectWithoutTagsInputSchema).optional(),
+  upsert: z.lazy(() => DocumentUpsertWithoutTagsInputSchema).optional(),
+  connect: z.lazy(() => DocumentWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => DocumentUpdateToOneWithWhereWithoutTagsInputSchema),z.lazy(() => DocumentUpdateWithoutTagsInputSchema),z.lazy(() => DocumentUncheckedUpdateWithoutTagsInputSchema) ]).optional(),
+}).strict();
+
 export const NestedStringFilterSchema: z.ZodType<Prisma.NestedStringFilter> = z.object({
   equals: z.string().optional(),
   in: z.string().array().optional(),
@@ -2155,6 +3454,66 @@ export const NestedBoolWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolWi
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
   _min: z.lazy(() => NestedBoolFilterSchema).optional(),
   _max: z.lazy(() => NestedBoolFilterSchema).optional()
+}).strict();
+
+export const NestedEnumTypeFilterSchema: z.ZodType<Prisma.NestedEnumTypeFilter> = z.object({
+  equals: z.lazy(() => TypeSchema).optional(),
+  in: z.lazy(() => TypeSchema).array().optional(),
+  notIn: z.lazy(() => TypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => TypeSchema),z.lazy(() => NestedEnumTypeFilterSchema) ]).optional(),
+}).strict();
+
+export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedIntFilterSchema).optional(),
+  _max: z.lazy(() => NestedIntFilterSchema).optional()
+}).strict();
+
+export const NestedFloatFilterSchema: z.ZodType<Prisma.NestedFloatFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedFloatFilterSchema) ]).optional(),
+}).strict();
+
+export const NestedEnumTypeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumTypeWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => TypeSchema).optional(),
+  in: z.lazy(() => TypeSchema).array().optional(),
+  notIn: z.lazy(() => TypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => TypeSchema),z.lazy(() => NestedEnumTypeWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumTypeFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumTypeFilterSchema).optional()
+}).strict();
+
+export const NestedJsonNullableFilterSchema: z.ZodType<Prisma.NestedJsonNullableFilter> = z.object({
+  equals: InputJsonValueSchema.optional(),
+  path: z.string().array().optional(),
+  string_contains: z.string().optional(),
+  string_starts_with: z.string().optional(),
+  string_ends_with: z.string().optional(),
+  array_contains: InputJsonValueSchema.optional().nullable(),
+  array_starts_with: InputJsonValueSchema.optional().nullable(),
+  array_ends_with: InputJsonValueSchema.optional().nullable(),
+  lt: InputJsonValueSchema.optional(),
+  lte: InputJsonValueSchema.optional(),
+  gt: InputJsonValueSchema.optional(),
+  gte: InputJsonValueSchema.optional(),
+  not: InputJsonValueSchema.optional()
 }).strict();
 
 export const UserCreateWithoutAccountsInputSchema: z.ZodType<Prisma.UserCreateWithoutAccountsInput> = z.object({
@@ -2681,6 +4040,393 @@ export const CompanyUserUpdateManyWithWhereWithoutCompanyInputSchema: z.ZodType<
   data: z.union([ z.lazy(() => CompanyUserUpdateManyMutationInputSchema),z.lazy(() => CompanyUserUncheckedUpdateManyWithoutCompanyInputSchema) ]),
 }).strict();
 
+export const VehiclePictureCreateWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureCreateWithoutVehicleInput> = z.object({
+  image: z.string(),
+  pinned: z.boolean().optional()
+}).strict();
+
+export const VehiclePictureUncheckedCreateWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedCreateWithoutVehicleInput> = z.object({
+  id: z.number().int().optional(),
+  image: z.string(),
+  pinned: z.boolean().optional()
+}).strict();
+
+export const VehiclePictureCreateOrConnectWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureCreateOrConnectWithoutVehicleInput> = z.object({
+  where: z.lazy(() => VehiclePictureWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const VehiclePictureCreateManyVehicleInputEnvelopeSchema: z.ZodType<Prisma.VehiclePictureCreateManyVehicleInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => VehiclePictureCreateManyVehicleInputSchema),z.lazy(() => VehiclePictureCreateManyVehicleInputSchema).array() ]),
+  skipDuplicates: z.boolean().optional()
+}).strict();
+
+export const DocumentCreateWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentCreateWithoutVehicleInput> = z.object({
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  tags: z.lazy(() => DocumentTagCreateNestedManyWithoutDocumentInputSchema).optional()
+}).strict();
+
+export const DocumentUncheckedCreateWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUncheckedCreateWithoutVehicleInput> = z.object({
+  id: z.number().int().optional(),
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  tags: z.lazy(() => DocumentTagUncheckedCreateNestedManyWithoutDocumentInputSchema).optional()
+}).strict();
+
+export const DocumentCreateOrConnectWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentCreateOrConnectWithoutVehicleInput> = z.object({
+  where: z.lazy(() => DocumentWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => DocumentCreateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const DocumentCreateManyVehicleInputEnvelopeSchema: z.ZodType<Prisma.DocumentCreateManyVehicleInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => DocumentCreateManyVehicleInputSchema),z.lazy(() => DocumentCreateManyVehicleInputSchema).array() ]),
+  skipDuplicates: z.boolean().optional()
+}).strict();
+
+export const VehiclePictureUpsertWithWhereUniqueWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUpsertWithWhereUniqueWithoutVehicleInput> = z.object({
+  where: z.lazy(() => VehiclePictureWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => VehiclePictureUpdateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedUpdateWithoutVehicleInputSchema) ]),
+  create: z.union([ z.lazy(() => VehiclePictureCreateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedCreateWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const VehiclePictureUpdateWithWhereUniqueWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUpdateWithWhereUniqueWithoutVehicleInput> = z.object({
+  where: z.lazy(() => VehiclePictureWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => VehiclePictureUpdateWithoutVehicleInputSchema),z.lazy(() => VehiclePictureUncheckedUpdateWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const VehiclePictureUpdateManyWithWhereWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUpdateManyWithWhereWithoutVehicleInput> = z.object({
+  where: z.lazy(() => VehiclePictureScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => VehiclePictureUpdateManyMutationInputSchema),z.lazy(() => VehiclePictureUncheckedUpdateManyWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const VehiclePictureScalarWhereInputSchema: z.ZodType<Prisma.VehiclePictureScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => VehiclePictureScalarWhereInputSchema),z.lazy(() => VehiclePictureScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => VehiclePictureScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => VehiclePictureScalarWhereInputSchema),z.lazy(() => VehiclePictureScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  image: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  pinned: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+}).strict();
+
+export const DocumentUpsertWithWhereUniqueWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUpsertWithWhereUniqueWithoutVehicleInput> = z.object({
+  where: z.lazy(() => DocumentWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => DocumentUpdateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedUpdateWithoutVehicleInputSchema) ]),
+  create: z.union([ z.lazy(() => DocumentCreateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const DocumentUpdateWithWhereUniqueWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUpdateWithWhereUniqueWithoutVehicleInput> = z.object({
+  where: z.lazy(() => DocumentWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => DocumentUpdateWithoutVehicleInputSchema),z.lazy(() => DocumentUncheckedUpdateWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const DocumentUpdateManyWithWhereWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUpdateManyWithWhereWithoutVehicleInput> = z.object({
+  where: z.lazy(() => DocumentScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => DocumentUpdateManyMutationInputSchema),z.lazy(() => DocumentUncheckedUpdateManyWithoutVehicleInputSchema) ]),
+}).strict();
+
+export const DocumentScalarWhereInputSchema: z.ZodType<Prisma.DocumentScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  file: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  note: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  document_type: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  expiration_date: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
+  remainder_days: z.union([ z.lazy(() => IntNullableFilterSchema),z.number() ]).optional().nullable(),
+  isActive: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  vehicleId: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  extraFields: z.lazy(() => JsonNullableFilterSchema).optional()
+}).strict();
+
+export const VehicleCreateWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleCreateWithoutVehiclePicturesInput> = z.object({
+  type: z.lazy(() => TypeSchema),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutVehicleInputSchema).optional()
+}).strict();
+
+export const VehicleUncheckedCreateWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleUncheckedCreateWithoutVehiclePicturesInput> = z.object({
+  id: z.number().int().optional(),
+  type: z.lazy(() => TypeSchema),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutVehicleInputSchema).optional()
+}).strict();
+
+export const VehicleCreateOrConnectWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleCreateOrConnectWithoutVehiclePicturesInput> = z.object({
+  where: z.lazy(() => VehicleWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => VehicleCreateWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutVehiclePicturesInputSchema) ]),
+}).strict();
+
+export const VehicleUpsertWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleUpsertWithoutVehiclePicturesInput> = z.object({
+  update: z.union([ z.lazy(() => VehicleUpdateWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUncheckedUpdateWithoutVehiclePicturesInputSchema) ]),
+  create: z.union([ z.lazy(() => VehicleCreateWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutVehiclePicturesInputSchema) ]),
+  where: z.lazy(() => VehicleWhereInputSchema).optional()
+}).strict();
+
+export const VehicleUpdateToOneWithWhereWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleUpdateToOneWithWhereWithoutVehiclePicturesInput> = z.object({
+  where: z.lazy(() => VehicleWhereInputSchema).optional(),
+  data: z.union([ z.lazy(() => VehicleUpdateWithoutVehiclePicturesInputSchema),z.lazy(() => VehicleUncheckedUpdateWithoutVehiclePicturesInputSchema) ]),
+}).strict();
+
+export const VehicleUpdateWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleUpdateWithoutVehiclePicturesInput> = z.object({
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutVehicleNestedInputSchema).optional()
+}).strict();
+
+export const VehicleUncheckedUpdateWithoutVehiclePicturesInputSchema: z.ZodType<Prisma.VehicleUncheckedUpdateWithoutVehiclePicturesInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutVehicleNestedInputSchema).optional()
+}).strict();
+
+export const VehicleCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleCreateWithoutDocumentsInput> = z.object({
+  type: z.lazy(() => TypeSchema),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureCreateNestedManyWithoutVehicleInputSchema).optional()
+}).strict();
+
+export const VehicleUncheckedCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleUncheckedCreateWithoutDocumentsInput> = z.object({
+  id: z.number().int().optional(),
+  type: z.lazy(() => TypeSchema),
+  year: z.number().int(),
+  make: z.string(),
+  model: z.string(),
+  trim: z.string(),
+  plate: z.string(),
+  vin: z.string(),
+  odometer: z.number().int(),
+  nickname: z.string(),
+  spare_tires: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureUncheckedCreateNestedManyWithoutVehicleInputSchema).optional()
+}).strict();
+
+export const VehicleCreateOrConnectWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleCreateOrConnectWithoutDocumentsInput> = z.object({
+  where: z.lazy(() => VehicleWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => VehicleCreateWithoutDocumentsInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutDocumentsInputSchema) ]),
+}).strict();
+
+export const DocumentTagCreateWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagCreateWithoutDocumentInput> = z.object({
+  name: z.string()
+}).strict();
+
+export const DocumentTagUncheckedCreateWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUncheckedCreateWithoutDocumentInput> = z.object({
+  id: z.number().int().optional(),
+  name: z.string()
+}).strict();
+
+export const DocumentTagCreateOrConnectWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagCreateOrConnectWithoutDocumentInput> = z.object({
+  where: z.lazy(() => DocumentTagWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema) ]),
+}).strict();
+
+export const DocumentTagCreateManyDocumentInputEnvelopeSchema: z.ZodType<Prisma.DocumentTagCreateManyDocumentInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => DocumentTagCreateManyDocumentInputSchema),z.lazy(() => DocumentTagCreateManyDocumentInputSchema).array() ]),
+  skipDuplicates: z.boolean().optional()
+}).strict();
+
+export const VehicleUpsertWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleUpsertWithoutDocumentsInput> = z.object({
+  update: z.union([ z.lazy(() => VehicleUpdateWithoutDocumentsInputSchema),z.lazy(() => VehicleUncheckedUpdateWithoutDocumentsInputSchema) ]),
+  create: z.union([ z.lazy(() => VehicleCreateWithoutDocumentsInputSchema),z.lazy(() => VehicleUncheckedCreateWithoutDocumentsInputSchema) ]),
+  where: z.lazy(() => VehicleWhereInputSchema).optional()
+}).strict();
+
+export const VehicleUpdateToOneWithWhereWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleUpdateToOneWithWhereWithoutDocumentsInput> = z.object({
+  where: z.lazy(() => VehicleWhereInputSchema).optional(),
+  data: z.union([ z.lazy(() => VehicleUpdateWithoutDocumentsInputSchema),z.lazy(() => VehicleUncheckedUpdateWithoutDocumentsInputSchema) ]),
+}).strict();
+
+export const VehicleUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleUpdateWithoutDocumentsInput> = z.object({
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureUpdateManyWithoutVehicleNestedInputSchema).optional()
+}).strict();
+
+export const VehicleUncheckedUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.VehicleUncheckedUpdateWithoutDocumentsInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  type: z.union([ z.lazy(() => TypeSchema),z.lazy(() => EnumTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  year: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  make: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  model: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  trim: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  plate: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  vin: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  odometer: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  nickname: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  spare_tires: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehiclePictures: z.lazy(() => VehiclePictureUncheckedUpdateManyWithoutVehicleNestedInputSchema).optional()
+}).strict();
+
+export const DocumentTagUpsertWithWhereUniqueWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUpsertWithWhereUniqueWithoutDocumentInput> = z.object({
+  where: z.lazy(() => DocumentTagWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => DocumentTagUpdateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedUpdateWithoutDocumentInputSchema) ]),
+  create: z.union([ z.lazy(() => DocumentTagCreateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedCreateWithoutDocumentInputSchema) ]),
+}).strict();
+
+export const DocumentTagUpdateWithWhereUniqueWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUpdateWithWhereUniqueWithoutDocumentInput> = z.object({
+  where: z.lazy(() => DocumentTagWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => DocumentTagUpdateWithoutDocumentInputSchema),z.lazy(() => DocumentTagUncheckedUpdateWithoutDocumentInputSchema) ]),
+}).strict();
+
+export const DocumentTagUpdateManyWithWhereWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUpdateManyWithWhereWithoutDocumentInput> = z.object({
+  where: z.lazy(() => DocumentTagScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => DocumentTagUpdateManyMutationInputSchema),z.lazy(() => DocumentTagUncheckedUpdateManyWithoutDocumentInputSchema) ]),
+}).strict();
+
+export const DocumentTagScalarWhereInputSchema: z.ZodType<Prisma.DocumentTagScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentTagScalarWhereInputSchema),z.lazy(() => DocumentTagScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentTagScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentTagScalarWhereInputSchema),z.lazy(() => DocumentTagScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  documentId: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+}).strict();
+
+export const DocumentCreateWithoutTagsInputSchema: z.ZodType<Prisma.DocumentCreateWithoutTagsInput> = z.object({
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehicle: z.lazy(() => VehicleCreateNestedOneWithoutDocumentsInputSchema)
+}).strict();
+
+export const DocumentUncheckedCreateWithoutTagsInputSchema: z.ZodType<Prisma.DocumentUncheckedCreateWithoutTagsInput> = z.object({
+  id: z.number().int().optional(),
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  vehicleId: z.number().int(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const DocumentCreateOrConnectWithoutTagsInputSchema: z.ZodType<Prisma.DocumentCreateOrConnectWithoutTagsInput> = z.object({
+  where: z.lazy(() => DocumentWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => DocumentCreateWithoutTagsInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutTagsInputSchema) ]),
+}).strict();
+
+export const DocumentUpsertWithoutTagsInputSchema: z.ZodType<Prisma.DocumentUpsertWithoutTagsInput> = z.object({
+  update: z.union([ z.lazy(() => DocumentUpdateWithoutTagsInputSchema),z.lazy(() => DocumentUncheckedUpdateWithoutTagsInputSchema) ]),
+  create: z.union([ z.lazy(() => DocumentCreateWithoutTagsInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutTagsInputSchema) ]),
+  where: z.lazy(() => DocumentWhereInputSchema).optional()
+}).strict();
+
+export const DocumentUpdateToOneWithWhereWithoutTagsInputSchema: z.ZodType<Prisma.DocumentUpdateToOneWithWhereWithoutTagsInput> = z.object({
+  where: z.lazy(() => DocumentWhereInputSchema).optional(),
+  data: z.union([ z.lazy(() => DocumentUpdateWithoutTagsInputSchema),z.lazy(() => DocumentUncheckedUpdateWithoutTagsInputSchema) ]),
+}).strict();
+
+export const DocumentUpdateWithoutTagsInputSchema: z.ZodType<Prisma.DocumentUpdateWithoutTagsInput> = z.object({
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  vehicle: z.lazy(() => VehicleUpdateOneRequiredWithoutDocumentsNestedInputSchema).optional()
+}).strict();
+
+export const DocumentUncheckedUpdateWithoutTagsInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateWithoutTagsInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  vehicleId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
 export const AccountCreateManyUserInputSchema: z.ZodType<Prisma.AccountCreateManyUserInput> = z.object({
   id: z.string().cuid().optional(),
   type: z.string(),
@@ -2839,6 +4585,101 @@ export const CompanyUserUncheckedUpdateManyWithoutCompanyInputSchema: z.ZodType<
   id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   role: z.union([ z.lazy(() => RoleSchema),z.lazy(() => EnumRoleFieldUpdateOperationsInputSchema) ]).optional(),
   userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const VehiclePictureCreateManyVehicleInputSchema: z.ZodType<Prisma.VehiclePictureCreateManyVehicleInput> = z.object({
+  id: z.number().int().optional(),
+  image: z.string(),
+  pinned: z.boolean().optional()
+}).strict();
+
+export const DocumentCreateManyVehicleInputSchema: z.ZodType<Prisma.DocumentCreateManyVehicleInput> = z.object({
+  id: z.number().int().optional(),
+  file: z.string(),
+  name: z.string(),
+  note: z.string(),
+  document_type: z.string(),
+  expiration_date: z.coerce.date().optional().nullable(),
+  remainder_days: z.number().int().optional().nullable(),
+  isActive: z.boolean().optional(),
+  createdAt: z.coerce.date().optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const VehiclePictureUpdateWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUpdateWithoutVehicleInput> = z.object({
+  image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  pinned: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const VehiclePictureUncheckedUpdateWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedUpdateWithoutVehicleInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  pinned: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const VehiclePictureUncheckedUpdateManyWithoutVehicleInputSchema: z.ZodType<Prisma.VehiclePictureUncheckedUpdateManyWithoutVehicleInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  image: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  pinned: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentUpdateWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUpdateWithoutVehicleInput> = z.object({
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  tags: z.lazy(() => DocumentTagUpdateManyWithoutDocumentNestedInputSchema).optional()
+}).strict();
+
+export const DocumentUncheckedUpdateWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateWithoutVehicleInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  tags: z.lazy(() => DocumentTagUncheckedUpdateManyWithoutDocumentNestedInputSchema).optional()
+}).strict();
+
+export const DocumentUncheckedUpdateManyWithoutVehicleInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateManyWithoutVehicleInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  file: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  note: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  document_type: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  expiration_date: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  remainder_days: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  extraFields: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+}).strict();
+
+export const DocumentTagCreateManyDocumentInputSchema: z.ZodType<Prisma.DocumentTagCreateManyDocumentInput> = z.object({
+  id: z.number().int().optional(),
+  name: z.string()
+}).strict();
+
+export const DocumentTagUpdateWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUpdateWithoutDocumentInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentTagUncheckedUpdateWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUncheckedUpdateWithoutDocumentInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentTagUncheckedUpdateManyWithoutDocumentInputSchema: z.ZodType<Prisma.DocumentTagUncheckedUpdateManyWithoutDocumentInput> = z.object({
+  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 /////////////////////////////////////////
@@ -3274,6 +5115,254 @@ export const CompanyFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.CompanyFindUni
   where: CompanyWhereUniqueInputSchema,
 }).strict() ;
 
+export const VehicleFindFirstArgsSchema: z.ZodType<Prisma.VehicleFindFirstArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  where: VehicleWhereInputSchema.optional(),
+  orderBy: z.union([ VehicleOrderByWithRelationInputSchema.array(),VehicleOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehicleWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ VehicleScalarFieldEnumSchema,VehicleScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const VehicleFindFirstOrThrowArgsSchema: z.ZodType<Prisma.VehicleFindFirstOrThrowArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  where: VehicleWhereInputSchema.optional(),
+  orderBy: z.union([ VehicleOrderByWithRelationInputSchema.array(),VehicleOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehicleWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ VehicleScalarFieldEnumSchema,VehicleScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const VehicleFindManyArgsSchema: z.ZodType<Prisma.VehicleFindManyArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  where: VehicleWhereInputSchema.optional(),
+  orderBy: z.union([ VehicleOrderByWithRelationInputSchema.array(),VehicleOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehicleWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ VehicleScalarFieldEnumSchema,VehicleScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const VehicleAggregateArgsSchema: z.ZodType<Prisma.VehicleAggregateArgs> = z.object({
+  where: VehicleWhereInputSchema.optional(),
+  orderBy: z.union([ VehicleOrderByWithRelationInputSchema.array(),VehicleOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehicleWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const VehicleGroupByArgsSchema: z.ZodType<Prisma.VehicleGroupByArgs> = z.object({
+  where: VehicleWhereInputSchema.optional(),
+  orderBy: z.union([ VehicleOrderByWithAggregationInputSchema.array(),VehicleOrderByWithAggregationInputSchema ]).optional(),
+  by: VehicleScalarFieldEnumSchema.array(),
+  having: VehicleScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const VehicleFindUniqueArgsSchema: z.ZodType<Prisma.VehicleFindUniqueArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  where: VehicleWhereUniqueInputSchema,
+}).strict() ;
+
+export const VehicleFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.VehicleFindUniqueOrThrowArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  where: VehicleWhereUniqueInputSchema,
+}).strict() ;
+
+export const VehiclePictureFindFirstArgsSchema: z.ZodType<Prisma.VehiclePictureFindFirstArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  where: VehiclePictureWhereInputSchema.optional(),
+  orderBy: z.union([ VehiclePictureOrderByWithRelationInputSchema.array(),VehiclePictureOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehiclePictureWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ VehiclePictureScalarFieldEnumSchema,VehiclePictureScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const VehiclePictureFindFirstOrThrowArgsSchema: z.ZodType<Prisma.VehiclePictureFindFirstOrThrowArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  where: VehiclePictureWhereInputSchema.optional(),
+  orderBy: z.union([ VehiclePictureOrderByWithRelationInputSchema.array(),VehiclePictureOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehiclePictureWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ VehiclePictureScalarFieldEnumSchema,VehiclePictureScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const VehiclePictureFindManyArgsSchema: z.ZodType<Prisma.VehiclePictureFindManyArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  where: VehiclePictureWhereInputSchema.optional(),
+  orderBy: z.union([ VehiclePictureOrderByWithRelationInputSchema.array(),VehiclePictureOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehiclePictureWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ VehiclePictureScalarFieldEnumSchema,VehiclePictureScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const VehiclePictureAggregateArgsSchema: z.ZodType<Prisma.VehiclePictureAggregateArgs> = z.object({
+  where: VehiclePictureWhereInputSchema.optional(),
+  orderBy: z.union([ VehiclePictureOrderByWithRelationInputSchema.array(),VehiclePictureOrderByWithRelationInputSchema ]).optional(),
+  cursor: VehiclePictureWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const VehiclePictureGroupByArgsSchema: z.ZodType<Prisma.VehiclePictureGroupByArgs> = z.object({
+  where: VehiclePictureWhereInputSchema.optional(),
+  orderBy: z.union([ VehiclePictureOrderByWithAggregationInputSchema.array(),VehiclePictureOrderByWithAggregationInputSchema ]).optional(),
+  by: VehiclePictureScalarFieldEnumSchema.array(),
+  having: VehiclePictureScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const VehiclePictureFindUniqueArgsSchema: z.ZodType<Prisma.VehiclePictureFindUniqueArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  where: VehiclePictureWhereUniqueInputSchema,
+}).strict() ;
+
+export const VehiclePictureFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.VehiclePictureFindUniqueOrThrowArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  where: VehiclePictureWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentFindFirstArgsSchema: z.ZodType<Prisma.DocumentFindFirstArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentScalarFieldEnumSchema,DocumentScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentFindFirstOrThrowArgsSchema: z.ZodType<Prisma.DocumentFindFirstOrThrowArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentScalarFieldEnumSchema,DocumentScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentFindManyArgsSchema: z.ZodType<Prisma.DocumentFindManyArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentScalarFieldEnumSchema,DocumentScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentAggregateArgsSchema: z.ZodType<Prisma.DocumentAggregateArgs> = z.object({
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const DocumentGroupByArgsSchema: z.ZodType<Prisma.DocumentGroupByArgs> = z.object({
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithAggregationInputSchema.array(),DocumentOrderByWithAggregationInputSchema ]).optional(),
+  by: DocumentScalarFieldEnumSchema.array(),
+  having: DocumentScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const DocumentFindUniqueArgsSchema: z.ZodType<Prisma.DocumentFindUniqueArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.DocumentFindUniqueOrThrowArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentTagFindFirstArgsSchema: z.ZodType<Prisma.DocumentTagFindFirstArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  where: DocumentTagWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentTagOrderByWithRelationInputSchema.array(),DocumentTagOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentTagWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentTagScalarFieldEnumSchema,DocumentTagScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentTagFindFirstOrThrowArgsSchema: z.ZodType<Prisma.DocumentTagFindFirstOrThrowArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  where: DocumentTagWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentTagOrderByWithRelationInputSchema.array(),DocumentTagOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentTagWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentTagScalarFieldEnumSchema,DocumentTagScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentTagFindManyArgsSchema: z.ZodType<Prisma.DocumentTagFindManyArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  where: DocumentTagWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentTagOrderByWithRelationInputSchema.array(),DocumentTagOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentTagWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentTagScalarFieldEnumSchema,DocumentTagScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentTagAggregateArgsSchema: z.ZodType<Prisma.DocumentTagAggregateArgs> = z.object({
+  where: DocumentTagWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentTagOrderByWithRelationInputSchema.array(),DocumentTagOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentTagWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const DocumentTagGroupByArgsSchema: z.ZodType<Prisma.DocumentTagGroupByArgs> = z.object({
+  where: DocumentTagWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentTagOrderByWithAggregationInputSchema.array(),DocumentTagOrderByWithAggregationInputSchema ]).optional(),
+  by: DocumentTagScalarFieldEnumSchema.array(),
+  having: DocumentTagScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const DocumentTagFindUniqueArgsSchema: z.ZodType<Prisma.DocumentTagFindUniqueArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  where: DocumentTagWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentTagFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.DocumentTagFindUniqueOrThrowArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  where: DocumentTagWhereUniqueInputSchema,
+}).strict() ;
+
 export const AccountCreateArgsSchema: z.ZodType<Prisma.AccountCreateArgs> = z.object({
   select: AccountSelectSchema.optional(),
   include: AccountIncludeSchema.optional(),
@@ -3555,4 +5644,168 @@ export const CompanyUpdateManyArgsSchema: z.ZodType<Prisma.CompanyUpdateManyArgs
 
 export const CompanyDeleteManyArgsSchema: z.ZodType<Prisma.CompanyDeleteManyArgs> = z.object({
   where: CompanyWhereInputSchema.optional(),
+}).strict() ;
+
+export const VehicleCreateArgsSchema: z.ZodType<Prisma.VehicleCreateArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  data: z.union([ VehicleCreateInputSchema,VehicleUncheckedCreateInputSchema ]),
+}).strict() ;
+
+export const VehicleUpsertArgsSchema: z.ZodType<Prisma.VehicleUpsertArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  where: VehicleWhereUniqueInputSchema,
+  create: z.union([ VehicleCreateInputSchema,VehicleUncheckedCreateInputSchema ]),
+  update: z.union([ VehicleUpdateInputSchema,VehicleUncheckedUpdateInputSchema ]),
+}).strict() ;
+
+export const VehicleCreateManyArgsSchema: z.ZodType<Prisma.VehicleCreateManyArgs> = z.object({
+  data: z.union([ VehicleCreateManyInputSchema,VehicleCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict() ;
+
+export const VehicleDeleteArgsSchema: z.ZodType<Prisma.VehicleDeleteArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  where: VehicleWhereUniqueInputSchema,
+}).strict() ;
+
+export const VehicleUpdateArgsSchema: z.ZodType<Prisma.VehicleUpdateArgs> = z.object({
+  select: VehicleSelectSchema.optional(),
+  include: VehicleIncludeSchema.optional(),
+  data: z.union([ VehicleUpdateInputSchema,VehicleUncheckedUpdateInputSchema ]),
+  where: VehicleWhereUniqueInputSchema,
+}).strict() ;
+
+export const VehicleUpdateManyArgsSchema: z.ZodType<Prisma.VehicleUpdateManyArgs> = z.object({
+  data: z.union([ VehicleUpdateManyMutationInputSchema,VehicleUncheckedUpdateManyInputSchema ]),
+  where: VehicleWhereInputSchema.optional(),
+}).strict() ;
+
+export const VehicleDeleteManyArgsSchema: z.ZodType<Prisma.VehicleDeleteManyArgs> = z.object({
+  where: VehicleWhereInputSchema.optional(),
+}).strict() ;
+
+export const VehiclePictureCreateArgsSchema: z.ZodType<Prisma.VehiclePictureCreateArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  data: z.union([ VehiclePictureCreateInputSchema,VehiclePictureUncheckedCreateInputSchema ]),
+}).strict() ;
+
+export const VehiclePictureUpsertArgsSchema: z.ZodType<Prisma.VehiclePictureUpsertArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  where: VehiclePictureWhereUniqueInputSchema,
+  create: z.union([ VehiclePictureCreateInputSchema,VehiclePictureUncheckedCreateInputSchema ]),
+  update: z.union([ VehiclePictureUpdateInputSchema,VehiclePictureUncheckedUpdateInputSchema ]),
+}).strict() ;
+
+export const VehiclePictureCreateManyArgsSchema: z.ZodType<Prisma.VehiclePictureCreateManyArgs> = z.object({
+  data: z.union([ VehiclePictureCreateManyInputSchema,VehiclePictureCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict() ;
+
+export const VehiclePictureDeleteArgsSchema: z.ZodType<Prisma.VehiclePictureDeleteArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  where: VehiclePictureWhereUniqueInputSchema,
+}).strict() ;
+
+export const VehiclePictureUpdateArgsSchema: z.ZodType<Prisma.VehiclePictureUpdateArgs> = z.object({
+  select: VehiclePictureSelectSchema.optional(),
+  include: VehiclePictureIncludeSchema.optional(),
+  data: z.union([ VehiclePictureUpdateInputSchema,VehiclePictureUncheckedUpdateInputSchema ]),
+  where: VehiclePictureWhereUniqueInputSchema,
+}).strict() ;
+
+export const VehiclePictureUpdateManyArgsSchema: z.ZodType<Prisma.VehiclePictureUpdateManyArgs> = z.object({
+  data: z.union([ VehiclePictureUpdateManyMutationInputSchema,VehiclePictureUncheckedUpdateManyInputSchema ]),
+  where: VehiclePictureWhereInputSchema.optional(),
+}).strict() ;
+
+export const VehiclePictureDeleteManyArgsSchema: z.ZodType<Prisma.VehiclePictureDeleteManyArgs> = z.object({
+  where: VehiclePictureWhereInputSchema.optional(),
+}).strict() ;
+
+export const DocumentCreateArgsSchema: z.ZodType<Prisma.DocumentCreateArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  data: z.union([ DocumentCreateInputSchema,DocumentUncheckedCreateInputSchema ]),
+}).strict() ;
+
+export const DocumentUpsertArgsSchema: z.ZodType<Prisma.DocumentUpsertArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
+  create: z.union([ DocumentCreateInputSchema,DocumentUncheckedCreateInputSchema ]),
+  update: z.union([ DocumentUpdateInputSchema,DocumentUncheckedUpdateInputSchema ]),
+}).strict() ;
+
+export const DocumentCreateManyArgsSchema: z.ZodType<Prisma.DocumentCreateManyArgs> = z.object({
+  data: z.union([ DocumentCreateManyInputSchema,DocumentCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict() ;
+
+export const DocumentDeleteArgsSchema: z.ZodType<Prisma.DocumentDeleteArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentUpdateArgsSchema: z.ZodType<Prisma.DocumentUpdateArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  data: z.union([ DocumentUpdateInputSchema,DocumentUncheckedUpdateInputSchema ]),
+  where: DocumentWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentUpdateManyArgsSchema: z.ZodType<Prisma.DocumentUpdateManyArgs> = z.object({
+  data: z.union([ DocumentUpdateManyMutationInputSchema,DocumentUncheckedUpdateManyInputSchema ]),
+  where: DocumentWhereInputSchema.optional(),
+}).strict() ;
+
+export const DocumentDeleteManyArgsSchema: z.ZodType<Prisma.DocumentDeleteManyArgs> = z.object({
+  where: DocumentWhereInputSchema.optional(),
+}).strict() ;
+
+export const DocumentTagCreateArgsSchema: z.ZodType<Prisma.DocumentTagCreateArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  data: z.union([ DocumentTagCreateInputSchema,DocumentTagUncheckedCreateInputSchema ]),
+}).strict() ;
+
+export const DocumentTagUpsertArgsSchema: z.ZodType<Prisma.DocumentTagUpsertArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  where: DocumentTagWhereUniqueInputSchema,
+  create: z.union([ DocumentTagCreateInputSchema,DocumentTagUncheckedCreateInputSchema ]),
+  update: z.union([ DocumentTagUpdateInputSchema,DocumentTagUncheckedUpdateInputSchema ]),
+}).strict() ;
+
+export const DocumentTagCreateManyArgsSchema: z.ZodType<Prisma.DocumentTagCreateManyArgs> = z.object({
+  data: z.union([ DocumentTagCreateManyInputSchema,DocumentTagCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict() ;
+
+export const DocumentTagDeleteArgsSchema: z.ZodType<Prisma.DocumentTagDeleteArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  where: DocumentTagWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentTagUpdateArgsSchema: z.ZodType<Prisma.DocumentTagUpdateArgs> = z.object({
+  select: DocumentTagSelectSchema.optional(),
+  include: DocumentTagIncludeSchema.optional(),
+  data: z.union([ DocumentTagUpdateInputSchema,DocumentTagUncheckedUpdateInputSchema ]),
+  where: DocumentTagWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentTagUpdateManyArgsSchema: z.ZodType<Prisma.DocumentTagUpdateManyArgs> = z.object({
+  data: z.union([ DocumentTagUpdateManyMutationInputSchema,DocumentTagUncheckedUpdateManyInputSchema ]),
+  where: DocumentTagWhereInputSchema.optional(),
+}).strict() ;
+
+export const DocumentTagDeleteManyArgsSchema: z.ZodType<Prisma.DocumentTagDeleteManyArgs> = z.object({
+  where: DocumentTagWhereInputSchema.optional(),
 }).strict() ;
