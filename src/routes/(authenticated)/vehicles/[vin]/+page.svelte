@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { FormattedVehicleData } from '../types';
 	import { Heading, P, Table, TableBody, TableBodyCell, TableBodyRow } from 'flowbite-svelte';
 
-	export let data: PageData;
+	export let data: FormattedVehicleData;
 </script>
 
 <Heading>VEHICLE INFORMATION</Heading>
