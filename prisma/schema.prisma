@@ -38,7 +38,7 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime 
+  expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -51,6 +51,10 @@ model User {
   accounts      Account[]
   sessions      Session[]
   companyUsers  CompanyUser[]
+
+  createdParts Part[] @relation("creationAuthor")
+  updatedParts Part[] @relation("updateAuthor")
+  deletedParts Part[] @relation("deletionAuthor")
 }
 
 model VerificationToken {
@@ -71,21 +75,20 @@ model CompanyUser {
 }
 
 model Client {
-  id          String     @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   email       String
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
   companyId   String
   company     Company @relation(fields: [companyId], references: [id])
-
 }
 
 model Company {
-  id      String      @id @default(cuid())
+  id      String        @id @default(cuid())
   name    String
   email   String?
-  isAdmin Boolean  @default(false)
+  isAdmin Boolean       @default(false)
   clients Client[]
   users   CompanyUser[]
 }
@@ -94,4 +97,104 @@ enum Role {
   STAFF
   ADMIN
   OWNER
+}
+
+// Inventory-related models.
+
+model Part {
+  id               String @id @default(cuid())
+  name             String
+  number           Int
+  criticalQty      Int
+  upc              Int
+  description      String @db.Text
+  extendedPartData Json?
+
+  // Built-in.
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // nullable field to simulate deletedAt built-in method.
+
+  categories CategoriesOnParts[]
+  locations  LocationsOnParts[]
+  vendors    VendorOnParts[]
+
+  createdBy String
+  updatedBy String
+  deletedBy String
+
+  // Relations.
+  creationAuthor User @relation("creationAuthor", fields: [createdBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updateAuthor   User @relation("updateAuthor", fields: [updatedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  deletionAuthor User @relation("deletionAuthor", fields: [deletedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Built-in.
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // nullable field to simulate deletedAt built-in method.
+
+  parts CategoriesOnParts[]
+}
+
+model Location {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Built-in.
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // nullable field to simulate deletedAt built-in method.
+
+  parts LocationsOnParts[]
+}
+
+model Vendor {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Built-in.
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // nullable field to simulate deletedAt built-in method.
+
+  parts VendorOnParts[]
+}
+
+model CategoriesOnParts {
+  part       Part     @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  partId     String   @unique
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  @@id([partId, categoryId])
+}
+
+model LocationsOnParts {
+  part       Part     @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  partId     String   @unique
+  Location   Location @relation(fields: [locationId], references: [id])
+  locationId Int
+
+  // Location-per-part fields.
+  quantity Int
+  unit     String
+
+  @@id([partId, locationId])
+}
+
+model VendorOnParts {
+  part     Part   @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  partId   String @unique
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+  vendorId Int
+
+  // Vendor-per-part price.
+  cost Float
+
+  @@id([partId, vendorId])
 }
