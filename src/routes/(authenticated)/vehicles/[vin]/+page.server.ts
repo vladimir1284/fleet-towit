@@ -1,10 +1,12 @@
 import axios from "axios"
 import { error as ErrorResponse } from "@sveltejs/kit"
+import type { FormattedVehicleData, VehicleDataEntry } from "../types.js"
 //import vehicleMock from "$lib/mocks/vehicle.json"
 
-const formatVehicleData = (data, vin) => {
-  const getValue = (data, variable) => {
-    return data.find(entry => entry.Variable === variable).Value
+const formatVehicleData = (data: VehicleDataEntry[], vin: string): FormattedVehicleData => {
+  const getValue = (data: VehicleDataEntry[], variable: string): string => {
+    const value = data.find((entry: VehicleDataEntry) => entry.Variable === variable)?.Value
+    return value || "N\\A"
   }
 
   return {
@@ -18,7 +20,7 @@ const formatVehicleData = (data, vin) => {
   }
 }
 
-export const load = async ({ params }) => {
+export const load = async ({ params }: { params: { vin: string } }) => {
   const vin = params.vin
 
   const URL = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`
@@ -33,7 +35,7 @@ export const load = async ({ params }) => {
     return data
   } catch (error) {
     return ErrorResponse(500, {
-      message: error.message
+      message: error instanceof Error? error.message: String(error)
     })
   }
 }
