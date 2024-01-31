@@ -110,6 +110,9 @@ model Part {
   description      String @db.Text
   extendedPartData Json?
 
+  // Amazon S3 services.
+  image String @db.Text
+
   // Built-in.
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -130,7 +133,7 @@ model Part {
 }
 
 model Category {
-  id   Int    @id @default(autoincrement())
+  id   String @id @default(cuid())
   name String @unique
 
   // Built-in.
@@ -142,7 +145,7 @@ model Category {
 }
 
 model Location {
-  id   Int    @id @default(autoincrement())
+  id   String @id @default(cuid())
   name String @unique
 
   // Built-in.
@@ -154,7 +157,7 @@ model Location {
 }
 
 model Vendor {
-  id   Int    @id @default(autoincrement())
+  id   String @id @default(cuid())
   name String @unique
 
   // Built-in.
@@ -169,7 +172,7 @@ model CategoriesOnParts {
   part       Part     @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   partId     String   @unique
   category   Category @relation(fields: [categoryId], references: [id])
-  categoryId Int
+  categoryId String
 
   @@id([partId, categoryId])
 }
@@ -178,7 +181,7 @@ model LocationsOnParts {
   part       Part     @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   partId     String   @unique
   Location   Location @relation(fields: [locationId], references: [id])
-  locationId Int
+  locationId String
 
   // Location-per-part fields.
   quantity Int
@@ -191,7 +194,7 @@ model VendorOnParts {
   part     Part   @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   partId   String @unique
   vendor   Vendor @relation(fields: [vendorId], references: [id])
-  vendorId Int
+  vendorId String
 
   // Vendor-per-part price.
   cost Float
