@@ -10,6 +10,10 @@ generator zod {
   output   = "../src/lib/zod"
 }
 
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
