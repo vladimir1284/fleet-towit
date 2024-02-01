@@ -5,6 +5,8 @@
 	import { createEventDispatcher } from 'svelte';
 
 	export let data;
+	export let selectedTenant;
+	let actionURL = '/api/tenants';
 
 	const dispatch = createEventDispatcher();
 
@@ -15,9 +17,14 @@
 			}
 		}
 	});
+	if (selectedTenant) {
+		$form.name = selectedTenant.name;
+		$form.email = selectedTenant.email;
+		actionURL = actionURL+`/${selectedTenant.id}`;
+	}
 </script>
 
-<form method="POST" use:enhance>
+<form method="POST" use:enhance action={actionURL}>
 	<div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
 		<input hidden name="id" bind:value={$form.id}/>
 		<div class="sm:col-span-2">
@@ -32,7 +39,7 @@
 				{...$constraints.name}
 			>
 				<BuildingSolid class="w-6 h-6 inline" />
-				Company name
+				Tenant name
 			</FloatingLabelInput>
 			{#if $errors.name}<span class="text-red-600">{$errors.name}</span>{/if}
 		</div>
@@ -48,12 +55,12 @@
 				{...$constraints.email}
 			>
 				<EnvelopeSolid class="w-6 h-6 inline" />
-				Company email
+				Tenant email
 			</FloatingLabelInput>
 			{#if $errors.email}<span class="text-red-600">{$errors.email}</span>{/if}
 		</div>
 		<div class="flex sm:col-span-2 justify-center items-center">
-			<Button type="submit" class="w-40">Create company</Button>
+			<Button type="submit" class="w-40">{!$form.id ? 'Create' : 'Update'} tenant</Button>
 		</div>
 	</div>
 </form>

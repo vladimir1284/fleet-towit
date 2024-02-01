@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
 import { sequence } from '@sveltejs/kit/hooks';
 import { handleErrorWithSentry, sentryHandle } from '@sentry/sveltekit';
@@ -5,7 +6,6 @@ import * as Sentry from '@sentry/sveltekit';
 import { type Handle } from '@sveltejs/kit';
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/core/providers/google';
-import { userContext } from '$lib/store/context-store';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -28,7 +28,7 @@ const handleAuth = (async(...args) => {
 	return SvelteKitAuth({
 		callbacks: {
 			async signIn({ user }) {
-				let guest = await prisma.user.findFirst({ where: { email: user.email } });
+				const guest = await prisma.user.findFirst({ where: { email: user.email } });
 				if (guest) {
 					return true;
 				} else {

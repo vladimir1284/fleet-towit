@@ -7,8 +7,9 @@
 
     const handleSubmit = async (event) => {
        event.preventDefault();
-       const response = await fetch(`./${data}`, {
+       const response = await fetch(`/api/tenants/users/${data}`, {
            method: 'DELETE',
+
        });
        if (!response.ok) {
            console.error('Failed to delete user');

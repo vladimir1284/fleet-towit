@@ -16,8 +16,10 @@
 	import CreateUserForm from '$lib/components/forms-components/users/CreateUserForm.svelte';
 	import DeleteUserForm from '$lib/components/forms-components/users/DeleteUserForm.svelte';
 	import type { PageData } from '../$types';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+
+	import { tenantActor } from '$lib/store/context-store';
+	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
 
 	export let data: PageData;
 	let tenants = [];
@@ -26,33 +28,36 @@
 	let createModal = false;
 	let editModal = false;
 	let deleteModal = false;
+	let selectedUser = undefined;
 	let selectedId = '';
 	let message = '';
 
 	let loading = true;
 
+	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
+	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+
 	onMount(async () => {
 		try {
-			console.log('cargando');
-			const response = await fetch('/api/tenants');
+			const response = await fetch('/api/tenants', { headers });
 			tenants = [...(await response.json())];
 			let usersList = await Promise.all(
 				tenants.map(async (tenant) => {
-					let tempList = await fetch(`/api/tenants/${tenant.id}/users`);
+					let tempList = await fetch(`/api/tenants/${tenant.id}/users`, { headers });
 					let tenantUsersList = await tempList.json();
 					let augmentedTenantUser = await Promise.all(
 						tenantUsersList.map(async (_user) => {
-							return {..._user, tenant}
+							return { ..._user, tenant };
 						})
 					);
-					return augmentedTenantUser;	
+					return augmentedTenantUser;
 				})
 			);
 			users = [...usersList.flat()];
-			loading = false; 
+			loading = false;
 		} catch (error) {
 			console.error('Error:', error);
-			loading = false; 
+			loading = false;
 		}
 	});
 
@@ -70,9 +75,8 @@
 		location.reload();
 	}
 
-	async function handleEdit(userId) {
-		await goto('/admin/users/' + userId);
-		selectedId = userId;
+	async function handleEdit(event) {
+		selectedUser = event.detail;
 		editModal = true;
 	}
 
@@ -80,12 +84,10 @@
 		editModal = event.detail;
 		handleAlert('User edited succesfully!');
 		location.reload();
-		
 	}
 
-	async function handleDelete(userId) {
-		await goto('/admin/users/' + userId);
-		selectedId = userId;
+	async function handleDelete(event) {
+		selectedId = event.detail;
 		deleteModal = true;
 	}
 
@@ -100,55 +102,33 @@
 	<p>Loading...</p>
 {:else}
 	<Modal size="xs" padding="md" bind:open={createModal}>
-		<CreateUserForm data={data} tenantsList={tenants} on:formvalid={handleCloseModal} />
+		<CreateUserForm {data} tenantsList={tenants} on:formvalid={handleCloseModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={editModal} on:close={handleCloseEditModal}>
-		<CreateUserForm data={data} tenantsList={tenants} on:formvalid={handleCloseEditModal} />
+		<CreateUserForm {data} tenantsList={tenants} selectedUser={selectedUser} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
 		<DeleteUserForm data={selectedId} on:formvalid={handleCloseDeleteModal} />
 	</Modal>
 
-	<div>
-		<Card size="9xl">
-			<Table>
-				<caption
-					class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
+	<Card size="xl" padding="lg" class="fixed w-full md:w-auto h-auto z-0">
+		<Table>
+			<caption
+				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
+			>
+				<GradientButton shadow color="blue" on:click={() => (createModal = true)}
+					>Create user</GradientButton
 				>
-					<GradientButton shadow color="blue" on:click={() => (createModal = true)}
-						>Create user</GradientButton
-					>
-				</caption>
-				<TableHead>
-					<TableHeadCell class="text-center">EMAIL</TableHeadCell>
-					<TableHeadCell class="text-center">NAME</TableHeadCell>
-					<TableHeadCell class="text-center">COMPANY</TableHeadCell>
-					<TableHeadCell class="text-center">ROLE</TableHeadCell>
-					<TableHeadCell class="text-center"></TableHeadCell>
-				</TableHead>
-				<TableBody class="divide-y">
-					{#each users as user}
-						<TableBodyRow>
-							<TableBodyCell class="text-center">{user.user.email}</TableBodyCell>
-							<TableBodyCell class="text-center">{user.user.name || '-'}</TableBodyCell>
-							<TableBodyCell class="text-center">{user.tenant?.name}</TableBodyCell>
-							<TableBodyCell class="text-center">{user.role}</TableBodyCell>
-							<TableBodyCell class=" flex w-32 justify-between">
-								<FileEditSolid class="text-gray-400" on:click={() => handleEdit(user.id)} />
-								<TrashBinSolid class="text-red-500" on:click={() => handleDelete(user.id)} />
-							</TableBodyCell>
-						</TableBodyRow>
-					{/each}
-				</TableBody>
-			</Table>
-		</Card>
+			</caption>
+			<UsersTable users={users} showOptions on:editUser={handleEdit} on:deleteUser={handleDelete}/>
+		</Table>
+	</Card>
 
-		{#if showAlert}
-			<Alert class="fixed bottom-0 right-0 m-4" color="green" dismissable>
-				{message}
-			</Alert>
-		{/if}
-	</div>
+	{#if showAlert}
+		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
+			{message}
+		</Alert>
+	{/if}
 {/if}

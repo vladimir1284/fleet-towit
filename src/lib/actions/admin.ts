@@ -4,7 +4,7 @@ import { Role } from "@prisma/client";
 type createTenantType = {name: string, email?: string | null};
 type createUserType = {email: string, tenantId: string, userRole?: Role};
 type editTenantType = createTenantType & {tenantId: string};
-type editUserType = createUserType & {tenantUserId: string}
+type editUserType = createUserType & {tenantUserId: string};
 
 export const createTenant = async({name, email=null, }: createTenantType) => {
     const obj = await bypassPrisma.tenant.create({data:{
@@ -38,7 +38,7 @@ export const updateTenantUser = async({tenantUserId, email, tenantId, userRole}:
     if (!user) {
         user = await bypassPrisma.user.create({data: {email: email}})
     } 
-    const tenantUser = await bypassPrisma.tenantUser.update({where:{id: tenantUserId}, data:{tenantId, role: userRole, userId: user.id}})
+    const tenantUser = await bypassPrisma.tenantUser.update({where:{id: tenantUserId}, data:{tenantId: tenantId, role: userRole, userId: user.id}})
     return tenantUser
 }
 
@@ -58,18 +58,18 @@ export const deleteUser = async({tenantUserId}: {tenantUserId: string}) => {
 }
 
 export const getTenantUser = async({tenantUserId}: {tenantUserId: string}) => {
-    let tenantUser = await bypassPrisma.tenantUser.findUnique({where: {id: tenantUserId}})
-    let user = await bypassPrisma.user.findUnique({where: {id: tenantUser?.userId}})
+    const tenantUser = await bypassPrisma.tenantUser.findUnique({where: {id: tenantUserId}})
+    const user = await bypassPrisma.user.findUnique({where: {id: tenantUser?.userId}})
     return {...tenantUser, user}
 }
 
 export const listTenants = async() => {
-    let tenants = await bypassPrisma.tenant.findMany();
-    let augmentedTenants = await Promise.all(tenants.map(async(tenant) => { 
+    const tenants = await bypassPrisma.tenant.findMany();
+    const augmentedTenants = await Promise.all(tenants.map(async(tenant) => { 
         let owner
-        let _owner = await bypassPrisma.tenantUser.findFirst({where:{AND:{tenantId: tenant.id, role: Role.OWNER}}})
+        const _owner = await bypassPrisma.tenantUser.findFirst({where:{AND:{tenantId: tenant.id, role: Role.OWNER}}})
         if (_owner) {
-            let user = await bypassPrisma.user.findUnique({where:{id: _owner.userId}})
+            const user = await bypassPrisma.user.findUnique({where:{id: _owner.userId}})
             owner = {..._owner, user}
         } else {
             owner = _owner

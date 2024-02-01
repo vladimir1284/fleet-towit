@@ -1,12 +1,19 @@
 <script lang="ts">
 	//@ts-nocheck
-	import AdminNavLink from './role-navlinks/Admin-navLink.svelte';
+	import { NavUl, NavLi } from 'flowbite-svelte';
 	import UserNavLink from './role-navlinks/User-navLink.svelte';
-	export let userData;
+	export let currentTenant;
 </script>
 
-{#if userData.tenantUsers[0].role === 'ADMIN' || userData.tenantUsers[0].role === 'OWNER'}
-	<AdminNavLink/>
-{:else}
-	<UserNavLink/>
-{/if}
+<NavUl>
+	<NavLi class="cursor-pointer" href="/dashboard">Home</NavLi>
+	{#if currentTenant.currentUserTenant.role === 'ADMIN' || currentTenant.currentUserTenant.role === 'OWNER'}
+		<NavLi class="cursor-pointer" href="/admin/users/">Users</NavLi>
+	{/if}
+	{#if currentTenant.isAdmin}
+		<NavLi class="cursor-pointer" href="/admin/tenants">Tenants</NavLi>
+	{:else}
+		<UserNavLink />
+	{/if}
+
+</NavUl>

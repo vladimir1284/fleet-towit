@@ -2,6 +2,7 @@ import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/prisma';
 import { getTenantUsers } from '$lib/actions/user';
+export const ssr = false;
 
 
 export const load: LayoutServerLoad = async (event) => {
@@ -10,7 +11,6 @@ export const load: LayoutServerLoad = async (event) => {
   const users = await getTenantUsers({ userId: session?.user.id || '' });
   if (!users.length) {
     await prisma.user.delete({ where: { id: session.user.id } })
-    delete session.user;
     throw redirect(307, '/logout')
   }
   return { session };

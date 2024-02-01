@@ -2,16 +2,14 @@
 	//@ts-nocheck
 	import { Card, Button } from 'flowbite-svelte';
 	import type { PageData } from './$types';
-	import  { companyActor } from '$lib/store/context-store';
 	import { goto } from '$app/navigation';
 	export let data: PageData;
 
+	import { tenantActor } from '$lib/store/context-store';
+
 	async function handleSelectTenant(tenant) {
-		console.log('sasasas', tenant)
-		companyActor.send({
-			type: 'company.update',
-			value: tenant
-		});
+		const currentUserTenant = data.session.user.tenantUsers.find(tenantUser => tenantUser.tenantId === tenant.id)
+		tenantActor.send({type:'tenant.update', value: {...tenant, currentUserTenant}})
 		await goto('/dashboard');
 	}
 </script>
