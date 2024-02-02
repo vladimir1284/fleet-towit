@@ -1,6 +1,6 @@
 <script>
 	import { Dropdown, DropdownItem, Avatar } from 'flowbite-svelte';
-	import { BellSolid, EyeSolid } from 'flowbite-svelte-icons';
+	import { BellSolid } from 'flowbite-svelte-icons';
 
 	let notifications = [
 		{

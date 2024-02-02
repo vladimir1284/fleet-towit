@@ -10,6 +10,10 @@ generator zod {
   output   = "../src/lib/zod"
 }
 
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -50,7 +54,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  companyUsers  CompanyUser[]
+  tenantUsers   TenantUser[]
 }
 
 model VerificationToken {
@@ -61,11 +65,11 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model CompanyUser {
+model TenantUser {
   id        String  @id @default(cuid())
   role      Role    @default(STAFF)
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tenantId  String
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId    String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -76,18 +80,18 @@ model Client {
   email       String
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
-  companyId   String
-  company     Company @relation(fields: [companyId], references: [id])
+  tenantId    String
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
 
 }
 
-model Company {
-  id      String      @id @default(cuid())
-  name    String
-  email   String?
-  isAdmin Boolean  @default(false)
-  clients Client[]
-  users   CompanyUser[]
+model Tenant {
+  id          String       @id @default(cuid())
+  name        String
+  email       String?
+  isAdmin     Boolean      @default(false)
+  clients     Client[]
+  tenantUsers TenantUser[] 
 }
 
 enum Role {
