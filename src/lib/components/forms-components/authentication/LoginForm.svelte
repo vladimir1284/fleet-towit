@@ -13,7 +13,7 @@
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
-				signIn('email', { email: form.data.email, callbackUrl: '/select-company' });
+				signIn('email', { email: form.data.email, callbackUrl: '/select-tenant' });
 			}
 		}
 	});

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
 import { sequence } from '@sveltejs/kit/hooks';
 import { handleErrorWithSentry, sentryHandle } from '@sentry/sveltekit';
@@ -5,7 +6,6 @@ import * as Sentry from '@sentry/sveltekit';
 import { type Handle } from '@sveltejs/kit';
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/core/providers/google';
-import { userContext } from '$lib/store/context-store';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -20,7 +20,7 @@ import {
 import EmailProvider from '@auth/core/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
-import { getCompanyUsers } from '$lib/actions/user';
+import { getTenantUsers } from '$lib/actions/user';
 const prisma = new PrismaClient();
 
 const handleAuth = (async(...args) => {
@@ -28,7 +28,7 @@ const handleAuth = (async(...args) => {
 	return SvelteKitAuth({
 		callbacks: {
 			async signIn({ user }) {
-				let guest = await prisma.user.findFirst({ where: { email: user.email } });
+				const guest = await prisma.user.findFirst({ where: { email: user.email } });
 				if (guest) {
 					return true;
 				} else {
@@ -40,13 +40,13 @@ const handleAuth = (async(...args) => {
 				}
 			},
 			async session({ session, user }) {
-				const companyUsers = await getCompanyUsers({userId: user.id})
+				const tenantUsers = await getTenantUsers({userId: user.id})
 				session.user = {
 					id: user.id,
 					name: user.name,
 					email: user.email,
 					image: user.image,
-					companyUsers,
+					tenantUsers,
 				};
 				event.locals.session = session;
 				return session;

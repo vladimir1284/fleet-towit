@@ -1,15 +1,10 @@
 <script>
+// @ts-nocheck
+
 	import { Chart, Card, A, Button, Dropdown, DropdownItem, Popover } from 'flowbite-svelte';
 	import {
-		InfoCircleSolid,
 		ChevronDownSolid,
 		ChevronRightSolid,
-		PenSolid,
-		DownloadSolid,
-		ShareNodesSolid,
-		TrashBinSolid,
-		DotsHorizontalOutline,
-		ArrowUpSolid
 	} from 'flowbite-svelte-icons';
 
 	let options = {
