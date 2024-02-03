@@ -60,8 +60,6 @@ async function main() {
 	for (const user of users_admin) {
 		await createTenantUser(user);
 	}
-
-
 }
 main()
 	.then(async () => {
