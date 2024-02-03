@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PrismaClient } from '@prisma/client';
 import { createTenantUser } from '$lib/actions/admin';
 import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
@@ -9,71 +8,57 @@ const prisma = bypassPrisma;
  * To run this function use: npx prisma db seed
  */
 async function main() {
-	const existingAdminTenant = await prisma.tenant.findFirst({
+	let existingAdminTenant = await prisma.tenant.findFirst({
 		where: {
 			name: 'admin'
 		}
 	});
 
 	if (!existingAdminTenant) {
-		const admin_tenant = await prisma.tenant.create({
+		existingAdminTenant = await prisma.tenant.create({
 			data: {
 				name: 'admin',
 				email: 'gissell111284@gmail.com',
 				isAdmin: true
 			}
 		});
-		const admin_user_0 = await createTenantUser({
+	}
+
+	const users_admin = [
+		{
 			email: 'gsg2604@gmail.com',
 			userRole: Role.ADMIN,
-			tenantId: admin_tenant.id
-		});
-		const admin_user_1 = await createTenantUser({
+			tenantId: existingAdminTenant.id
+		},
+		{
 			email: 'luis.ulloa75360@gmail.com',
 			userRole: Role.ADMIN,
-			tenantId: admin_tenant.id
-		});
-		const admin_user_3 = await createTenantUser({
+			tenantId: existingAdminTenant.id
+		},
+		{
 			email: 'vladimir.rdguez@gmail.com',
 			userRole: Role.ADMIN,
-			tenantId: admin_tenant.id
-		});
-		const admin_user_4 = await createTenantUser({
+			tenantId: existingAdminTenant.id
+		},
+		{
 			email: 'raulodev@gmail.com',
 			userRole: Role.ADMIN,
-			tenantId: admin_tenant.id
-		});
-		const admin_user_5 = await createTenantUser({
+			tenantId: existingAdminTenant.id
+		},
+		{
 			email: 'ymansfarroll@gmail.com',
 			userRole: Role.ADMIN,
-			tenantId: admin_tenant.id
-		});
-	} else {
-		const admin_user_0 = await createTenantUser({
+			tenantId: existingAdminTenant.id
+		},
+		{
 			email: 'gissell1184@gmail.com',
 			userRole: Role.ADMIN,
 			tenantId: existingAdminTenant.id
-		});
-		const admin_user_1 = await createTenantUser({
-			email: 'vladimir.rdguez@gmail.com',
-			userRole: Role.ADMIN,
-			tenantId: existingAdminTenant.id
-		});
-		const admin_user_3 = await createTenantUser({
-			email: 'luis.ulloa75360@gmail.com',
-			userRole: Role.ADMIN,
-			tenantId: existingAdminTenant.id
-		});
-		const admin_user_4 = await createTenantUser({
-			email: 'raulodev@gmail.com',
-			userRole: Role.ADMIN,
-			tenantId: existingAdminTenant.id
-		});
-		const admin_user_5 = await createTenantUser({
-			email: 'ymansfarroll@gmail.com',
-			userRole: Role.ADMIN,
-			tenantId: existingAdminTenant.id
-		});
+		}
+	];
+
+	for (const user of users_admin) {
+		await createTenantUser(user);
 	}
 
 
