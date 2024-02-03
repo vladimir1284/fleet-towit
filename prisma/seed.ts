@@ -5,6 +5,9 @@ import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
 const prisma = bypassPrisma;
 
+/**
+ * To run this function use: npx prisma db seed
+ */
 async function main() {
 	const existingAdminTenant = await prisma.tenant.findFirst({
 		where: {
@@ -35,6 +38,11 @@ async function main() {
 			userRole: Role.ADMIN,
 			tenantId: admin_tenant.id
 		});
+		const admin_user_4 = await createTenantUser({
+			email: 'raulodev@gmail.com',
+			userRole: Role.ADMIN,
+			tenantId: admin_tenant.id
+		});
 		const admin_user_5 = await createTenantUser({
 			email: 'ymansfarroll@gmail.com',
 			userRole: Role.ADMIN,
@@ -56,12 +64,19 @@ async function main() {
 			userRole: Role.ADMIN,
 			tenantId: existingAdminTenant.id
 		});
+		const admin_user_4 = await createTenantUser({
+			email: 'raulodev@gmail.com',
+			userRole: Role.ADMIN,
+			tenantId: existingAdminTenant.id
+		});
 		const admin_user_5 = await createTenantUser({
 			email: 'ymansfarroll@gmail.com',
 			userRole: Role.ADMIN,
 			tenantId: existingAdminTenant.id
 		});
 	}
+
+
 }
 main()
 	.then(async () => {
