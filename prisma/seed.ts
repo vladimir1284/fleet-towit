@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PrismaClient } from '@prisma/client';
 import { createTenantUser } from '$lib/actions/admin';
 import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
@@ -54,10 +53,8 @@ async function main() {
 	];
 
 	for (const user of users_admin) {
-		await createTenantUser(user)
+		await createTenantUser(user);
 	}
-
-
 }
 main()
 	.then(async () => {
