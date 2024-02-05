@@ -1,12 +1,6 @@
 <script>
 	// @ts-nocheck
-	import {
-		Button,
-		Label,
-		Fileupload,
-		Avatar,
-		FloatingLabelInput
-	} from 'flowbite-svelte';
+	import { Button, Label, Fileupload, Avatar, FloatingLabelInput } from 'flowbite-svelte';
 	import { EnvelopeSolid, UserSolid } from 'flowbite-svelte-icons';
 	let show = false;
 	/**

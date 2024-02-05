@@ -106,7 +106,12 @@
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={editModal} on:close={handleCloseEditModal}>
-		<CreateUserForm {data} tenantsList={tenants} selectedUser={selectedUser} on:formvalid={handleCloseEditModal} />
+		<CreateUserForm
+			{data}
+			tenantsList={tenants}
+			{selectedUser}
+			on:formvalid={handleCloseEditModal}
+		/>
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
@@ -122,7 +127,7 @@
 					>Create user</GradientButton
 				>
 			</caption>
-			<UsersTable users={users} showOptions on:editUser={handleEdit} on:deleteUser={handleDelete}/>
+			<UsersTable {users} showOptions on:editUser={handleEdit} on:deleteUser={handleDelete} />
 		</Table>
 	</Card>
 

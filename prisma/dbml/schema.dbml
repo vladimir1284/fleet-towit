@@ -84,6 +84,7 @@ Table Tenant {
 Table CustomForm {
   id Int [pk, increment]
   userId String [not null]
+  name String [not null]
   user User [not null]
   createdAt DateTime [default: `now()`, not null]
   fields CustomField [not null]

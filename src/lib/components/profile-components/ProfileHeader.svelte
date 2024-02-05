@@ -13,7 +13,6 @@
 	}
 </script>
 
-
 <div class="flex">
 	<Button class="text-black focus:ring-0 w-10 h-10" color="none" outline={false} pill={false}>
 		{#if userData && userData.name !== null}
@@ -26,12 +25,14 @@
 	<Dropdown>
 		<div slot="header" class="px-4 py-2">
 			<span class="block text-sm text-gray-900 dark:text-white">{userData.email}</span>
-			<span class="block truncate text-xs font-small">{userData?.tenantUsers[0].tenant.name}</span
-			>
+			<span class="block truncate text-xs font-small">{userData?.tenantUsers[0].tenant.name}</span>
 		</div>
 		<DropdownItem>Dashboard</DropdownItem>
 		<DropdownItem href="/profile">Profile</DropdownItem>
 		<DropdownItem on:click={handleSignOut}>Sign out</DropdownItem>
 	</Dropdown>
-	<Avatar src="https://minios3.crabdance.com/develop/users/{userData.id}/{userData.image}" rounded />
+	<Avatar
+		src="https://minios3.crabdance.com/develop/users/{userData.id}/{userData.image}"
+		rounded
+	/>
 </div>

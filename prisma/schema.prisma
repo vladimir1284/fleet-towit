@@ -104,6 +104,7 @@ enum Role {
 model CustomForm {
   id        Int           @id @default(autoincrement())
   userId    String
+  name      String
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime      @default(now())
   fields    CustomField[]

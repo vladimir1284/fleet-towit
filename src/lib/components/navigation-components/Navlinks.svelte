@@ -15,5 +15,4 @@
 	{:else}
 		<UserNavLink />
 	{/if}
-
 </NavUl>

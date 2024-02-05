@@ -23,8 +23,8 @@ import { PrismaClient } from '@prisma/client';
 import { getTenantUsers } from '$lib/actions/user';
 const prisma = new PrismaClient();
 
-const handleAuth = (async(...args) => {
-	const [{event}] = args;
+const handleAuth = (async (...args) => {
+	const [{ event }] = args;
 	return SvelteKitAuth({
 		callbacks: {
 			async signIn({ user }) {
@@ -40,17 +40,17 @@ const handleAuth = (async(...args) => {
 				}
 			},
 			async session({ session, user }) {
-				const tenantUsers = await getTenantUsers({userId: user.id})
+				const tenantUsers = await getTenantUsers({ userId: user.id });
 				session.user = {
 					id: user.id,
 					name: user.name,
 					email: user.email,
 					image: user.image,
-					tenantUsers,
+					tenantUsers
 				};
 				event.locals.session = session;
 				return session;
-			},
+			}
 		},
 		adapter: PrismaAdapter(prisma),
 		providers: [
@@ -75,18 +75,18 @@ const handleAuth = (async(...args) => {
 		pages: {
 			signIn: '/signin',
 			error: '/error', // Error code passed in query string as ?error=
-			verifyRequest: '/verifyRequest',
+			verifyRequest: '/verifyRequest'
 		},
 		trustHost: true,
 		secret: AUTH_SECRET
-	})(...args)
+	})(...args);
 }) satisfies Handle;
 
-if (ENVIRONMENT==="Production") {
+if (ENVIRONMENT === 'Production') {
 	Sentry.init({
 		dsn: 'https://264c6d3e8448a85d1a3717e5ef22a502@o4506418139299840.ingest.sentry.io/4506418143035392',
 		tracesSampleRate: 1.0
-	});		
+	});
 }
 // If you have custom handlers, make sure to place them after `sentryHandle()` in the `sequence` function.
 export const handle = sequence(sentryHandle(), handleAuth);
