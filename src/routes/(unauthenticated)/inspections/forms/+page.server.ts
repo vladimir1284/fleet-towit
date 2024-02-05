@@ -2,20 +2,22 @@ import { redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { z } from 'zod';
 import { superValidate } from 'sveltekit-superforms/server';
-import { fetchCustomFormByUser, createNewCustomForm } from '$lib/actions/custom-forms';
+import { fetchCustomFormsByUser, createNewCustomForm } from '$lib/actions/custom-forms';
 
+// schema
 const createFormSchema = z.object({
 	form_name: z.string()
 });
 
 export async function load({ url, locals }) {
+	// check user session
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(307, '/signin');
 
 	const form = await superValidate(createFormSchema);
 
-	const customForms = await fetchCustomFormByUser({ userId: session.user.id });
+	// retrieve form
+	const customForms = await fetchCustomFormsByUser({ userId: session.user.id });
 
 	return { form, customForms };
 }

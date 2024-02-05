@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { PageData, ActionData } from './$types';
+	import type { PageData } from './$types';
 	import type { CustomForm } from '@prisma/client';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { page } from '$app/stores';
 
 	export let data: PageData;
 
-	const { form } = superForm(data.form);
+	const { form, constraints } = superForm(data.form);
 
 	import {
 		Table,
@@ -43,6 +43,7 @@
 					placeholder="Type here"
 					required
 					bind:value={$form.form_name}
+					{...$constraints.form_name}
 				/>
 
 				<Button type="submit">Save</Button>
