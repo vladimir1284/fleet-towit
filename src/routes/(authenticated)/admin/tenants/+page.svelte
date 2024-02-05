@@ -56,8 +56,8 @@
 	}
 
 	async function handleUsers(tenant) {
-		const tempList = await fetch(`/api/tenants/${tenant.id}/users`, {headers});
-		selectedTenantUsersList = await tempList.json()
+		const tempList = await fetch(`/api/tenants/${tenant.id}/users`, { headers });
+		selectedTenantUsersList = await tempList.json();
 		showUsers = true;
 	}
 
@@ -133,7 +133,10 @@
 						<TableBodyCell class="text-center">{tenant.name}</TableBodyCell>
 						<TableBodyCell class="text-center">{tenant.email}</TableBodyCell>
 						<TableBodyCell class="text-center">{tenant.owner?.email || '-'}</TableBodyCell>
-						<TableBodyCell class="text-center text-blue-500 cursor-pointer" on:click={() => handleUsers(tenant)}>
+						<TableBodyCell
+							class="text-center text-blue-500 cursor-pointer"
+							on:click={() => handleUsers(tenant)}
+						>
 							See users
 						</TableBodyCell>
 						<TableBodyCell class="flex w-32 justify-between">

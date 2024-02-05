@@ -5,20 +5,18 @@
 	export let data;
 	const dispatch = createEventDispatcher();
 
-    const handleSubmit = async (event) => {
-       event.preventDefault();
-       const response = await fetch(`/api/tenants/users/${data}`, {
-           method: 'DELETE',
-
-       });
-       if (!response.ok) {
-           console.error('Failed to delete user');
-           return;
-       }
-       console.log('User deleted successfully');
-       dispatch('formvalid',false)
-   };
-
+	const handleSubmit = async (event) => {
+		event.preventDefault();
+		const response = await fetch(`/api/tenants/users/${data}`, {
+			method: 'DELETE'
+		});
+		if (!response.ok) {
+			console.error('Failed to delete user');
+			return;
+		}
+		console.log('User deleted successfully');
+		dispatch('formvalid', false);
+	};
 </script>
 
 <div class="flex flex-col justify-center align-center space-y-6">
