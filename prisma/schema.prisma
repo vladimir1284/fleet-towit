@@ -56,9 +56,11 @@ model User {
   sessions      Session[]
   tenantUsers   TenantUser[]
 
-  createdParts Part[] @relation("creationAuthor")
-  updatedParts Part[] @relation("updateAuthor")
-  deletedParts Part[] @relation("deletionAuthor")
+  createdParts Part[]       @relation("creationAuthor")
+  updatedParts Part[]       @relation("updateAuthor")
+  deletedParts Part[]       @relation("deletionAuthor")
+  customForms          CustomForm[]
+  customFieldResponses CustomFieldResponse[]
 }
 
 model VerificationToken {
@@ -225,4 +227,40 @@ model VendorOnParts {
   cost Float
 
   @@id([partId, vendorId])
+}
+
+
+model CustomForm {
+  id        Int           @id @default(autoincrement())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  fields    CustomField[]
+}
+
+enum FormFieldType {
+  TEXT
+  NUMBER
+  RADIO
+  CHECKBOX
+}
+
+model CustomField {
+  id        Int                   @id @default(autoincrement())
+  name      String
+  type      FormFieldType
+  required  Boolean?              @default(true)
+  formId    Int
+  form      CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  responses CustomFieldResponse[]
+}
+
+model CustomFieldResponse {
+  id        Int         @id @default(autoincrement())
+  content   String
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fieldId   Int
+  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
 }
