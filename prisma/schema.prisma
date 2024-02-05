@@ -87,8 +87,7 @@ model Client {
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
   tenantId    String
-  tenant      Tenant @relation(fields: [tenantId], references: [id])
-
+  tenant      Tenant  @relation(fields: [tenantId], references: [id])
 }
 
 model Tenant {
