@@ -11,8 +11,13 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
+<<<<<<< HEAD
 		"test:unit": "vitest",
 		"migrate": "npx prisma migrate dev --name"
+=======
+		"test:unit": "vitest" ,
+		"migrate" : "npx prisma migrate dev --name"
+>>>>>>> add migrate cmd in package.json
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^4.5.10",
