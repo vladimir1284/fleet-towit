@@ -4,15 +4,13 @@ import type { PageServerLoad } from './$types';
 import { z } from 'zod';
 
 const fixSchema = z.object({
-  name: z.string(),
-  email: z.string().email(),
-  id: z.string().optional(),
-})
-
+	name: z.string(),
+	email: z.string().email(),
+	id: z.string().optional()
+});
 
 export const load = (async () => {
-  const form = await superValidate(fixSchema);
-  
-  return { form: form}
+	const form = await superValidate(fixSchema);
 
-}) satisfies PageServerLoad
+	return { form: form };
+}) satisfies PageServerLoad;

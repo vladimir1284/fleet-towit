@@ -165,12 +165,14 @@
 </script>
 
 {#if underDevelopment}
-<Section name="maintenance">
-	<Maintenance>
-		<svelte:fragment slot="h1">Under Maintenance</svelte:fragment>
-		<svelte:fragment slot="paragraph">Our Enterprise administrators are performing scheduled maintenance.</svelte:fragment>
-	</Maintenance>
-</Section>
+	<Section name="maintenance">
+		<Maintenance>
+			<svelte:fragment slot="h1">Under Maintenance</svelte:fragment>
+			<svelte:fragment slot="paragraph"
+				>Our Enterprise administrators are performing scheduled maintenance.</svelte:fragment
+			>
+		</Maintenance>
+	</Section>
 {:else}
 	<Card padding="md" size="xl" class="grid md:grid-cols-2">
 		<div class="flex justify-between items-start w-full">
