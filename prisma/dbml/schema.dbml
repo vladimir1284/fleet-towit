@@ -84,10 +84,7 @@ Table Tenant {
 Table CustomForm {
   id Int [pk, increment]
   userId String [not null]
-<<<<<<< HEAD
   name String [not null]
-=======
->>>>>>> add migrate cmd in package.json
   user User [not null]
   createdAt DateTime [default: `now()`, not null]
   fields CustomField [not null]
