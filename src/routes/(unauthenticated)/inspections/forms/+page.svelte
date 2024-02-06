@@ -9,7 +9,6 @@
 	const { form, constraints } = superForm(data.form);
 
 	import {
-		Table,
 		TableBody,
 		TableBodyCell,
 		TableBodyRow,

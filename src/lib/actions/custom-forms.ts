@@ -11,6 +11,14 @@ const selectTenantUser = async (userId: string) => {
 	return tenantUser;
 };
 
+const getFieldType = (type: 'text' | 'number') => {
+	let fieldType;
+	if (type === 'number') fieldType = FormFieldType.NUMBER;
+	else fieldType = FormFieldType.TEXT;
+
+	return fieldType;
+};
+
 export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: string }) => {
 	const tenantUser = await bypassPrisma.tenantUser.findFirst({
 		where: {
@@ -71,16 +79,11 @@ export const addFieldToCustomFrom = async ({
 	formId: number;
 	cardType: 'number' | 'text';
 }) => {
-	let fieldType;
-
-	if (cardType === 'number') fieldType = FormFieldType.NUMBER;
-	else fieldType = FormFieldType.TEXT;
-
 	await bypassPrisma.customField.create({
 		data: {
 			formId: formId,
 			name: name,
-			type: fieldType
+			type: getFieldType(cardType)
 		}
 	});
 };
@@ -147,6 +150,32 @@ export const renameCustomForm = async ({
 			tenantUserId: tenantUser.id
 		},
 		data: {
+			name: newName
+		}
+	});
+};
+
+export const updateCustomField = async ({
+	cardId,
+	cardType,
+	newName,
+	userId
+}: {
+	cardId: number;
+	cardType: 'text' | 'number';
+	newName: string;
+	userId: string;
+}) => {
+	const tenantUser = await selectTenantUser(userId);
+
+	if (!tenantUser) return;
+
+	await bypassPrisma.customField.update({
+		where: {
+			id: cardId
+		},
+		data: {
+			type: getFieldType(cardType),
 			name: newName
 		}
 	});

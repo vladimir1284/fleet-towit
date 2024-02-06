@@ -15,14 +15,28 @@
 
 	const { form, constraints } = superForm(data.form);
 
+	// modals
 	let openDeleteFormModal = false;
+	let openDeleteCardModal = false;
 
-	let isEditNameForm = false;
+	// edit form name
+	let isEditFormName = false;
 	let formName = data.customForm.name;
 
-	let openDeleteCardModal = false;
+	// edit card
+	let isEditCard = false;
+	let cardTypeSelect;
+	let newCardName;
+	const setCardTypeToEdit = (fieldType: FormFieldType) => {
+		if (fieldType === FormFieldType.TEXT) cardTypeSelect = 'text';
+
+		if (fieldType === FormFieldType.NUMBER) cardTypeSelect = 'number';
+	};
+
+	// delete and edit card
 	let idCardSelected;
 
+	// select component
 	let selected;
 	let cardTypes = [
 		{ value: 'number', name: 'Data Entry Numeric' },
@@ -32,7 +46,8 @@
 
 <section class="flex flex-col gap-4 w-2/3 pb-10">
 	<div class="flex justify-between shadow bg-white p-6 rounded-lg">
-		{#if isEditNameForm}
+		{#if isEditFormName}
+			<!-- Form -->
 			<form class="inline-flex gap-4 w-1/2" method="post" action="?/renameForm">
 				<Input
 					bind:value={data.customForm.name}
@@ -46,7 +61,7 @@
 					<CheckOutline class="h-5 w-5" />
 				</Button>
 				<Button
-					on:click={() => (isEditNameForm = false)}
+					on:click={() => (isEditFormName = false)}
 					type="submit"
 					outline
 					size="xs"
@@ -55,6 +70,7 @@
 					<CloseOutline class="h-5 w-5" />
 				</Button>
 			</form>
+			<!-- Form -->
 		{:else}
 			<h5
 				class="text-2xl inline-flex gap-4 font-bold break-all text-gray-900 dark:text-white w-1/2"
@@ -62,7 +78,7 @@
 				{formName}
 
 				<Button outline size="xs" color="light" class="h-max">
-					<PenOutline on:click={() => (isEditNameForm = true)} class="h-5 w-5" />
+					<PenOutline on:click={() => (isEditFormName = true)} class="h-5 w-5" />
 				</Button>
 			</h5>
 		{/if}
@@ -77,49 +93,100 @@
 	</div>
 
 	<div class="flex gap-4">
-		<div class="min-w-96 w-1/2 h-max bg-white rounded-lg shadow p-6">
-			<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Add card</h5>
-			<div>
-				<Label>
-					Select an option
-					<Select class="mt-2" items={cardTypes} bind:value={selected} />
-				</Label>
-				<Helper class="mt-2">
-					{#if selected === 'number'}
-						User is able to input numeric data.
-					{:else if selected === 'text'}
-						User is able to input alphanumeric data.
-					{/if}
-				</Helper>
-			</div>
+		{#if isEditCard}
+			<!-- Edit Card -->
+			<div class="min-w-96 w-1/2 h-max bg-white rounded-lg shadow p-6">
+				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+					Edit card
+				</h5>
+				<div>
+					<Label>
+						Select an option
+						<Select class="mt-2" items={cardTypes} bind:value={cardTypeSelect} />
+					</Label>
+					<Helper class="mt-2">
+						{#if selected === 'number'}
+							User is able to input numeric data.
+						{:else if selected === 'text'}
+							User is able to input alphanumeric data.
+						{/if}
+					</Helper>
+				</div>
 
-			{#if selected}
 				<div class="border-t mt-4 py-4">
-					<form method="post" class="space-y-4" action="?/addField">
-						<input name="form_id" type="hidden" bind:value={data.customForm.id} />
-						<input name="card_type" type="hidden" bind:value={selected} />
-						{#if selected === 'number' || selected === 'text'}
+					<!-- Form -->
+					<form method="post" class="space-y-4" action="?/updateField">
+						<input name="card_type" type="hidden" bind:value={cardTypeSelect} />
+						<input name="card_id" type="hidden" bind:value={idCardSelected} />
+						{#if cardTypeSelect === 'number' || cardTypeSelect === 'text'}
 							<Label class="space-y-2">
 								<span>Card name*</span>
 								<Input
-									name="card_name"
+									name="new_card_name"
 									type="text"
 									placeholder="Type here"
-									{...$constraints.card_name}
-									bind:value={$form.card_name}
+									bind:value={newCardName}
 								/>
 							</Label>
 						{/if}
 
 						<div class="inline-flex gap-4">
-							<Button on:click={() => (selected = '')} outline color="red">Cancel</Button>
-							<Button type="submit" color="blue">Add</Button>
+							<Button on:click={() => (isEditCard = false)} outline color="red">Cancel</Button>
+							<Button type="submit" color="blue">Update</Button>
 						</div>
 					</form>
+					<!-- Form -->
 				</div>
-			{/if}
-		</div>
+			</div>
+		{:else}
+			<!-- Add Card  -->
+			<div class="min-w-96 w-1/2 h-max bg-white rounded-lg shadow p-6">
+				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+					Add card
+				</h5>
+				<div>
+					<Label>
+						Select an option
+						<Select class="mt-2" items={cardTypes} bind:value={selected} />
+					</Label>
+					<Helper class="mt-2">
+						{#if selected === 'number'}
+							User is able to input numeric data.
+						{:else if selected === 'text'}
+							User is able to input alphanumeric data.
+						{/if}
+					</Helper>
+				</div>
 
+				{#if selected}
+					<div class="border-t mt-4 py-4">
+						<form method="post" class="space-y-4" action="?/addField">
+							<input name="form_id" type="hidden" bind:value={data.customForm.id} />
+							<input name="card_type" type="hidden" bind:value={selected} />
+							{#if selected === 'number' || selected === 'text'}
+								<Label class="space-y-2">
+									<span>Card name*</span>
+									<Input
+										name="card_name"
+										type="text"
+										placeholder="Type here"
+										{...$constraints.card_name}
+										bind:value={$form.card_name}
+									/>
+								</Label>
+							{/if}
+
+							<div class="inline-flex gap-4">
+								<Button on:click={() => (selected = '')} outline color="red">Cancel</Button>
+								<Button type="submit" color="blue">Add</Button>
+							</div>
+						</form>
+					</div>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- List Cards -->
 		<div class="min-w-96 w-1/2 bg-white rounded-lg shadow p-6 h-max">
 			<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
 				Cards ({data.customForm.fields.length})
@@ -149,7 +216,17 @@
 							>
 								<TrashBinOutline class="h-4 w-4" />
 							</Button>
-							<Button outline size="xs" color="light">
+							<Button
+								on:click={() => {
+									isEditCard = true;
+									newCardName = field.name;
+									idCardSelected = field.id;
+									setCardTypeToEdit(field.type);
+								}}
+								outline
+								size="xs"
+								color="light"
+							>
 								<PenOutline class="h-4 w-4" />
 							</Button>
 						</div>
@@ -166,6 +243,7 @@
 			<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
 				Are you sure you want to delete this card ?
 			</h3>
+			<!-- Form -->
 			<form method="post" action="?/deleteCard">
 				<input type="hidden" bind:value={idCardSelected} name="card_id" />
 				<input type="hidden" value={data.customForm.id} name="form_id" />
@@ -175,6 +253,7 @@
 					>No, cancel</Button
 				>
 			</form>
+			<!-- Form -->
 		</div>
 	</Modal>
 
@@ -185,6 +264,7 @@
 			<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
 				Are you sure you want to delete this form?
 			</h3>
+			<!-- Form -->
 			<form method="post" action="?/deleteForm">
 				<input type="hidden" value={data.customForm.id} name="form_id" />
 
@@ -193,6 +273,7 @@
 					>No, cancel</Button
 				>
 			</form>
+			<!-- Form -->
 		</div>
 	</Modal>
 </section>

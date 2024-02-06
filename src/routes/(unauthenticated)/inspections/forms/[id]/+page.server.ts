@@ -3,7 +3,8 @@ import {
 	deleteCustomForm,
 	fetchOneFormById,
 	deleteCustomField,
-	renameCustomForm
+	renameCustomForm,
+	updateCustomField
 } from '$lib/actions/custom-forms';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
@@ -28,6 +29,12 @@ const deleteCardSchema = z.object({
 const renameFormSchema = z.object({
 	new_form_name: z.string(),
 	form_id: z.number()
+});
+
+const updateCardSchema = z.object({
+	card_id: z.number(),
+	card_type: z.enum(['text', 'number']),
+	new_card_name: z.string()
 });
 
 // redirect to form dashboard
@@ -97,7 +104,6 @@ export const actions = {
 	/*
 	 * action to delete card
 	 */
-
 	deleteCard: async ({ request, locals }) => {
 		const session = await locals.getSession();
 
@@ -117,7 +123,7 @@ export const actions = {
 	},
 
 	/*
-	 * action for raname form
+	 * action to raname form
 	 */
 	renameForm: async ({ request, locals }) => {
 		const session = await locals.getSession();
@@ -133,6 +139,28 @@ export const actions = {
 		await renameCustomForm({
 			formId: form.data.form_id,
 			newName: form.data.new_form_name,
+			userId: session.user.id
+		});
+	},
+
+	/*
+	 * action to update field
+	 */
+	updateField: async ({ request, locals }) => {
+		const session = await locals.getSession();
+
+		if (!session?.user) throw redirect(307, '/signin');
+
+		const form = await superValidate(request, updateCardSchema);
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		await updateCustomField({
+			newName: form.data.new_card_name,
+			cardId: form.data.card_id,
+			cardType: form.data.card_type,
 			userId: session.user.id
 		});
 	}
