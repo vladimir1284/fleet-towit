@@ -39,8 +39,6 @@ Table User {
   accounts Account [not null]
   sessions Session [not null]
   tenantUsers TenantUser [not null]
-  customForms CustomForm [not null]
-  customFieldResponses CustomFieldResponse [not null]
 }
 
 Table VerificationToken {
@@ -60,6 +58,8 @@ Table TenantUser {
   tenant Tenant [not null]
   userId String [not null]
   user User [not null]
+  customForms CustomForm [not null]
+  customFieldResponses CustomFieldResponse [not null]
 }
 
 Table Client {
@@ -83,9 +83,9 @@ Table Tenant {
 
 Table CustomForm {
   id Int [pk, increment]
-  userId String [not null]
   name String [not null]
-  user User [not null]
+  tenantUserId String [not null]
+  user TenantUser [not null]
   createdAt DateTime [default: `now()`, not null]
   fields CustomField [not null]
 }
@@ -103,8 +103,8 @@ Table CustomField {
 Table CustomFieldResponse {
   id Int [pk, increment]
   content String [not null]
-  userId String [not null]
-  user User [not null]
+  tenantUserId String [not null]
+  user TenantUser [not null]
   fieldId Int [not null]
   field CustomField [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -133,10 +133,10 @@ Ref: TenantUser.userId > User.id [delete: Cascade]
 
 Ref: Client.tenantId > Tenant.id
 
-Ref: CustomForm.userId > User.id [delete: Cascade]
+Ref: CustomForm.tenantUserId > TenantUser.id [delete: Cascade]
 
 Ref: CustomField.formId > CustomForm.id [delete: Cascade]
 
-Ref: CustomFieldResponse.userId > User.id [delete: Cascade]
+Ref: CustomFieldResponse.tenantUserId > TenantUser.id [delete: Cascade]
 
 Ref: CustomFieldResponse.fieldId > CustomField.id [delete: Cascade]

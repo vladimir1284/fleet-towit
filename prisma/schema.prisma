@@ -103,9 +103,9 @@ enum Role {
 
 model CustomForm {
   id        Int           @id @default(autoincrement())
-  userId    String
   name      String
-  user      TenantUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantUserId    String
+  user      TenantUser    @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
   createdAt DateTime      @default(now())
   fields    CustomField[]
 }
@@ -130,8 +130,8 @@ model CustomField {
 model CustomFieldResponse {
   id        Int         @id @default(autoincrement())
   content   String
-  userId    String
-  user      TenantUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantUserId    String
+  user      TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
   fieldId   Int
   field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   createdAt DateTime    @default(now())

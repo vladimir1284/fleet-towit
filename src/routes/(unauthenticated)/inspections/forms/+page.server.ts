@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect , fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { z } from 'zod';
 import { superValidate } from 'sveltekit-superforms/server';
