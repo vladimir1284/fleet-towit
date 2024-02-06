@@ -3,6 +3,8 @@
 export interface VehicleDataEntry {
   Variable: string;
   Value: string | null;
+  ValueId: string,
+  VariableId: number
 }
 
 export interface FormattedVehicleData {

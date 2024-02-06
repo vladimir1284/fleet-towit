@@ -1,14 +1,14 @@
 import axios from "axios"
 import { error as ErrorResponse } from "@sveltejs/kit"
 import type { FormattedVehicleData, VehicleDataEntry } from "../types.js"
-//import vehicleMock from "$lib/mocks/vehicle.json"
+import vehicleMock from "$lib/mocks/vehicle.json"
+
+const getValue = (data: VehicleDataEntry[], variable: string) => {
+  const value = data.find((entry: VehicleDataEntry) => entry.Variable === variable)?.Value
+  return value
+}
 
 const formatVehicleData = (data: VehicleDataEntry[], vin: string): FormattedVehicleData => {
-  const getValue = (data: VehicleDataEntry[], variable: string): string => {
-    const value = data.find((entry: VehicleDataEntry) => entry.Variable === variable)?.Value
-    return value || "N\\A"
-  }
-
   return {
     type: getValue(data, 'Vehicle Type'),
     year: getValue(data, 'Model Year'),
@@ -27,15 +27,15 @@ export const load = async ({ params }: { params: { vin: string } }) => {
   let data
 
   try {
-    const response = await axios.get(URL)
-    data = formatVehicleData(await response.data.Results, vin)
+    // const response = await axios.get(URL)
+    // data = formatVehicleData(await response.data.Results, vin)
 
-    //data = formatVehicleData(vehicleMock.Results, vin)
+    data = formatVehicleData(vehicleMock.Results, vin)
 
     return data
   } catch (error) {
     return ErrorResponse(500, {
-      message: error instanceof Error? error.message: String(error)
+      message: error instanceof Error ? error.message : String(error)
     })
   }
 }
