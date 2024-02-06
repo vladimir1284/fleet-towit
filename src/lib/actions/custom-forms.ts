@@ -1,54 +1,65 @@
 import { bypassPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
 
-/*
- * return all forms created by user
- */
-export const fetchCustomFormsByUser = async ({ userId }: { userId: string }) => {
-	const customForms = await bypassPrisma.customForm.findMany({
+const selectTenantUser = async (userId: string) => {
+	const tenantUser = await bypassPrisma.tenantUser.findFirst({
 		where: {
-			user: {
-				id: userId
+			userId: userId
+		}
+	});
+
+	return tenantUser;
+};
+
+export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: string }) => {
+	const tenantUser = await bypassPrisma.tenantUser.findFirst({
+		where: {
+			userId: userId
+		},
+
+		include: {
+			customForms: {
+				include: {
+					fields: true
+				}
 			}
-		},
-		include: {
-			fields: true,
-			user: true
 		}
 	});
 
-	return customForms;
+	return tenantUser?.customForms || [];
 };
 
-/*
- * Create new custom form
- */
 export const createNewCustomForm = async ({ userId, name }: { userId: string; name: string }) => {
-	const newForm = await bypassPrisma.customForm.create({
-		data: {
-			name: name,
-			userId: userId
-		}
-	});
+	const tenantUser = await selectTenantUser(userId);
 
-	return newForm;
+	if (tenantUser) {
+		const newForm = await bypassPrisma.customForm.create({
+			data: {
+				name: name,
+				tenantUserId: tenantUser.id
+			}
+		});
+
+		return newForm;
+	}
 };
 
-/*
- * get details from one custom form
- */
-export const fetchOneFormByUser = async (userId: string, formId: number) => {
-	const customForm = await bypassPrisma.customForm.findUnique({
-		where: {
-			id: formId,
-			userId: userId
-		},
-		include: {
-			fields: true
-		}
-	});
+export const fetchOneFormById = async (userId: string, formId: number) => {
+	const tenantUser = await selectTenantUser(userId);
 
-	return customForm;
+	if (tenantUser) {
+		const customForm = await bypassPrisma.customForm.findUnique({
+			where: {
+				id: formId,
+				tenantUserId: tenantUser.id
+			},
+			include: {
+				fields: true
+			}
+		});
+
+		return customForm;
+	}
 };
 
 /*
@@ -63,14 +74,12 @@ export const addFieldToCustomFrom = async ({
 	formId: number;
 	cardType: 'number' | 'text';
 }) => {
-	console.log(name, formId, cardType);
-
 	let fieldType;
 
 	if (cardType === 'number') fieldType = FormFieldType.NUMBER;
 	else fieldType = FormFieldType.TEXT;
 
-	const newForm = await bypassPrisma.customField.create({
+	await bypassPrisma.customField.create({
 		data: {
 			formId: formId,
 			name: name,
@@ -79,9 +88,6 @@ export const addFieldToCustomFrom = async ({
 	});
 };
 
-/*
- * delete form
- */
 export const deleteCustomForm = async (formId: number) => {
 	await bypassPrisma.customForm.delete({
 		where: {

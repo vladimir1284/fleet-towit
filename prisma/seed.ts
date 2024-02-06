@@ -24,7 +24,7 @@ async function main() {
 		});
 	}
 
-	const users_admin = [
+	const admins = [
 		{
 			email: 'gsg2604@gmail.com',
 			userRole: Role.ADMIN,
@@ -52,7 +52,7 @@ async function main() {
 		}
 	];
 
-	for (const user of users_admin) {
+	for (const user of admins) {
 		await createTenantUser(user);
 	}
 }

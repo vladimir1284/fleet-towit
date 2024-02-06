@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Card, Button, Input, Label, Select, Helper, Modal } from 'flowbite-svelte';
-	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
+	import { ExclamationCircleOutline, TrashBinOutline, PenOutline } from 'flowbite-svelte-icons';
 
 	export let data: PageData;
 
@@ -14,14 +14,16 @@
 		{ value: 'number', name: 'Data Entry Numeric' },
 		{ value: 'text', name: 'Data Entry Alphanumeric' }
 	];
-
-	// console.log(data.customForm);
 </script>
 
-<section class="flex flex-col gap-4">
+<section class="flex flex-col gap-4 w-2/3">
 	<div class="flex justify-between shadow bg-white p-6 rounded-lg">
 		<h5 class="text-2xl font-bold break-all text-gray-900 dark:text-white w-1/2">
 			{data.customForm.name}
+
+			<Button outline size="xs" color="light">
+				<PenOutline class="h-5 w-5" />
+			</Button>
 		</h5>
 
 		<Button
@@ -29,12 +31,12 @@
 			size="xs"
 			outline
 			color="red"
-			on:click={() => (openDeleteFormModal = true)}>Delete</Button
+			on:click={() => (openDeleteFormModal = true)}><TrashBinOutline class="h-4 w-4" /></Button
 		>
 	</div>
 
 	<div class="flex gap-4">
-		<Card class="min-w-96">
+		<div class="min-w-96 w-1/2 bg-white rounded-lg shadow p-6">
 			<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Add card</h5>
 			<div>
 				<Label>
@@ -75,14 +77,12 @@
 					</form>
 				</div>
 			{/if}
-		</Card>
+		</div>
 
-		<div>
-			<Card class="min-w-96">
-				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-					Cards ({data.customForm.fields.length})
-				</h5>
-			</Card>
+		<div class="min-w-96 w-1/2 bg-white rounded-lg shadow p-6">
+			<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+				Cards ({data.customForm.fields.length})
+			</h5>
 		</div>
 	</div>
 

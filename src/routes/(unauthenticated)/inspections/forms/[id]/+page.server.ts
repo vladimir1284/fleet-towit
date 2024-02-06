@@ -1,21 +1,20 @@
-import { redirect, fail } from '@sveltejs/kit';
-import type { Actions } from './$types';
-import { z } from 'zod';
-import { superValidate } from 'sveltekit-superforms/server';
 import {
-	fetchOneFormByUser,
+	addFieldToCustomFrom,
 	deleteCustomForm,
-	addFieldToCustomFrom
+	fetchOneFormById
 } from '$lib/actions/custom-forms';
+import { fail, redirect } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms/server';
+import { z } from 'zod';
+import type { Actions } from './$types';
+// import { ExclamationCircleOutline , TrashBinOutline , PenOutline} from 'flowbite-svelte-icons';
 
-// schema to add new field
 const addCardSchema = z.object({
 	card_name: z.string(),
 	form_id: z.number(),
 	card_type: z.enum(['text', 'number'])
 });
 
-// delete form schema
 const deleteFormSchema = z.object({
 	form_id: z.number()
 });
@@ -24,16 +23,15 @@ const deleteFormSchema = z.object({
 const redirect_to_dashboard = () => redirect(301, '/inspections/forms');
 
 export async function load({ params, locals }) {
-	// check user session
 	const session = await locals.getSession();
+
 	if (!session?.user) throw redirect(307, '/signin');
 
 	const formId = Number(params.id);
 
 	if (formId) {
-		const customForm = await fetchOneFormByUser(session.user.id, formId);
+		const customForm = await fetchOneFormById(session.user.id, formId);
 
-		// if form not exist
 		if (!customForm) redirect_to_dashboard();
 
 		const form = await superValidate(addCardSchema);
@@ -47,8 +45,8 @@ export const actions = {
 	 * action to add field
 	 */
 	addField: async ({ request, url, locals }) => {
-		// check user session
 		const session = await locals.getSession();
+
 		if (!session?.user) throw redirect(307, '/signin');
 
 		const form = await superValidate(request, addCardSchema);
@@ -57,7 +55,6 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		// add field to form
 		await addFieldToCustomFrom({
 			name: form.data.card_name,
 			formId: form.data.form_id,
@@ -71,8 +68,8 @@ export const actions = {
 	 * action to delete form
 	 */
 	deleteForm: async ({ request, url, locals }) => {
-		// check user session
 		const session = await locals.getSession();
+
 		if (!session?.user) throw redirect(307, '/signin');
 
 		const form = await superValidate(request, deleteFormSchema);
@@ -81,7 +78,6 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		// delete form
 		await deleteCustomForm(form.data.form_id);
 
 		redirect_to_dashboard();

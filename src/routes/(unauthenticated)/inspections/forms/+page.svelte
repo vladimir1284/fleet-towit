@@ -34,26 +34,10 @@
 <section class="flex flex-col mt-10">
 	<div class="flex justify-end">
 		<Button color="blue" on:click={() => (createFormModal = true)}>Create new form</Button>
-		<Modal title="Create new form" bind:open={createFormModal} autoclose={false}>
-			<form class="space-y-6" method="post">
-				<Label for="form_name" class="block mb-2">Form name</Label>
-				<Input
-					id="form_name"
-					name="form_name"
-					placeholder="Type here"
-					required
-					bind:value={$form.form_name}
-					{...$constraints.form_name}
-				/>
-
-				<Button type="submit">Save</Button>
-				<Button on:click={() => (createFormModal = false)} color="alternative">Cancel</Button>
-			</form>
-		</Modal>
 	</div>
 	<TableSearch placeholder="Search" hoverable={true} bind:inputValue={searchTerm}>
 		<TableHead>
-			<TableHeadCell>Form Title</TableHeadCell>
+			<TableHeadCell>Form Name</TableHeadCell>
 			<TableHeadCell>Cards</TableHeadCell>
 			<TableHeadCell>Created</TableHeadCell>
 			<TableHeadCell>Action</TableHeadCell>
@@ -73,4 +57,20 @@
 			{/each}
 		</TableBody>
 	</TableSearch>
+	<Modal title="Create new form" bind:open={createFormModal} autoclose={false}>
+		<form class="space-y-6" method="post">
+			<Label for="form_name" class="block mb-2">Form name</Label>
+			<Input
+				id="form_name"
+				name="form_name"
+				placeholder="Type here"
+				required
+				bind:value={$form.form_name}
+				{...$constraints.form_name}
+			/>
+
+			<Button type="submit">Save</Button>
+			<Button on:click={() => (createFormModal = false)} color="alternative">Cancel</Button>
+		</form>
+	</Modal>
 </section>
