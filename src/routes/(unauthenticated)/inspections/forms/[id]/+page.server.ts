@@ -2,7 +2,8 @@ import {
 	addFieldToCustomFrom,
 	deleteCustomForm,
 	fetchOneFormById,
-	deleteCustomField
+	deleteCustomField,
+	renameCustomForm
 } from '$lib/actions/custom-forms';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
@@ -21,6 +22,11 @@ const deleteFormSchema = z.object({
 
 const deleteCardSchema = z.object({
 	card_id: z.number(),
+	form_id: z.number()
+});
+
+const renameFormSchema = z.object({
+	new_form_name: z.string(),
 	form_id: z.number()
 });
 
@@ -106,6 +112,27 @@ export const actions = {
 		await deleteCustomField({
 			fieldId: form.data.card_id,
 			formId: form.data.form_id,
+			userId: session.user.id
+		});
+	},
+
+	/*
+	* action for raname form
+	*/
+	renameForm: async ({ request, locals }) => {
+		const session = await locals.getSession();
+
+		if (!session?.user) throw redirect(307, '/signin');
+
+		const form = await superValidate(request, renameFormSchema);
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		await renameCustomForm({
+			formId: form.data.form_id,
+			newName: form.data.new_form_name,
 			userId: session.user.id
 		});
 	}

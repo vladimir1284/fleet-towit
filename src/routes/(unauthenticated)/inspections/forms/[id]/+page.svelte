@@ -3,13 +3,20 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import { FormFieldType } from '@prisma/client';
 	import { Card, Button, Input, Label, Select, Helper, Modal } from 'flowbite-svelte';
-	import { ExclamationCircleOutline, TrashBinOutline, PenOutline } from 'flowbite-svelte-icons';
+	import {
+		ExclamationCircleOutline,
+		TrashBinOutline,
+		PenOutline,
+		CheckOutline
+	} from 'flowbite-svelte-icons';
 
 	export let data: PageData;
 
 	const { form, constraints } = superForm(data.form);
 
 	let openDeleteFormModal = false;
+
+	let isEditNameForm = false;
 
 	let openDeleteCardModal = false;
 	let idCardSelected;
@@ -23,13 +30,31 @@
 
 <section class="flex flex-col gap-4 w-2/3 pb-10">
 	<div class="flex justify-between shadow bg-white p-6 rounded-lg">
-		<h5 class="text-2xl font-bold break-all text-gray-900 dark:text-white w-1/2">
-			{data.customForm.name}
+		{#if isEditNameForm}
+			<form class="inline-flex gap-4 w-1/2" method="post" action="?/renameForm">
+				<Input
+					bind:value={data.customForm.name}
+					class="w-full"
+					placeholder="Type here"
+					name="new_form_name"
+					required
+				/>
+				<input name="form_id" type="hidden" bind:value={data.customForm.id} />
+				<Button type="submit" outline size="xs" color="light">
+					<CheckOutline class="h-5 w-5" />
+				</Button>
+			</form>
+		{:else}
+			<h5
+				class="text-2xl inline-flex gap-4 font-bold break-all text-gray-900 dark:text-white w-1/2"
+			>
+				{data.customForm.name}
 
-			<Button outline size="xs" color="light">
-				<PenOutline class="h-5 w-5" />
-			</Button>
-		</h5>
+				<Button outline size="xs" color="light" class="h-max">
+					<PenOutline on:click={() => (isEditNameForm = true)} class="h-5 w-5" />
+				</Button>
+			</h5>
+		{/if}
 
 		<Button
 			class="w-max h-max"

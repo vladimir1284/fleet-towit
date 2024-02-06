@@ -127,3 +127,27 @@ export const deleteCustomField = async ({
 		});
 	}
 };
+
+export const renameCustomForm = async ({
+	formId,
+	newName,
+	userId
+}: {
+	formId: number;
+	newName: string;
+	userId: string;
+}) => {
+	const tenantUser = await selectTenantUser(userId);
+
+	if (!tenantUser) return;
+
+	await bypassPrisma.customForm.update({
+		where: {
+			id: formId,
+			tenantUserId: tenantUser.id
+		},
+		data: {
+			name: newName
+		}
+	});
+};
