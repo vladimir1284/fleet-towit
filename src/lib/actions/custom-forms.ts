@@ -62,9 +62,6 @@ export const fetchOneFormById = async (userId: string, formId: number) => {
 	}
 };
 
-/*
- * add field to custom form
- */
 export const addFieldToCustomFrom = async ({
 	name,
 	formId,
@@ -88,10 +85,45 @@ export const addFieldToCustomFrom = async ({
 	});
 };
 
-export const deleteCustomForm = async (formId: number) => {
-	await bypassPrisma.customForm.delete({
+export const deleteCustomForm = async (formId: number, userId: string) => {
+	const tenantUser = await selectTenantUser(userId);
+
+	if (tenantUser) {
+		await bypassPrisma.customForm.delete({
+			where: {
+				id: formId,
+				tenantUserId: tenantUser.id
+			}
+		});
+	}
+};
+
+export const deleteCustomField = async ({
+	fieldId,
+	formId,
+	userId
+}: {
+	fieldId: number;
+	formId: number;
+	userId: string;
+}) => {
+	const tenantUser = await selectTenantUser(userId);
+
+	if (!tenantUser) return;
+
+	const customForm = await bypassPrisma.customForm.findFirst({
 		where: {
-			id: formId
+			id: formId,
+			tenantUserId: tenantUser.id
 		}
 	});
+
+	if (customForm) {
+		await bypassPrisma.customField.delete({
+			where: {
+				id: fieldId,
+				formId: customForm.id
+			}
+		});
+	}
 };

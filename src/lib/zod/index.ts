@@ -2754,11 +2754,9 @@ export const ClientUpdateInputSchema: z.ZodType<Prisma.ClientUpdateInput> = z
 		email: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
 		phoneNumber: z
 			.union([
-				z
-					.string()
-					.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
-						message: 'Invalid Number!'
-					}),
+				z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
+					message: 'Invalid Number!'
+				}),
 				z.lazy(() => StringFieldUpdateOperationsInputSchema)
 			])
 			.optional(),
@@ -2779,11 +2777,9 @@ export const ClientUncheckedUpdateInputSchema: z.ZodType<Prisma.ClientUncheckedU
 		email: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
 		phoneNumber: z
 			.union([
-				z
-					.string()
-					.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
-						message: 'Invalid Number!'
-					}),
+				z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
+					message: 'Invalid Number!'
+				}),
 				z.lazy(() => StringFieldUpdateOperationsInputSchema)
 			])
 			.optional(),
@@ -2820,11 +2816,9 @@ export const ClientUpdateManyMutationInputSchema: z.ZodType<Prisma.ClientUpdateM
 			email: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
 			phoneNumber: z
 				.union([
-					z
-						.string()
-						.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
-							message: 'Invalid Number!'
-						}),
+					z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
+						message: 'Invalid Number!'
+					}),
 					z.lazy(() => StringFieldUpdateOperationsInputSchema)
 				])
 				.optional(),
@@ -2845,11 +2839,9 @@ export const ClientUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ClientUnchec
 			email: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
 			phoneNumber: z
 				.union([
-					z
-						.string()
-						.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
-							message: 'Invalid Number!'
-						}),
+					z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
+						message: 'Invalid Number!'
+					}),
 					z.lazy(() => StringFieldUpdateOperationsInputSchema)
 				])
 				.optional(),
@@ -8943,11 +8935,9 @@ export const ClientUpdateWithoutTenantInputSchema: z.ZodType<Prisma.ClientUpdate
 			email: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
 			phoneNumber: z
 				.union([
-					z
-						.string()
-						.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
-							message: 'Invalid Number!'
-						}),
+					z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
+						message: 'Invalid Number!'
+					}),
 					z.lazy(() => StringFieldUpdateOperationsInputSchema)
 				])
 				.optional(),
@@ -8968,11 +8958,9 @@ export const ClientUncheckedUpdateWithoutTenantInputSchema: z.ZodType<Prisma.Cli
 			email: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
 			phoneNumber: z
 				.union([
-					z
-						.string()
-						.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
-							message: 'Invalid Number!'
-						}),
+					z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
+						message: 'Invalid Number!'
+					}),
 					z.lazy(() => StringFieldUpdateOperationsInputSchema)
 				])
 				.optional(),
@@ -8993,11 +8981,9 @@ export const ClientUncheckedUpdateManyWithoutTenantInputSchema: z.ZodType<Prisma
 			email: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
 			phoneNumber: z
 				.union([
-					z
-						.string()
-						.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
-							message: 'Invalid Number!'
-						}),
+					z.string().regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), {
+						message: 'Invalid Number!'
+					}),
 					z.lazy(() => StringFieldUpdateOperationsInputSchema)
 				])
 				.optional(),

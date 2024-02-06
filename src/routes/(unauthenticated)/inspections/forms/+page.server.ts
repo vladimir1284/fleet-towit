@@ -2,26 +2,23 @@ import { createNewCustomForm, fetchCustomFormsByTenantUser } from '$lib/actions/
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 
-// schema
 const createFormSchema = z.object({
 	form_name: z.string()
 });
 
-export async function load({ url, locals }) {
-	// check user session
+export const load: PageServerLoad = async ({ locals }) => {
 	const session = await locals.getSession();
 
 	if (!session?.user) throw redirect(307, '/signin');
 
 	const form = await superValidate(createFormSchema);
 
-	// retrieve form
 	const customForms = await fetchCustomFormsByTenantUser({ userId: session.user.id });
 
 	return { form, customForms };
-}
+};
 
 export const actions = {
 	default: async ({ request, url, locals }) => {
