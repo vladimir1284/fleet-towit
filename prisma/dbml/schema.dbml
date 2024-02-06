@@ -38,6 +38,9 @@ Table User {
   image String
   accounts Account [not null]
   sessions Session [not null]
+  createdParts Part [not null]
+  updatedParts Part [not null]
+  deletedParts Part [not null]
   tenantUsers TenantUser [not null]
 }
 
@@ -77,6 +80,95 @@ Table Tenant {
   isAdmin Boolean [not null, default: false]
   clients Client [not null]
   tenantUsers TenantUser [not null]
+  Part Part [not null]
+}
+
+Table Part {
+  id String [pk]
+  name String [not null]
+  number Int [not null]
+  criticalQty Int [not null]
+  upc Int [not null]
+  description String [not null]
+  extendedPartData Json
+  image String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  categories CategoriesOnParts [not null]
+  locations LocationsOnParts [not null]
+  vendors VendorOnParts [not null]
+  createdBy String [not null]
+  updatedBy String [not null]
+  deletedBy String [not null]
+  creationAuthor User [not null]
+  updateAuthor User [not null]
+  deletionAuthor User [not null]
+  tenantId String [not null]
+  tenant Tenant [not null]
+}
+
+Table Category {
+  id String [pk]
+  name String [unique, not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  parts CategoriesOnParts [not null]
+}
+
+Table Location {
+  id String [pk]
+  name String [unique, not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  parts LocationsOnParts [not null]
+}
+
+Table Vendor {
+  id String [pk]
+  name String [unique, not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  parts VendorOnParts [not null]
+}
+
+Table CategoriesOnParts {
+  part Part [not null]
+  partId String [unique, not null]
+  category Category [not null]
+  categoryId String [not null]
+
+  indexes {
+    (partId, categoryId) [pk]
+  }
+}
+
+Table LocationsOnParts {
+  part Part [not null]
+  partId String [unique, not null]
+  Location Location [not null]
+  locationId String [not null]
+  quantity Int [not null]
+  unit String [not null]
+
+  indexes {
+    (partId, locationId) [pk]
+  }
+}
+
+Table VendorOnParts {
+  part Part [not null]
+  partId String [unique, not null]
+  vendor Vendor [not null]
+  vendorId String [not null]
+  cost Float [not null]
+
+  indexes {
+    (partId, vendorId) [pk]
+  }
 }
 
 Enum Role {
@@ -94,3 +186,23 @@ Ref: TenantUser.tenantId > Tenant.id [delete: Cascade]
 Ref: TenantUser.userId > User.id [delete: Cascade]
 
 Ref: Client.tenantId > Tenant.id
+
+Ref: Part.createdBy > User.id [delete: Cascade]
+
+Ref: Part.updatedBy > User.id [delete: Cascade]
+
+Ref: Part.deletedBy > User.id [delete: Cascade]
+
+Ref: Part.tenantId > Tenant.id
+
+Ref: CategoriesOnParts.partId > Part.id [delete: Cascade]
+
+Ref: CategoriesOnParts.categoryId > Category.id
+
+Ref: LocationsOnParts.partId > Part.id [delete: Cascade]
+
+Ref: LocationsOnParts.locationId > Location.id
+
+Ref: VendorOnParts.partId > Part.id [delete: Cascade]
+
+Ref: VendorOnParts.vendorId > Vendor.id
