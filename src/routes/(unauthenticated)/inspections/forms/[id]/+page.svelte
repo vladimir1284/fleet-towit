@@ -7,7 +7,8 @@
 		ExclamationCircleOutline,
 		TrashBinOutline,
 		PenOutline,
-		CheckOutline
+		CheckOutline,
+		CloseOutline
 	} from 'flowbite-svelte-icons';
 
 	export let data: PageData;
@@ -17,6 +18,7 @@
 	let openDeleteFormModal = false;
 
 	let isEditNameForm = false;
+	let formName = data.customForm.name;
 
 	let openDeleteCardModal = false;
 	let idCardSelected;
@@ -43,12 +45,21 @@
 				<Button type="submit" outline size="xs" color="light">
 					<CheckOutline class="h-5 w-5" />
 				</Button>
+				<Button
+					on:click={() => (isEditNameForm = false)}
+					type="submit"
+					outline
+					size="xs"
+					color="light"
+				>
+					<CloseOutline class="h-5 w-5" />
+				</Button>
 			</form>
 		{:else}
 			<h5
 				class="text-2xl inline-flex gap-4 font-bold break-all text-gray-900 dark:text-white w-1/2"
 			>
-				{data.customForm.name}
+				{formName}
 
 				<Button outline size="xs" color="light" class="h-max">
 					<PenOutline on:click={() => (isEditNameForm = true)} class="h-5 w-5" />

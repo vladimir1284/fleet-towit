@@ -117,8 +117,8 @@ export const actions = {
 	},
 
 	/*
-	* action for raname form
-	*/
+	 * action for raname form
+	 */
 	renameForm: async ({ request, locals }) => {
 		const session = await locals.getSession();
 
