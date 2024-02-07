@@ -60,9 +60,6 @@ model User {
   deletedParts Part[] @relation("deletionAuthor")
   tenantUsers   TenantUser[]
 
-  createdParts Part[]       @relation("creationAuthor")
-  updatedParts Part[]       @relation("updateAuthor")
-  deletedParts Part[]       @relation("deletionAuthor")
   customForms          CustomForm[]
   customFieldResponses CustomFieldResponse[]
 }
