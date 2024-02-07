@@ -1,11 +1,12 @@
 <script lang="ts">
 	// @ts-nocheck
-	import { Button, Select, FloatingLabelInput } from 'flowbite-svelte';
-	import { EnvelopeSolid } from 'flowbite-svelte-icons';
-	import { superForm, superValidateSync  } from 'sveltekit-superforms/client';
-	import { createEventDispatcher } from 'svelte';
+	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import { superForm } from 'sveltekit-superforms/client';
 	import { tenantActor } from '$lib/store/context-store';
+	import { Select } from 'flowbite-svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { z } from 'zod';
+	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	export let data;
 	export let selectedUser;
 	export let tenantsList = [];
@@ -79,20 +80,7 @@
 >
 	<input hidden name="id" bind:value={$form.id} />
 	<div class="sm:col-span-2">
-		<FloatingLabelInput
-			style="outlined"
-			class="focus:ring-0 border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500"
-			type="text"
-			name="email"
-			placeholder="Insert your email"
-			required
-			bind:value={$form.email}
-			{...$constraints.email}
-		>
-			<EnvelopeSolid class="w-6 h-6 inline" />
-			Email
-		</FloatingLabelInput>
-		{#if $errors.email}<span class="text-red-600">{$errors.email}</span>{/if}
+		<EmailInputComponent placeholder="Insert user email" form={form} errors={errors} constraints={constraints}/>
 	</div>
 	<Select
 		class="mt-2"
@@ -112,6 +100,5 @@
 	{:else}
 		<input hidden name='tenantId' bind:value={$form.tenantId}>
 	{/if}
-	<Button type="submit" class="w-[50%] mx-auto block">{!selectedUser ? 'Create' : 'Update'} user</Button
-	>
+	<SubmitButtonComponent placeholder={!selectedUser ? 'Create user' : 'Update user'} styles="w-[50%] mx-auto block"/>
 </form>
