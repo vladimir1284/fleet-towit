@@ -6,29 +6,37 @@ import { Role } from "@prisma/client";
 const prisma = bypassPrisma
 
 async function main() {
+	const usersData = [
+        { email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN },
+        { email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN },
+        { email: 'waos@gmail.com', userRole: Role.ADMIN },
+        // Add more users as needed
+    ];
 	const existingAdminTenant = await prisma.tenant.findFirst({
         where: {
-            name: 'admin'
+            isAdmin: true
         }
     });
 
-	if(!existingAdminTenant){
-		const admin_tenant = await prisma.tenant.create({
-			data: {
-				name: 'admin',
-				email: 'gissell111284@gmail.com',
-				isAdmin: true
-			}
-		});
-		const admin_user_0 = await createTenantUser({email: 'gsg2604@gmail.com', userRole: Role.ADMIN, tenantId: admin_tenant.id})
-		const admin_user_1 = await createTenantUser({email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, tenantId: admin_tenant.id})
-		const admin_user_3 = await createTenantUser({email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, tenantId: admin_tenant.id})
-	}else {
-		const admin_user_0 = await createTenantUser({email: 'gissell1184@gmail.com', userRole: Role.ADMIN, tenantId: existingAdminTenant.id})
-		const admin_user_1 = await createTenantUser({email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, tenantId: existingAdminTenant.id})
-		const admin_user_3 = await createTenantUser({email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, tenantId: existingAdminTenant.id})
-	}
+    let tenantId;
+    if (!existingAdminTenant) {
+        const admin_tenant = await prisma.tenant.create({
+            data: {
+                name: 'admin',
+                email: 'gissell111284@gmail.com',
+                isAdmin: true
+            }
+        });
+        tenantId = admin_tenant.id;
+    } else {
+        tenantId = existingAdminTenant.id;
+    }
+
+    for (const userData of usersData) {
+        await createTenantUser({ ...userData, tenantId });
+    }
 }
+
 main()
 	.then(async () => {
 		await prisma.$disconnect();
