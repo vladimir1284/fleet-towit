@@ -14,22 +14,26 @@
 	});
 
 	$: currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	
-	
-	$: if (currentTenant !== 'initial') {
-		const actualTenant = data.session.user.tenantUsers.find(user => user.id === currentTenant.currentUserTenant.id);
-		if (actualTenant.role !== currentTenant.currentUserTenant.role) {
-		   tenantActor.send({type: 'tenant.update', value: {
-			...actualTenant.tenant, currentUserTenant: {
-				id: actualTenant.id,
-				tentantId: actualTenant.tentantId,
-				role: actualTenant.role,
-				userId: actualTenant.userId
-			}
-		   }})
-	   	}
-	}
 
+	$: if (currentTenant !== 'initial') {
+		const actualTenant = data.session.user.tenantUsers.find(
+			(user) => user.id === currentTenant.currentUserTenant.id
+		);
+		if (actualTenant.role !== currentTenant.currentUserTenant.role) {
+			tenantActor.send({
+				type: 'tenant.update',
+				value: {
+					...actualTenant.tenant,
+					currentUserTenant: {
+						id: actualTenant.id,
+						tentantId: actualTenant.tentantId,
+						role: actualTenant.role,
+						userId: actualTenant.userId
+					}
+				}
+			});
+		}
+	}
 
 	$: if (
 		data.session &&

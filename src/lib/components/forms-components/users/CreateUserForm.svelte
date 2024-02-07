@@ -2,7 +2,7 @@
 	// @ts-nocheck
 	import { Button, Select, FloatingLabelInput } from 'flowbite-svelte';
 	import { EnvelopeSolid } from 'flowbite-svelte-icons';
-	import { superForm, superValidateSync  } from 'sveltekit-superforms/client';
+	import { superForm, superValidateSync } from 'sveltekit-superforms/client';
 	import { createEventDispatcher } from 'svelte';
 	import { tenantActor } from '$lib/store/context-store';
 	import { z } from 'zod';
@@ -14,11 +14,11 @@
 	let actionURL = `/api/tenants/${currentTenant.currentUserTenant.tenantId}/users`;
 
 	const fixSchema = z.object({
-  		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
-  		email: z.string().email(),
-  		tenantId: z.string(),
-  		id: z.string().optional()
-	})
+		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
+		email: z.string().email(),
+		tenantId: z.string(),
+		id: z.string().optional()
+	});
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		SPA: true,
@@ -110,8 +110,9 @@
 			bind:value={$form.tenantId}
 		/>
 	{:else}
-		<input hidden name='tenantId' bind:value={$form.tenantId}>
+		<input hidden name="tenantId" bind:value={$form.tenantId} />
 	{/if}
-	<Button type="submit" class="w-[50%] mx-auto block">{!selectedUser ? 'Create' : 'Update'} user</Button
+	<Button type="submit" class="w-[50%] mx-auto block"
+		>{!selectedUser ? 'Create' : 'Update'} user</Button
 	>
 </form>

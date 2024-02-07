@@ -20,13 +20,13 @@
 	if (selectedTenant) {
 		$form.name = selectedTenant.name;
 		$form.email = selectedTenant.email;
-		actionURL = actionURL+`/${selectedTenant.id}`;
+		actionURL = actionURL + `/${selectedTenant.id}`;
 	}
 </script>
 
 <form method="POST" use:enhance action={actionURL}>
 	<div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
-		<input hidden name="id" bind:value={$form.id}/>
+		<input hidden name="id" bind:value={$form.id} />
 		<div class="sm:col-span-2">
 			<FloatingLabelInput
 				style="outlined"

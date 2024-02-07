@@ -1,23 +1,25 @@
-import { tenantPrisma } from "$lib/prisma";
-import { Role } from "@prisma/client";
+import { tenantPrisma } from '$lib/prisma';
+import { Role } from '@prisma/client';
 
-type createUserType = {tenantId: string, email: string, role?: Role};
-type editUserType = createUserType & {tenantUserId: string};
+type createUserType = { tenantId: string; email: string; role?: Role };
+type editUserType = createUserType & { tenantUserId: string };
 
-export const createNewUser = async({tenantId, email, role=Role.STAFF}: createUserType) => {
-    const tenantContext = tenantPrisma(tenantId);
-    const tenant = await tenantContext.tenant.findUnique({where: {id: tenantId}});
-    let user = await tenantContext.user.findUnique({where: {email: email}});
-    if (!user) {
-        user = await tenantContext.user.create({data: {email: email}});
-    };
-    const tenantUser = await tenantContext.tenantUser.create({data:{
-        tenantId: tenantId,
-        userId: user.id,
-        role: role
-    }});
-    return {...tenantUser, user, tenant}
-}
+export const createNewUser = async ({ tenantId, email, role = Role.STAFF }: createUserType) => {
+	const tenantContext = tenantPrisma(tenantId);
+	const tenant = await tenantContext.tenant.findUnique({ where: { id: tenantId } });
+	let user = await tenantContext.user.findUnique({ where: { email: email } });
+	if (!user) {
+		user = await tenantContext.user.create({ data: { email: email } });
+	}
+	const tenantUser = await tenantContext.tenantUser.create({
+		data: {
+			tenantId: tenantId,
+			userId: user.id,
+			role: role
+		}
+	});
+	return { ...tenantUser, user, tenant };
+};
 
 /*
 export const updateTenantUser = async({tenantUserId, email, tenantId, role}: editUserType) => {
@@ -34,8 +36,8 @@ export const updateTenantUser = async({tenantUserId, email, tenantId, role}: edi
     return tenantUser
 }*/
 
-export const getTenantUsers = async({tenantId}:{tenantId: string}) => {
-    const tenantContext = tenantPrisma(tenantId)
-    const basetenantUsers = await tenantContext.tenantUser.findMany();
-    return basetenantUsers
-}
+export const getTenantUsers = async ({ tenantId }: { tenantId: string }) => {
+	const tenantContext = tenantPrisma(tenantId);
+	const basetenantUsers = await tenantContext.tenantUser.findMany();
+	return basetenantUsers;
+};
