@@ -47,18 +47,18 @@ model Session {
 }
 
 model User {
-  id                   String            @id @default(cuid()) /// @zod.custom.omit([model, input])
-  name                 String?
-  email                String?           @unique
-  emailVerified        DateTime?
-  image                String?
-  accounts             Account[]
-  sessions             Session[]
+  id            String        @id @default(cuid()) /// @zod.custom.omit([model, input])
+  name          String?
+  email         String?       @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
 
-  createdParts Part[]       @relation("creationAuthor")
-  updatedParts Part[]       @relation("updateAuthor")
-  deletedParts Part[]       @relation("deletionAuthor")
-  tenantUsers         TenantUser[]
+  createdParts Part[] @relation("creationAuthor")
+  updatedParts Part[] @relation("updateAuthor")
+  deletedParts Part[] @relation("deletionAuthor")
+  tenantUsers   TenantUser[]
   customForms          CustomForm[]
   customFieldResponses CustomFieldResponse[]
 }
@@ -108,6 +108,41 @@ enum Role {
   ADMIN
   OWNER
 }
+
+model CustomForm {
+  id        Int           @id @default(autoincrement())
+  userId    String
+  name      String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  fields    CustomField[]
+}
+
+enum FormFieldType {
+  TEXT
+  NUMBER
+  RADIO
+  CHECKBOX
+}
+
+model CustomField {
+  id        Int                   @id @default(autoincrement())
+  name      String
+  type      FormFieldType
+  required  Boolean?              @default(true)
+  formId    Int
+  form      CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  responses CustomFieldResponse[]
+}
+
+model CustomFieldResponse {
+  id        Int         @id @default(autoincrement())
+  content   String
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fieldId   Int
+  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
 
 // Inventory-related models.
 

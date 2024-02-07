@@ -46,6 +46,38 @@ async function main() {
 			tenantId: existingAdminTenant.id
 		},
 		{
+			email: 'gissell1184@gmail.com',
+			userRole: Role.ADMIN,
+			tenantId: existingAdminTenant.id
+		}
+	];
+
+	for (const user of users_admin) {
+		await createTenantUser(user);
+	}
+
+	const users_admin = [
+		{
+			email: 'gsg2604@gmail.com',
+			userRole: Role.ADMIN,
+			tenantId: existingAdminTenant.id
+		},
+		{
+			email: 'luis.ulloa75360@gmail.com',
+			userRole: Role.ADMIN,
+			tenantId: existingAdminTenant.id
+		},
+		{
+			email: 'vladimir.rdguez@gmail.com',
+			userRole: Role.ADMIN,
+			tenantId: existingAdminTenant.id
+		},
+		{
+			email: 'raulodev@gmail.com',
+			userRole: Role.ADMIN,
+			tenantId: existingAdminTenant.id
+		},
+		{
 			email: 'ymansfarroll@gmail.com',
 			userRole: Role.ADMIN,
 			tenantId: existingAdminTenant.id
