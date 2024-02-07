@@ -143,7 +143,7 @@ model CustomFieldResponse {
   fieldId   Int
   field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   createdAt DateTime    @default(now())
-
+}
 // Inventory-related models.
 
 model Part {
@@ -263,39 +263,3 @@ model VendorOnParts {
   @@id([partId, vendorId])
 }
 
-
-model CustomForm {
-  id        Int           @id @default(autoincrement())
-  userId    String
-  name      String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime      @default(now())
-  fields    CustomField[]
-}
-
-enum FormFieldType {
-  TEXT
-  NUMBER
-  RADIO
-  CHECKBOX
-}
-
-model CustomField {
-  id        Int                   @id @default(autoincrement())
-  name      String
-  type      FormFieldType
-  required  Boolean?              @default(true)
-  formId    Int
-  form      CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
-  responses CustomFieldResponse[]
-}
-
-model CustomFieldResponse {
-  id        Int         @id @default(autoincrement())
-  content   String
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fieldId   Int
-  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-  createdAt DateTime    @default(now())
-}
