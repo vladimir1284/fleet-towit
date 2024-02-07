@@ -86,7 +86,6 @@ model Client {
   email       String
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
-
   tenantId    String
   tenant      Tenant  @relation(fields: [tenantId], references: [id])
 }
@@ -98,6 +97,10 @@ model Tenant {
   isAdmin     Boolean      @default(false)
   clients     Client[]
   tenantUsers TenantUser[]
+  Part        Part[]
+  Category    Category[]
+  Location    Location[]
+  Vendor      Vendor[]
 }
 
 enum Role {
@@ -172,6 +175,10 @@ model Part {
   creationAuthor User @relation("creationAuthor", fields: [createdBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
   updateAuthor   User @relation("updateAuthor", fields: [updatedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
   deletionAuthor User @relation("deletionAuthor", fields: [deletedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // Multi-tenant identification.
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Category {
@@ -184,6 +191,10 @@ model Category {
   deletedAt DateTime? // nullable field to simulate deletedAt built-in method.
 
   parts CategoriesOnParts[]
+
+  // Multi-tenant identification.
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Location {
@@ -196,6 +207,10 @@ model Location {
   deletedAt DateTime? // nullable field to simulate deletedAt built-in method.
 
   parts LocationsOnParts[]
+
+  // Multi-tenant identification.
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Vendor {
@@ -208,6 +223,10 @@ model Vendor {
   deletedAt DateTime? // nullable field to simulate deletedAt built-in method.
 
   parts VendorOnParts[]
+
+  // Multi-tenant identification.
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model CategoriesOnParts {
@@ -242,4 +261,41 @@ model VendorOnParts {
   cost Float
 
   @@id([partId, vendorId])
+}
+
+
+model CustomForm {
+  id        Int           @id @default(autoincrement())
+  userId    String
+  name      String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  fields    CustomField[]
+}
+
+enum FormFieldType {
+  TEXT
+  NUMBER
+  RADIO
+  CHECKBOX
+}
+
+model CustomField {
+  id        Int                   @id @default(autoincrement())
+  name      String
+  type      FormFieldType
+  required  Boolean?              @default(true)
+  formId    Int
+  form      CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  responses CustomFieldResponse[]
+}
+
+model CustomFieldResponse {
+  id        Int         @id @default(autoincrement())
+  content   String
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fieldId   Int
+  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
 }
