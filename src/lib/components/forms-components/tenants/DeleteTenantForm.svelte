@@ -1,7 +1,7 @@
 <script>
 	// @ts-nocheck
-	import { Button } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
+	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	export let data;
 	const dispatch = createEventDispatcher();
 
@@ -23,5 +23,5 @@
 	<div class="sm:col-span-2">
 		<h1>Delete?</h1>
 	</div>
-	<Button class="w-[50%] mx-auto block" on:click={handleSubmit}>Delete</Button>
+    <SubmitButtonComponent placeholder="Delete" styles="w-[50%] mx-auto block" onClick={handleSubmit}/>
 </div>

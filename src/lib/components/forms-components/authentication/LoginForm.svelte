@@ -1,9 +1,11 @@
 <script async script lang="ts">
-	import { Card, Button, Label, Input, Checkbox } from 'flowbite-svelte';
-	import { EnvelopeSolid, EyeOutline, EyeSlashOutline, GoogleSolid } from 'flowbite-svelte-icons';
+	import { Card, Label, Input, Checkbox } from 'flowbite-svelte';
+	import { EyeOutline, EyeSlashOutline, GoogleSolid } from 'flowbite-svelte-icons';
+	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
 	import { superForm } from 'sveltekit-superforms/client';
 
 	import { signIn } from '@auth/sveltekit/client';
+	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 
 	export let data;
 
@@ -22,22 +24,7 @@
 <Card class="w-full max-w-md">
 	<form class="flex flex-col space-y-6" action="/signin" method="post" use:enhance>
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white">Sign in to our platform</h3>
-		<Label class="space-y-2">
-			<span>Email</span>
-			<Input
-				class="focus:ring-0 border-blue-500 focus:outline-0 focus:ring-2 focus:ring-blue-500"
-				type="email"
-				name="email"
-				placeholder="Insert your email"
-				required
-				aria-invalid={$errors.email ? 'true' : undefined}
-				bind:value={$form.email}
-				{...$constraints.email}
-			>
-				<EnvelopeSolid slot="left" class="w-4 h-4" />
-			</Input>
-		</Label>
-		{#if $errors.email}<span class="text-red-600">{$errors.email}</span>{/if}
+		<EmailInputComponent placeholder="Insert email address" form={form} errors={errors} constraints={constraints}/>
 		{#if !useMagicLink}
 			<Label class="space-y-2">
 				<span>Your password</span>
@@ -62,12 +49,10 @@
 			</Label>
 			{#if $errors.password}<span class="text-red-600">{$errors.password}</span>{/if}
 		{/if}
-		<div class="flex items-start">
-			<Checkbox color="blue" checked={useMagicLink} on:change={() => (useMagicLink = !useMagicLink)}
-				>Receive access token</Checkbox
-			>
-		</div>
-		<Button type="submit" color="blue" class="w-full color-blue">Login to your account</Button>
+		<Checkbox checked={useMagicLink} on:change={() => (useMagicLink = !useMagicLink)}>
+			Receive access token
+		</Checkbox>
+		<SubmitButtonComponent placeholder="Login to your account" styles="w-full color-blue"/>
 		<Label>
 			<GoogleSolid
 				class="w-6 h-6"

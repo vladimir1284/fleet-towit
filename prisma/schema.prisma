@@ -42,14 +42,14 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime
+  expires      DateTime 
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String        @id @default(cuid()) /// @zod.custom.omit([model, input])
+  id            String    @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
-  email         String?       @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -59,6 +59,10 @@ model User {
   updatedParts Part[] @relation("updateAuthor")
   deletedParts Part[] @relation("deletionAuthor")
   tenantUsers   TenantUser[]
+
+  createdParts Part[]       @relation("creationAuthor")
+  updatedParts Part[]       @relation("updateAuthor")
+  deletedParts Part[]       @relation("deletionAuthor")
   customForms          CustomForm[]
   customFieldResponses CustomFieldResponse[]
 }
