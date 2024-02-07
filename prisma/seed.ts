@@ -60,6 +60,8 @@ async function main() {
 			tenantId: existingTenant.id
 		});
 	}
+
+
 }
 main()
 	.then(async () => {
