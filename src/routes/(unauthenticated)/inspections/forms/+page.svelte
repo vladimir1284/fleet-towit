@@ -30,11 +30,11 @@
 	);
 </script>
 
-<section class="flex flex-col mt-10">
+<section class="flex flex-col mt-10 w-full p-4 border border-red-500">
 	<div class="flex justify-end">
 		<Button color="blue" on:click={() => (createFormModal = true)}>Create new form</Button>
 	</div>
-	<TableSearch placeholder="Search" hoverable={true} bind:inputValue={searchTerm}>
+	<TableSearch classInput="w-64" placeholder="Search" bind:inputValue={searchTerm}>
 		<TableHead>
 			<TableHeadCell>Form Name</TableHeadCell>
 			<TableHeadCell>Cards</TableHeadCell>

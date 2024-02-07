@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { FormFieldType } from '@prisma/client';
-	import { Card, Button, Input, Label, Select, Helper, Modal } from 'flowbite-svelte';
+	import { Button, Input, Label, Select, Helper, Modal } from 'flowbite-svelte';
 	import {
 		ExclamationCircleOutline,
 		TrashBinOutline,
@@ -44,36 +44,42 @@
 	];
 </script>
 
-<section class="flex flex-col gap-4 w-2/3 pb-10">
-	<div class="flex justify-between shadow bg-white p-6 rounded-lg">
+<section class="flex flex-col gap-4 w-full sm:w-2/3 pb-10 p-1">
+	<div class="flex justify-between gap-4 shadow bg-white p-6 rounded-lg">
 		{#if isEditFormName}
 			<!-- Form -->
-			<form class="inline-flex gap-4 w-1/2" method="post" action="?/renameForm">
+			<form
+				class="flex flex-wrap lg:flex-nowrap gap-4 md:w-1/2"
+				method="post"
+				action="?/renameForm"
+			>
 				<Input
 					bind:value={data.customForm.name}
-					class="w-full"
+					class="w-full max-w-64"
 					placeholder="Type here"
 					name="new_form_name"
 					required
 				/>
 				<input name="form_id" type="hidden" bind:value={data.customForm.id} />
-				<Button type="submit" outline size="xs" color="light">
-					<CheckOutline class="h-5 w-5" />
-				</Button>
-				<Button
-					on:click={() => (isEditFormName = false)}
-					type="submit"
-					outline
-					size="xs"
-					color="light"
-				>
-					<CloseOutline class="h-5 w-5" />
-				</Button>
+				<div class="inline-flex gap-4">
+					<Button type="submit" outline size="xs" color="light">
+						<CheckOutline class="h-5 w-5" />
+					</Button>
+					<Button
+						on:click={() => (isEditFormName = false)}
+						type="submit"
+						outline
+						size="xs"
+						color="light"
+					>
+						<CloseOutline class="h-4 w-4" />
+					</Button>
+				</div>
 			</form>
 			<!-- Form -->
 		{:else}
 			<h5
-				class="text-2xl inline-flex gap-4 font-bold break-all text-gray-900 dark:text-white w-1/2"
+				class="text-lg lg:text-2xl inline-flex gap-4 font-bold break-all text-gray-900 dark:text-white w-1/2"
 			>
 				{formName}
 
@@ -88,14 +94,14 @@
 			size="xs"
 			outline
 			color="red"
-			on:click={() => (openDeleteFormModal = true)}><TrashBinOutline class="h-4 w-4" /></Button
+			on:click={() => (openDeleteFormModal = true)}><TrashBinOutline class="h-5 w-5" /></Button
 		>
 	</div>
 
-	<div class="flex gap-4">
+	<div class="flex flex-col lg:flex-row gap-4">
 		{#if isEditCard}
 			<!-- Edit Card -->
-			<div class="min-w-96 w-1/2 h-max bg-white rounded-lg shadow p-6">
+			<div class="w-full lg:w-1/2 h-max bg-white rounded-lg shadow p-6">
 				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
 					Edit card
 				</h5>
@@ -140,7 +146,7 @@
 			</div>
 		{:else}
 			<!-- Add Card  -->
-			<div class="min-w-96 w-1/2 h-max bg-white rounded-lg shadow p-6">
+			<div class="w-full lg:w-1/2 h-max bg-white rounded-lg shadow p-6">
 				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
 					Add card
 				</h5>
@@ -187,13 +193,13 @@
 		{/if}
 
 		<!-- List Cards -->
-		<div class="min-w-96 w-1/2 bg-white rounded-lg shadow p-6 h-max">
+		<div class="w-full lg:w-1/2 bg-white rounded-lg shadow p-6 h-max">
 			<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
 				Cards ({data.customForm.fields.length})
 			</h5>
-			<div class="flex flex-col gap-4">
+			<div class="grid grid-cols-1 gap-4">
 				{#each data.customForm.fields as field}
-					<Card>
+					<div class="shadow bg-white p-6 rounded-lg">
 						<h5 class="font-medium text-lg text-gray-800">
 							{field.name}
 						</h5>
@@ -230,7 +236,7 @@
 								<PenOutline class="h-4 w-4" />
 							</Button>
 						</div>
-					</Card>
+					</div>
 				{/each}
 			</div>
 		</div>
