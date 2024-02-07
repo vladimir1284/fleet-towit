@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Button, Label, Fileupload, Avatar, FloatingLabelInput, Modal } from 'flowbite-svelte';
-	import { EnvelopeSolid, EyeOutline, EyeSlashOutline, UserSolid } from 'flowbite-svelte-icons';
+	import { Button, Label, Fileupload, Avatar, Modal } from 'flowbite-svelte';
 	import { Card } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';

@@ -1,6 +1,6 @@
 <script async script lang="ts">
-	import { Card, Button, Label, Input, Checkbox } from 'flowbite-svelte';
-	import { EnvelopeSolid, EyeOutline, EyeSlashOutline, GoogleSolid } from 'flowbite-svelte-icons';
+	import { Card, Label, Input, Checkbox } from 'flowbite-svelte';
+	import { EyeOutline, EyeSlashOutline, GoogleSolid } from 'flowbite-svelte-icons';
 	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
 	import { superForm } from 'sveltekit-superforms/client';
 

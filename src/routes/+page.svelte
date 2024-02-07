@@ -1,6 +1,6 @@
 <script>
 	import { Section, News, HeroHeader, HeroBody } from 'flowbite-svelte-blocks';
-	import { Button } from 'flowbite-svelte';
+	import ButtonComponent  from '$lib/components/buttons/ButtonComponent.svelte';
 	import { ArrowRightSolid } from 'flowbite-svelte-icons';
 	
 </script>
@@ -13,10 +13,10 @@
 		>
 			<svelte:fragment slot="h1">Custom text</svelte:fragment>
 			<svelte:fragment slot="paragraph">Custom text.</svelte:fragment>
-			<a href="/signin"
-				><Button size="xl" color="blue" class="inline-flex items-center justify-center mr-3"
-					>Sign in<ArrowRightSolid size="md" class="ml-2 -mr-1" /></Button
-				>
+			<a href="/signin">
+				<ButtonComponent color="blue" styles="inline-flex items-center justify-center mr-3" placeholder="Sign in">
+					<ArrowRightSolid size="md" class="ml-2 -mr-1" />
+				</ButtonComponent>
 			</a>
 		</HeroHeader>
 	</div>

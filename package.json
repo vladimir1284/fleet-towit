@@ -57,6 +57,8 @@
 		"@popperjs/core": "^2.11.8",
 		"@prisma/client": "^5.7.1",
 		"@sentry/sveltekit": "^7.88.0",
+		"@testing-library/jest-dom": "^6.4.2",
+		"@testing-library/svelte": "^4.1.0",
 		"aws-sdk": "^2.1543.0",
 		"flowbite": "^2.2.1",
 		"flowbite-svelte": "^0.44.21",
