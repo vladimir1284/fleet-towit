@@ -8,10 +8,16 @@ const createFormSchema = z.object({
 	form_name: z.string()
 });
 
-export const load: PageServerLoad = async ({ locals }) => {
+const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 
 	if (!session?.user) throw redirect(307, '/signin');
+
+	return session;
+};
+
+export const load: PageServerLoad = async ({ locals }) => {
+	const session = await verifySession(locals);
 
 	const form = await superValidate(createFormSchema);
 
@@ -22,9 +28,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions = {
 	default: async ({ request, url, locals }) => {
-		const session = await locals.getSession();
-
-		if (!session?.user) throw redirect(307, '/signin');
+		const session = await verifySession(locals);
 
 		const form = await superValidate(request, createFormSchema);
 

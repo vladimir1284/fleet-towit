@@ -40,10 +40,16 @@ const updateCardSchema = z.object({
 // redirect to form dashboard
 const redirect_to_dashboard = () => redirect(301, '/inspections/forms');
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 
 	if (!session?.user) throw redirect(307, '/signin');
+
+	return session;
+};
+
+export const load: PageServerLoad = async ({ params, locals }) => {
+	const session = await verifySession(locals);
 
 	const formId = Number(params.id);
 
@@ -63,9 +69,7 @@ export const actions = {
 	 * action to add field
 	 */
 	addField: async ({ request, locals }) => {
-		const session = await locals.getSession();
-
-		if (!session?.user) throw redirect(307, '/signin');
+		await verifySession(locals);
 
 		const form = await superValidate(request, addCardSchema);
 
@@ -86,9 +90,7 @@ export const actions = {
 	 * action to delete form
 	 */
 	deleteForm: async ({ request, locals }) => {
-		const session = await locals.getSession();
-
-		if (!session?.user) throw redirect(307, '/signin');
+		const session = await verifySession(locals);
 
 		const form = await superValidate(request, deleteFormSchema);
 
@@ -105,9 +107,7 @@ export const actions = {
 	 * action to delete card
 	 */
 	deleteCard: async ({ request, locals }) => {
-		const session = await locals.getSession();
-
-		if (!session?.user) throw redirect(307, '/signin');
+		const session = await verifySession(locals);
 
 		const form = await superValidate(request, deleteCardSchema);
 
@@ -126,9 +126,7 @@ export const actions = {
 	 * action to raname form
 	 */
 	renameForm: async ({ request, locals }) => {
-		const session = await locals.getSession();
-
-		if (!session?.user) throw redirect(307, '/signin');
+		const session = await verifySession(locals);
 
 		const form = await superValidate(request, renameFormSchema);
 
@@ -144,12 +142,10 @@ export const actions = {
 	},
 
 	/*
-	 * action to update field
+	 * action to update custom field
 	 */
 	updateField: async ({ request, locals }) => {
-		const session = await locals.getSession();
-
-		if (!session?.user) throw redirect(307, '/signin');
+		const session = await verifySession(locals);
 
 		const form = await superValidate(request, updateCardSchema);
 
