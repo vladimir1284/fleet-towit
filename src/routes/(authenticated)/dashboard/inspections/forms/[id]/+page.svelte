@@ -21,12 +21,12 @@
 
 	// edit form name
 	let isEditFormName = false;
-	let formName = data.customForm.name;
+	let formName = data.customForm?.name;
 
 	// edit card
 	let isEditCard = false;
-	let cardTypeSelect;
-	let newCardName;
+	let cardTypeSelect: string;
+	let newCardName: string;
 	const setCardTypeToEdit = (fieldType: FormFieldType) => {
 		if (fieldType === FormFieldType.TEXT) cardTypeSelect = 'text';
 
@@ -34,10 +34,10 @@
 	};
 
 	// delete and edit card
-	let idCardSelected;
+	let idCardSelected: number;
 
 	// select component
-	let selected;
+	let selected: string;
 	let cardTypes = [
 		{ value: 'number', name: 'Data Entry Numeric' },
 		{ value: 'text', name: 'Data Entry Alphanumeric' }
