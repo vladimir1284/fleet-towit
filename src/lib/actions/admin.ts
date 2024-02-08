@@ -79,9 +79,16 @@ export const deleteUser = async ({ tenantUserId }: { tenantUserId: string }) => 
 };
 
 export const getTenantUser = async ({ tenantUserId }: { tenantUserId: string }) => {
-	const tenantUser = await bypassPrisma.tenantUser.findUnique({ where: { id: tenantUserId } });
-	const user = await bypassPrisma.user.findUnique({ where: { id: tenantUser?.userId } });
-	return { ...tenantUser, user };
+	const tenantUser = await bypassPrisma.tenantUser.findUnique({ where: { id: tenantUserId }, 
+		select:{
+			id: true,
+			role: true,
+			tenantId: true,
+			userId: true,
+			user: true,
+		}});
+	
+	return { tenantUser };
 };
 
 export const listTenants = async () => {
@@ -121,14 +128,15 @@ export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: string }
 };
 
 export const listAllTenantUsers = async () => {
-	const _users = await bypassPrisma.tenantUser.findMany();
-	const users = await Promise.all(
-		_users.map(async (user) => {
-			const _user = await bypassPrisma.user.findUnique({ where: { id: user.userId } });
-			const _tenant = await bypassPrisma.tenant.findUnique({ where: { id: user.tenantId } });
-			return { ...user, user: _user, tenant: _tenant };
-		})
-	);
+	const users = await bypassPrisma.tenantUser.findMany({
+		select: {
+			id: true,
+			role: true,
+			userId: true,
+			user: true,
+			tenantId: true,
+			tenant: true,
+		}});
 	return users;
 };
 
