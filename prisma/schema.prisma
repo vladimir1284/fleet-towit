@@ -137,9 +137,10 @@ model CustomFieldResponse {
   field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   createdAt    DateTime    @default(now())
 
+}
   // Inventory-related models.
 
-  model Part {
+model Part {
   id               String @id @default(cuid())
   name             String
   number           Int
