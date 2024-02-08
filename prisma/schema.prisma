@@ -42,19 +42,18 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime 
+  expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String    @id @default(cuid()) /// @zod.custom.omit([model, input])
+  id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
-  email         String?   @unique
+  email         String?      @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-
   tenantUsers   TenantUser[]
 }
 
@@ -67,17 +66,15 @@ model VerificationToken {
 }
 
 model TenantUser {
-  id       String @id @default(cuid())
-  role     Role   @default(STAFF)
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id                   String                @id @default(cuid())
+  role                 Role                  @default(STAFF)
+  tenantId             String
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdParts Part[] @relation("creationAuthor")
   updatedParts Part[] @relation("updateAuthor")
   deletedParts Part[] @relation("deletionAuthor")
-
   customForms          CustomForm[]
   customFieldResponses CustomFieldResponse[]
 }
@@ -88,8 +85,9 @@ model Client {
   email       String
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
-  tenantId    String
-  tenant      Tenant  @relation(fields: [tenantId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Tenant {
@@ -112,12 +110,12 @@ enum Role {
 }
 
 model CustomForm {
-  id        Int           @id @default(autoincrement())
-  userId    String
-  name      String
-  user      TenantUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime      @default(now())
-  fields    CustomField[]
+  id           Int           @id @default(autoincrement())
+  name         String
+  tenantUserId String
+  user         TenantUser    @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  fields       CustomField[]
 }
 
 enum FormFieldType {
@@ -138,15 +136,16 @@ model CustomField {
 }
 
 model CustomFieldResponse {
-  id        Int         @id @default(autoincrement())
-  content   String
-  userId    String
-  user      TenantUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fieldId   Int
-  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-  createdAt DateTime    @default(now())
+  id           Int         @id @default(autoincrement())
+  content      String
+  tenantUserId String
+  user         TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  fieldId      Int
+  field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+
 }
-// Inventory-related models.
+  // Inventory-related models.
 
 model Part {
   id               String @id @default(cuid())
@@ -264,4 +263,3 @@ model VendorOnParts {
 
   @@id([partId, vendorId])
 }
-
