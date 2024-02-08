@@ -11,7 +11,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
-		"test:unit": "vitest"
+		"test:unit": "vitest",
+		"migrate": "npx prisma migrate dev --name"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^4.5.10",
@@ -58,6 +59,8 @@
 		"@popperjs/core": "^2.11.8",
 		"@prisma/client": "^5.7.1",
 		"@sentry/sveltekit": "^7.88.0",
+		"@testing-library/jest-dom": "^6.4.2",
+		"@testing-library/svelte": "^4.1.0",
 		"aws-sdk": "^2.1543.0",
 		"flowbite": "^2.2.1",
 		"flowbite-svelte": "^0.44.21",

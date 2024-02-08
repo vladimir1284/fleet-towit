@@ -42,7 +42,7 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime
+  expires      DateTime 
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -55,10 +55,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  createdParts Part[]       @relation("creationAuthor")
-  updatedParts Part[]       @relation("updateAuthor")
-  deletedParts Part[]       @relation("deletionAuthor")
-  tenantUsers  TenantUser[]
+  tenantUsers   TenantUser[]
 }
 
 model VerificationToken {
@@ -76,6 +73,13 @@ model TenantUser {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdParts Part[] @relation("creationAuthor")
+  updatedParts Part[] @relation("updateAuthor")
+  deletedParts Part[] @relation("deletionAuthor")
+
+  customForms          CustomForm[]
+  customFieldResponses CustomFieldResponse[]
 }
 
 model Client {
@@ -84,9 +88,8 @@ model Client {
   email       String
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
-
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  tenant      Tenant  @relation(fields: [tenantId], references: [id])
 }
 
 model Tenant {
@@ -108,6 +111,41 @@ enum Role {
   OWNER
 }
 
+model CustomForm {
+  id        Int           @id @default(autoincrement())
+  userId    String
+  name      String
+  user      TenantUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  fields    CustomField[]
+}
+
+enum FormFieldType {
+  TEXT
+  NUMBER
+  RADIO
+  CHECKBOX
+}
+
+model CustomField {
+  id        Int                   @id @default(autoincrement())
+  name      String
+  type      FormFieldType
+  required  Boolean?              @default(true)
+  formId    Int
+  form      CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  responses CustomFieldResponse[]
+}
+
+model CustomFieldResponse {
+  id        Int         @id @default(autoincrement())
+  content   String
+  userId    String
+  user      TenantUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fieldId   Int
+  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+}
 // Inventory-related models.
 
 model Part {
@@ -136,9 +174,9 @@ model Part {
   deletedBy String
 
   // Relations.
-  creationAuthor User @relation("creationAuthor", fields: [createdBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  updateAuthor   User @relation("updateAuthor", fields: [updatedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  deletionAuthor User @relation("deletionAuthor", fields: [deletedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creationAuthor TenantUser @relation("creationAuthor", fields: [createdBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updateAuthor   TenantUser @relation("updateAuthor", fields: [updatedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  deletionAuthor TenantUser @relation("deletionAuthor", fields: [deletedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   // Multi-tenant identification.
   tenantId String
@@ -226,3 +264,4 @@ model VendorOnParts {
 
   @@id([partId, vendorId])
 }
+

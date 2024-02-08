@@ -13,8 +13,8 @@
 		Alert
 	} from 'flowbite-svelte';
 	import { TrashBinSolid, FileEditSolid, UserGroupSolid } from 'flowbite-svelte-icons';
-	import CreateTenantForm from '$lib/components/forms-components/companies/CreateTenantForm.svelte';
-	import DeleteTenantForm from '$lib/components/forms-components/companies/DeleteTenantForm.svelte';
+	import TenantForm from '$lib/components/forms-components/tenants/TenantForm.svelte';
+	import DeleteTenantForm from '$lib/components/forms-components/tenants/DeleteTenantForm.svelte';
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
 	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
@@ -56,8 +56,8 @@
 	}
 
 	async function handleUsers(tenant) {
-		const tempList = await fetch(`/api/tenants/${tenant.id}/users`, {headers});
-		selectedTenantUsersList = await tempList.json()
+		const tempList = await fetch(`/api/tenants/${tenant.id}/users`, { headers });
+		selectedTenantUsersList = await tempList.json();
 		showUsers = true;
 	}
 
@@ -94,11 +94,11 @@
 	<p>Loading...</p>
 {:else}
 	<Modal bind:open={createModal} size="xs">
-		<CreateTenantForm {data} on:formvalid={handleCloseModal} />
+		<TenantForm {data} on:formvalid={handleCloseModal} />
 	</Modal>
 
 	<Modal bind:open={editModal} size="xs">
-		<CreateTenantForm {data} {selectedTenant} on:formvalid={handleCloseEditModal} />
+		<TenantForm {data} {selectedTenant} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
@@ -107,7 +107,7 @@
 
 	<Modal size="md" padding="md" bind:open={showUsers}>
 		<Table>
-			<UsersTable users={selectedTenantUsersList} />
+			<UsersTable users={selectedTenantUsersList}/>
 		</Table>
 	</Modal>
 
@@ -133,7 +133,10 @@
 						<TableBodyCell class="text-center">{tenant.name}</TableBodyCell>
 						<TableBodyCell class="text-center">{tenant.email}</TableBodyCell>
 						<TableBodyCell class="text-center">{tenant.owner?.email || '-'}</TableBodyCell>
-						<TableBodyCell class="text-center text-blue-500 cursor-pointer" on:click={() => handleUsers(tenant)}>
+						<TableBodyCell
+							class="text-center text-blue-500 cursor-pointer"
+							on:click={() => handleUsers(tenant)}
+						>
 							See users
 						</TableBodyCell>
 						<TableBodyCell class="flex w-32 justify-between">
