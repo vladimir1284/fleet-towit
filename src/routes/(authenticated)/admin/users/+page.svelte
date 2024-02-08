@@ -1,25 +1,12 @@
 <script lang="ts">
 	// @ts-nocheck
-	import {
-		Card,
-		GradientButton,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell,
-		Modal,
-		Alert
-	} from 'flowbite-svelte';
-	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
-	import CreateUserForm from '$lib/components/forms-components/users/CreateUserForm.svelte';
+	import { Card, GradientButton, Table, Modal, Alert } from 'flowbite-svelte';
 	import DeleteUserForm from '$lib/components/forms-components/users/DeleteUserForm.svelte';
+	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
+	import UserForm from '$lib/components/forms-components/users/UserForm.svelte';
+	import { tenantActor } from '$lib/store/context-store';
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
-
-	import { tenantActor } from '$lib/store/context-store';
-	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
 
 	export let data: PageData;
 	let tenants = [];
@@ -102,16 +89,11 @@
 	<p>Loading...</p>
 {:else}
 	<Modal size="xs" padding="md" bind:open={createModal}>
-		<CreateUserForm {data} tenantsList={tenants} on:formvalid={handleCloseModal} />
+		<UserForm {data} tenantsList={tenants} on:formvalid={handleCloseModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={editModal} on:close={handleCloseEditModal}>
-		<CreateUserForm
-			{data}
-			tenantsList={tenants}
-			{selectedUser}
-			on:formvalid={handleCloseEditModal}
-		/>
+		<UserForm {data} tenantsList={tenants} {selectedUser} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>

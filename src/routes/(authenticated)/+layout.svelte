@@ -16,6 +16,9 @@
 	$: currentTenant = tenantActor.getSnapshot().context.currentTenant;
 
 	$: if (currentTenant !== 'initial') {
+		if (!currentTenant) {
+			goto('/select-tenant');
+		}
 		const actualTenant = data.session.user.tenantUsers.find(
 			(user) => user.id === currentTenant.currentUserTenant.id
 		);
@@ -45,9 +48,6 @@
 		goto('/select-tenant');
 	}
 
-	$: if (!currentTenant) {
-		goto('/select-tenant');
-	}
 </script>
 
 <svelte:head>

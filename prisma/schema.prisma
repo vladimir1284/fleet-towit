@@ -54,12 +54,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  createdParts Part[] @relation("creationAuthor")
-  updatedParts Part[] @relation("updateAuthor")
-  deletedParts Part[] @relation("deletionAuthor")
   tenantUsers   TenantUser[]
-  customForms          CustomForm[]
-  customFieldResponses CustomFieldResponse[]
 }
 
 model VerificationToken {
@@ -88,8 +83,8 @@ model Client {
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
 
-  tenantId    String
-  tenant      Tenant  @relation(fields: [tenantId], references: [id])
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Tenant {
@@ -108,12 +103,12 @@ enum Role {
 }
 
 model CustomForm {
-  id        Int           @id @default(autoincrement())
-  name      String
-  tenantUserId    String
-  user      TenantUser    @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-  createdAt DateTime      @default(now())
-  fields    CustomField[]
+  id           Int           @id @default(autoincrement())
+  name         String
+  tenantUserId String
+  user         TenantUser    @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  fields       CustomField[]
 }
 
 enum FormFieldType {
@@ -134,17 +129,17 @@ model CustomField {
 }
 
 model CustomFieldResponse {
-  id        Int         @id @default(autoincrement())
-  content   String
-  tenantUserId    String
-  user      TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-  fieldId   Int
-  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-  createdAt DateTime    @default(now())
+  id           Int         @id @default(autoincrement())
+  content      String
+  tenantUserId String
+  user         TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  fieldId      Int
+  field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
 
-// Inventory-related models.
+  // Inventory-related models.
 
-model Part {
+  model Part {
   id               String @id @default(cuid())
   name             String
   number           Int
