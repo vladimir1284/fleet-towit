@@ -1,40 +1,65 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PrismaClient } from '@prisma/client';
-import { createTenantUser } from "$lib/actions/admin";
+import { createTenantUser } from '$lib/actions/admin';
 import { bypassPrisma } from '$lib/prisma';
-import { Role } from "@prisma/client";
-const prisma = bypassPrisma
+import { Role } from '@prisma/client';
+const prisma = bypassPrisma;
 
+/**
+ * To run this function use: npx prisma db seed
+ */
 async function main() {
-	const usersData = [
-        { email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN },
-        { email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN },
-        { email: 'waos@gmail.com', userRole: Role.ADMIN },
-        // Add more users as needed
-    ];
-	const existingAdminTenant = await prisma.tenant.findFirst({
-        where: {
-            isAdmin: true
-        }
-    });
+	let existingAdminTenant = await prisma.tenant.findFirst({
+		where: {
+			name: 'admin'
+		}
+	});
 
-    let tenantId;
-    if (!existingAdminTenant) {
-        const admin_tenant = await prisma.tenant.create({
-            data: {
-                name: 'admin',
-                email: 'gissell111284@gmail.com',
-                isAdmin: true
-            }
-        });
-        tenantId = admin_tenant.id;
-    } else {
-        tenantId = existingAdminTenant.id;
-    }
+	let existingTenant = await prisma.tenant.findFirst({
+		where: {
+			name: 'TEST'
+		}
+	});
 
-    for (const userData of usersData) {
-        await createTenantUser({ ...userData, tenantId });
-    }
+	if (!existingAdminTenant) {
+		existingAdminTenant = await prisma.tenant.create({
+			data: {
+				name: 'admin',
+				email: 'gissell111284@gmail.com',
+				isAdmin: true
+			}
+		});
+	}
+
+	if (!existingTenant) {
+		existingTenant = await prisma.tenant.create({
+			data: {
+				name: 'TEST',
+				email: 'gissell111284@gmail.com',
+				isAdmin: false
+			}
+		});
+	}
+
+	const users_admin_emails = [
+		'gsg2604@gmail.com',
+		'luis.ulloa75360@gmail.com',
+		'vladimir.rdguez@gmail.com',
+		'raulodev@gmail.com',
+		'ymansfarroll@gmail.com'
+		];
+
+	for (const email of users_admin_emails) {
+		await createTenantUser({
+			email: email,
+			userRole: Role.ADMIN,
+			tenantId: existingAdminTenant.id
+		});
+		await createTenantUser({
+			email: email,
+			userRole: Role.ADMIN,
+			tenantId: existingTenant.id
+		});
+	}
 }
 
 main()

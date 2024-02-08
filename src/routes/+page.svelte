@@ -2,7 +2,6 @@
 	import { Section, News, HeroHeader, HeroBody } from 'flowbite-svelte-blocks';
 	import ButtonComponent  from '$lib/components/buttons/ButtonComponent.svelte';
 	import { ArrowRightSolid } from 'flowbite-svelte-icons';
-	
 </script>
 
 <Section name="heroVisual">
