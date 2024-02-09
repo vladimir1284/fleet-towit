@@ -15,11 +15,11 @@
 	let actionURL = `/api/tenants/${currentTenant.currentUserTenant.tenantId}/users`;
 
 	const fixSchema = z.object({
-  		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
-  		email: z.string().email(),
-  		tenantId: z.string(),
-  		id: z.string().optional()
-	})
+		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
+		email: z.string().email(),
+		tenantId: z.string(),
+		id: z.string().optional()
+	});
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		SPA: true,
@@ -80,7 +80,7 @@
 >
 	<input hidden name="id" bind:value={$form.id} />
 	<div class="sm:col-span-2">
-		<EmailInputComponent placeholder="Insert user email" form={form} errors={errors} constraints={constraints}/>
+		<EmailInputComponent placeholder="Insert user email" {form} {errors} {constraints} />
 	</div>
 	<Select
 		class="mt-2"
@@ -98,7 +98,10 @@
 			bind:value={$form.tenantId}
 		/>
 	{:else}
-		<input hidden name='tenantId' bind:value={$form.tenantId}>
+		<input hidden name="tenantId" bind:value={$form.tenantId} />
 	{/if}
-	<SubmitButtonComponent placeholder={!selectedUser ? 'Create user' : 'Update user'} styles="w-[50%] mx-auto block"/>
+	<SubmitButtonComponent
+		placeholder={!selectedUser ? 'Create user' : 'Update user'}
+		styles="w-[50%] mx-auto block"
+	/>
 </form>

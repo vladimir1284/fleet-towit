@@ -46,7 +46,7 @@ async function main() {
 		'vladimir.rdguez@gmail.com',
 		'raulodev@gmail.com',
 		'ymansfarroll@gmail.com'
-		];
+	];
 
 	for (const email of users_admin_emails) {
 		await createTenantUser({
@@ -60,8 +60,6 @@ async function main() {
 			tenantId: existingTenant.id
 		});
 	}
-
-
 }
 main()
 	.then(async () => {

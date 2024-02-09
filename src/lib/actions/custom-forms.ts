@@ -52,7 +52,7 @@ export const createNewCustomForm = async ({ userId, name }: { userId: string; na
 	}
 };
 
-export const fetchOneFormById = async (userId: string, formId: number) => {
+export const fetchCustomFormById = async (userId: string, formId: number) => {
 	const tenantUser = await selectTenantUser(userId);
 
 	if (tenantUser) {

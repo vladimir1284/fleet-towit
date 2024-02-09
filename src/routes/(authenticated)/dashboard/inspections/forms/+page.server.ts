@@ -3,6 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import type { Actions, PageServerLoad } from './$types';
+import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared/helpers';
 
 const createFormSchema = z.object({
 	form_name: z.string()
@@ -11,7 +12,7 @@ const createFormSchema = z.object({
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 
-	if (!session?.user) throw redirect(307, '/signin');
+	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
 
 	return session;
 };
@@ -33,7 +34,7 @@ export const actions = {
 		const form = await superValidate(request, createFormSchema);
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
 		const newForm = await createNewCustomForm({
@@ -42,7 +43,7 @@ export const actions = {
 		});
 
 		if (newForm) {
-			throw redirect(301, `${url.pathname}/${newForm.id}`);
+			throw redirect(TEMPORARY_REDIRECT_STATUS, `${url.pathname}/${newForm.id}`);
 		}
 	}
 } satisfies Actions;

@@ -47,7 +47,6 @@
 	) {
 		goto('/select-tenant');
 	}
-
 </script>
 
 <svelte:head>

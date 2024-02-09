@@ -1,7 +1,7 @@
 import {
 	addFieldToCustomFrom,
 	deleteCustomForm,
-	fetchOneFormById,
+	fetchCustomFormById,
 	deleteCustomField,
 	renameCustomForm,
 	updateCustomField
@@ -10,6 +10,11 @@ import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import type { Actions, PageServerLoad } from './$types';
+import {
+	PERMANENT_REDIRECT_STATUS,
+	TEMPORARY_REDIRECT_STATUS,
+	MISSING_SECURITY_HEADER_STATUS
+} from '$lib/shared/helpers';
 
 const addCardSchema = z.object({
 	card_name: z.string(),
@@ -37,13 +42,10 @@ const updateCardSchema = z.object({
 	new_card_name: z.string()
 });
 
-// redirect to form dashboard
-const redirect_to_dashboard = () => redirect(301, '/inspections/forms');
-
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 
-	if (!session?.user) throw redirect(307, '/signin');
+	if (!session?.user) redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
 
 	return session;
 };
@@ -54,14 +56,20 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const formId = Number(params.id);
 
 	if (formId) {
-		const customForm = await fetchOneFormById(session.user.id, formId);
+		try {
+			const customForm = await fetchCustomFormById(session.user.id, formId);
 
-		if (!customForm) redirect_to_dashboard();
+			if (!customForm) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
 
-		const form = await superValidate(addCardSchema);
+			const form = await superValidate(addCardSchema);
 
-		return { customForm, form };
-	} else redirect_to_dashboard();
+			return { customForm, form };
+		} catch {
+			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
+		}
+	}
+
+	redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
 };
 
 export const actions = {
@@ -74,7 +82,7 @@ export const actions = {
 		const form = await superValidate(request, addCardSchema);
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
 		await addFieldToCustomFrom({
@@ -95,12 +103,12 @@ export const actions = {
 		const form = await superValidate(request, deleteFormSchema);
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
 		await deleteCustomForm(form.data.form_id, session.user.id);
 
-		redirect_to_dashboard();
+		redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
 	},
 
 	/*
@@ -112,7 +120,7 @@ export const actions = {
 		const form = await superValidate(request, deleteCardSchema);
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
 		await deleteCustomField({
@@ -131,7 +139,7 @@ export const actions = {
 		const form = await superValidate(request, renameFormSchema);
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
 		await renameCustomForm({
@@ -150,7 +158,7 @@ export const actions = {
 		const form = await superValidate(request, updateCardSchema);
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
 		await updateCustomField({

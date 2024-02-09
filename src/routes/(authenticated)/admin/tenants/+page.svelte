@@ -107,7 +107,7 @@
 
 	<Modal size="md" padding="md" bind:open={showUsers}>
 		<Table>
-			<UsersTable users={selectedTenantUsersList}/>
+			<UsersTable users={selectedTenantUsersList} />
 		</Table>
 	</Modal>
 

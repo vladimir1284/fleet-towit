@@ -24,7 +24,7 @@
 <Card class="w-full max-w-md">
 	<form class="flex flex-col space-y-6" action="/signin" method="post" use:enhance>
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white">Sign in to our platform</h3>
-		<EmailInputComponent placeholder="Insert email address" form={form} errors={errors} constraints={constraints}/>
+		<EmailInputComponent placeholder="Insert email address" {form} {errors} {constraints} />
 		{#if !useMagicLink}
 			<Label class="space-y-2">
 				<span>Your password</span>
@@ -52,7 +52,7 @@
 		<Checkbox checked={useMagicLink} on:change={() => (useMagicLink = !useMagicLink)}>
 			Receive access token
 		</Checkbox>
-		<SubmitButtonComponent placeholder="Login to your account" styles="w-full color-blue"/>
+		<SubmitButtonComponent placeholder="Login to your account" styles="w-full color-blue" />
 		<Label>
 			<GoogleSolid
 				class="w-6 h-6"
