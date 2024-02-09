@@ -1,28 +1,48 @@
-import { bypassPrisma } from '$lib/prisma';
+import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
 
-const selectTenantUser = async (userId: string) => {
-	const tenantUser = await bypassPrisma.tenantUser.findFirst({
-		where: {
-			userId: userId
+/*
+ *  The following function are related to CustomForm
+ */
+
+/*
+ * Create new custom form
+ */
+export const createCustomForm = async ({ tenantId, name }: { tenantId: string; name: string }) => {
+	const newForm = await tenantPrisma(tenantId).customForm.create({
+		data: {
+			name: name,
+			tenantId: tenantId
 		}
 	});
 
-	return tenantUser;
+	return newForm;
 };
 
-const getFieldType = (type: 'text' | 'number') => {
-	let fieldType;
-	if (type === 'number') fieldType = FormFieldType.NUMBER;
-	else fieldType = FormFieldType.TEXT;
-
-	return fieldType;
-};
-
-export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: string }) => {
-	const tenantUser = await bypassPrisma.tenantUser.findFirst({
+/*
+ * Delete custom form
+ */
+export const deleteCustomForm = async ({
+	tenantId,
+	formId
+}: {
+	formId: number;
+	tenantId: string;
+}) => {
+	await tenantPrisma(tenantId).customForm.delete({
 		where: {
-			userId: userId
+			id: formId
+		}
+	});
+};
+
+/*
+ *  Return all custom forms
+ */
+export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: string }) => {
+	const tenant = await tenantPrisma(tenantId).tenant.findFirst({
+		where: {
+			id: tenantId
 		},
 
 		include: {
@@ -34,52 +54,81 @@ export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: string 
 		}
 	});
 
-	return tenantUser?.customForms || [];
+	return tenant?.customForms || [];
 };
 
-export const createNewCustomForm = async ({ userId, name }: { userId: string; name: string }) => {
-	const tenantUser = await selectTenantUser(userId);
+/*
+ *  Retrieve 1 custom form by id
+ */
+export const retrieveCustomFormById = async ({
+	tenantId,
+	formId
+}: {
+	tenantId: string;
+	formId: number;
+}) => {
+	const customForm = await tenantPrisma(tenantId).customForm.findUnique({
+		where: {
+			id: formId,
+			tenantId: tenantId
+		},
+		include: {
+			fields: true
+		}
+	});
 
-	if (tenantUser) {
-		const newForm = await bypassPrisma.customForm.create({
-			data: {
-				name: name,
-				tenantUserId: tenantUser.id
-			}
-		});
-
-		return newForm;
-	}
+	return customForm;
 };
 
-export const fetchCustomFormById = async (userId: string, formId: number) => {
-	const tenantUser = await selectTenantUser(userId);
+/*
+ *  Rename custom form
+ */
+export const renameCustomForm = async ({
+	formId,
+	newName,
+	tenantId
+}: {
+	formId: number;
+	newName: string;
+	tenantId: string;
+}) => {
+	await tenantPrisma(tenantId).customForm.update({
+		where: {
+			id: formId
+		},
 
-	if (tenantUser) {
-		const customForm = await bypassPrisma.customForm.findUnique({
-			where: {
-				id: formId,
-				tenantUserId: tenantUser.id
-			},
-			include: {
-				fields: true
-			}
-		});
-
-		return customForm;
-	}
+		data: {
+			name: newName
+		}
+	});
 };
 
+/*
+ *  The following function are related to custom field
+ */
+
+const getFieldType = (type: 'text' | 'number') => {
+	let fieldType;
+	if (type === 'number') fieldType = FormFieldType.NUMBER;
+	else fieldType = FormFieldType.TEXT;
+	return fieldType;
+};
+
+/*
+ *	add field to custom form
+ */
 export const addFieldToCustomFrom = async ({
 	name,
 	formId,
-	cardType
+	cardType,
+	tenantId
 }: {
 	name: string;
 	formId: number;
 	cardType: 'number' | 'text';
+	tenantId: string;
 }) => {
-	await bypassPrisma.customField.create({
+	await tenantPrisma(tenantId).customField.create({
 		data: {
 			formId: formId,
 			name: name,
@@ -88,41 +137,29 @@ export const addFieldToCustomFrom = async ({
 	});
 };
 
-export const deleteCustomForm = async (formId: number, userId: string) => {
-	const tenantUser = await selectTenantUser(userId);
-
-	if (tenantUser) {
-		await bypassPrisma.customForm.delete({
-			where: {
-				id: formId,
-				tenantUserId: tenantUser.id
-			}
-		});
-	}
-};
-
+/*
+ * 	delete custom field
+ */
 export const deleteCustomField = async ({
 	fieldId,
 	formId,
-	userId
+	tenantId
 }: {
 	fieldId: number;
 	formId: number;
-	userId: string;
+	tenantId: string;
 }) => {
-	const tenantUser = await selectTenantUser(userId);
-
-	if (!tenantUser) return;
-
-	const customForm = await bypassPrisma.customForm.findFirst({
+	// this step is for security , checking the tenant is the owner
+	// of this custom form
+	const customForm = await tenantPrisma(tenantId).customForm.findFirst({
 		where: {
 			id: formId,
-			tenantUserId: tenantUser.id
+			tenantId: tenantId
 		}
 	});
 
 	if (customForm) {
-		await bypassPrisma.customField.delete({
+		await tenantPrisma(tenantId).customField.delete({
 			where: {
 				id: fieldId,
 				formId: customForm.id
@@ -131,46 +168,21 @@ export const deleteCustomField = async ({
 	}
 };
 
-export const renameCustomForm = async ({
-	formId,
-	newName,
-	userId
-}: {
-	formId: number;
-	newName: string;
-	userId: string;
-}) => {
-	const tenantUser = await selectTenantUser(userId);
-
-	if (!tenantUser) return;
-
-	await bypassPrisma.customForm.update({
-		where: {
-			id: formId,
-			tenantUserId: tenantUser.id
-		},
-		data: {
-			name: newName
-		}
-	});
-};
-
+/*
+ *  update custom field
+ */
 export const updateCustomField = async ({
 	cardId,
 	cardType,
 	newName,
-	userId
+	tenantId
 }: {
 	cardId: number;
 	cardType: 'text' | 'number';
 	newName: string;
-	userId: string;
+	tenantId: string;
 }) => {
-	const tenantUser = await selectTenantUser(userId);
-
-	if (!tenantUser) return;
-
-	await bypassPrisma.customField.update({
+	await tenantPrisma(tenantId).customField.update({
 		where: {
 			id: cardId
 		},

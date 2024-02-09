@@ -1,4 +1,4 @@
-import { createNewCustomForm, fetchCustomFormsByTenantUser } from '$lib/actions/custom-forms';
+import { createCustomForm, fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
@@ -22,7 +22,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const form = await superValidate(createFormSchema);
 
-	const customForms = await fetchCustomFormsByTenantUser({ userId: session.user.id });
+	// this code is for testing purposes only
+	const tenant = session?.user.tenantUsers[0].tenant;
+
+	const customForms = await fetchCustomFormsByTenant({ tenantId: tenant.id });
 
 	return { form, customForms };
 };
@@ -37,8 +40,11 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		const newForm = await createNewCustomForm({
-			userId: session.user.id,
+		// this code is for testing purposes only
+		const tenant = session?.user.tenantUsers[0].tenant;
+
+		const newForm = await createCustomForm({
+			tenantId: tenant.id,
 			name: form.data.form_name
 		});
 

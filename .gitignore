@@ -15,6 +15,7 @@ vite.config.ts.timestamp-*
 .sentryclirc
 prisma/dev.db
 prisma/dev.db-journal
+prisma/migrations
 fleet-towit.rar
 fleet-towit.rar
 .vscode/sftp.json

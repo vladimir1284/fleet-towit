@@ -72,7 +72,6 @@ model TenantUser {
   tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId               String
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  customForms          CustomForm[]
   customFieldResponses CustomFieldResponse[]
 }
 
@@ -94,6 +93,7 @@ model Tenant {
   isAdmin     Boolean      @default(false)
   clients     Client[]
   tenantUsers TenantUser[]
+  customForms          CustomForm[]
 }
 
 enum Role {
@@ -105,8 +105,8 @@ enum Role {
 model CustomForm {
   id           Int           @id @default(autoincrement())
   name         String
-  tenantUserId String
-  user         TenantUser    @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  tenantId String
+  user         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   createdAt    DateTime      @default(now())
   fields       CustomField[]
 }

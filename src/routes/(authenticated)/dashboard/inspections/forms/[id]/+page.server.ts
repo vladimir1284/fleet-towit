@@ -1,7 +1,7 @@
 import {
 	addFieldToCustomFrom,
 	deleteCustomForm,
-	fetchCustomFormById,
+	retrieveCustomFormById,
 	deleteCustomField,
 	renameCustomForm,
 	updateCustomField
@@ -57,7 +57,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (formId) {
 		try {
-			const customForm = await fetchCustomFormById(session.user.id, formId);
+			// this code is for testing purposes only
+			const tenant = session?.user.tenantUsers[0].tenant;
+
+			const customForm = await retrieveCustomFormById({
+				tenantId: tenant.id,
+				formId: formId
+			});
 
 			if (!customForm) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
 
@@ -74,27 +80,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions = {
 	/*
-	 * action to add field
-	 */
-	addField: async ({ request, locals }) => {
-		await verifySession(locals);
-
-		const form = await superValidate(request, addCardSchema);
-
-		if (!form.valid) {
-			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
-		}
-
-		await addFieldToCustomFrom({
-			name: form.data.card_name,
-			formId: form.data.form_id,
-			cardType: form.data.card_type
-		});
-
-		return { form };
-	},
-
-	/*
 	 * action to delete form
 	 */
 	deleteForm: async ({ request, locals }) => {
@@ -106,28 +91,15 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		await deleteCustomForm(form.data.form_id, session.user.id);
+		// this code is for testing purposes only
+		const tenant = session?.user.tenantUsers[0].tenant;
+
+		await deleteCustomForm({
+			tenantId: tenant.id,
+			formId: form.data.form_id
+		});
 
 		redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
-	},
-
-	/*
-	 * action to delete card
-	 */
-	deleteCard: async ({ request, locals }) => {
-		const session = await verifySession(locals);
-
-		const form = await superValidate(request, deleteCardSchema);
-
-		if (!form.valid) {
-			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
-		}
-
-		await deleteCustomField({
-			fieldId: form.data.card_id,
-			formId: form.data.form_id,
-			userId: session.user.id
-		});
 	},
 
 	/*
@@ -142,10 +114,60 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
+		// this code is for testing purposes only
+		const tenant = session?.user.tenantUsers[0].tenant;
+
 		await renameCustomForm({
+			tenantId: tenant.id,
 			formId: form.data.form_id,
-			newName: form.data.new_form_name,
-			userId: session.user.id
+			newName: form.data.new_form_name
+		});
+	},
+
+	/*
+	 * action to add field to custom form
+	 */
+	addField: async ({ request, locals }) => {
+		const session = await verifySession(locals);
+
+		const form = await superValidate(request, addCardSchema);
+
+		if (!form.valid) {
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
+		}
+
+		// this code is for testing purposes only
+		const tenant = session?.user.tenantUsers[0].tenant;
+
+		await addFieldToCustomFrom({
+			tenantId: tenant.id,
+			cardType: form.data.card_type,
+			name: form.data.card_name,
+			formId: form.data.form_id
+		});
+
+		return { form };
+	},
+
+	/*
+	 * action to delete card or field
+	 */
+	deleteCard: async ({ request, locals }) => {
+		const session = await verifySession(locals);
+
+		const form = await superValidate(request, deleteCardSchema);
+
+		if (!form.valid) {
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
+		}
+
+		// this code is for testing purposes only
+		const tenant = session?.user.tenantUsers[0].tenant;
+
+		await deleteCustomField({
+			tenantId: tenant.id,
+			formId: form.data.form_id,
+			fieldId: form.data.card_id
 		});
 	},
 
@@ -161,11 +183,14 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
+		// this code is for testing purposes only
+		const tenant = session?.user.tenantUsers[0].tenant;
+
 		await updateCustomField({
+			tenantId: tenant.id,
 			newName: form.data.new_card_name,
 			cardId: form.data.card_id,
-			cardType: form.data.card_type,
-			userId: session.user.id
+			cardType: form.data.card_type
 		});
 	}
 } satisfies Actions;
