@@ -1,32 +1,34 @@
-import { redirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
-import { z } from 'zod';
+import { createNewCustomForm, fetchCustomFormsByTenantUser } from '$lib/actions/custom-forms';
+import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
-import { fetchCustomFormsByUser, createNewCustomForm } from '$lib/actions/custom-forms';
+import { z } from 'zod';
+import type { Actions, PageServerLoad } from './$types';
 
-// schema
 const createFormSchema = z.object({
 	form_name: z.string()
 });
 
-export async function load({ url, locals }) {
-	// check user session
+const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
+
 	if (!session?.user) throw redirect(307, '/signin');
+
+	return session;
+};
+
+export const load: PageServerLoad = async ({ locals }) => {
+	const session = await verifySession(locals);
 
 	const form = await superValidate(createFormSchema);
 
-	// retrieve form
-	const customForms = await fetchCustomFormsByUser({ userId: session.user.id });
+	const customForms = await fetchCustomFormsByTenantUser({ userId: session.user.id });
 
 	return { form, customForms };
-}
+};
 
 export const actions = {
 	default: async ({ request, url, locals }) => {
-		const session = await locals.getSession();
-
-		if (!session?.user) throw redirect(307, '/signin');
+		const session = await verifySession(locals);
 
 		const form = await superValidate(request, createFormSchema);
 
@@ -39,6 +41,8 @@ export const actions = {
 			name: form.data.form_name
 		});
 
-		throw redirect(301, `${url.pathname}/${newForm.id}`);
+		if (newForm) {
+			throw redirect(301, `${url.pathname}/${newForm.id}`);
+		}
 	}
 } satisfies Actions;
