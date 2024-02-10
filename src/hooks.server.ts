@@ -58,6 +58,9 @@ const handleAuth = (async (...args) => {
 				};
 				event.locals.session = session;
 				return session;
+			},
+			async redirect({ url, baseUrl }) {
+				return baseUrl
 			}
 		},
 		adapter: PrismaAdapter(prisma),
@@ -76,8 +79,7 @@ const handleAuth = (async (...args) => {
 						pass: SMTP_PASSWORD
 					}
 				},
-				from: EMAIL_FROM,
-				allowDangerousEmailAccountLinking: true
+				from: EMAIL_FROM
 			})
 		],
 		pages: {
