@@ -1,5 +1,8 @@
 import { json } from '@sveltejs/kit';
-import { SUCCESSFUL_REQUEST_STATUS, TAKE_PAGINATION_PARAMETER } from '$lib/shared/helpers';
+import {
+	SUCCESSFUL_REQUEST_STATUS,
+	TAKE_PAGINATION_PARAMETER
+} from '../../../../dashboard/maintenance/inventory/helpers';
 
 import type { RequestHandler } from '@sveltejs/kit';
 

@@ -47,14 +47,15 @@ model Session {
 }
 
 model User {
-  id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
+  id            String    @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
-  email         String?      @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  tenantUsers   TenantUser[]
+
+  tenantUsers TenantUser[]
 }
 
 model VerificationToken {
@@ -66,15 +67,17 @@ model VerificationToken {
 }
 
 model TenantUser {
-  id                   String                @id @default(cuid())
-  role                 Role                  @default(STAFF)
-  tenantId             String
-  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userId               String
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String @id @default(cuid()) @db.VarChar(30)
+  role     Role   @default(STAFF)
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdParts Part[] @relation("creationAuthor")
   updatedParts Part[] @relation("updateAuthor")
   deletedParts Part[] @relation("deletionAuthor")
+
   customForms          CustomForm[]
   customFieldResponses CustomFieldResponse[]
 }
@@ -91,7 +94,7 @@ model Client {
 }
 
 model Tenant {
-  id          String       @id @default(cuid())
+  id          String       @id @default(cuid()) @db.VarChar(30)
   name        String
   email       String?
   isAdmin     Boolean      @default(false)
@@ -110,12 +113,12 @@ enum Role {
 }
 
 model CustomForm {
-  id           Int           @id @default(autoincrement())
-  name         String
-  tenantUserId String
-  user         TenantUser    @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-  createdAt    DateTime      @default(now())
-  fields       CustomField[]
+  id        Int           @id @default(autoincrement())
+  userId    String
+  name      String
+  user      TenantUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  fields    CustomField[]
 }
 
 enum FormFieldType {
@@ -136,19 +139,19 @@ model CustomField {
 }
 
 model CustomFieldResponse {
-  id           Int         @id @default(autoincrement())
-  content      String
-  tenantUserId String
-  user         TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-  fieldId      Int
-  field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-  createdAt    DateTime    @default(now())
-
+  id        Int         @id @default(autoincrement())
+  content   String
+  userId    String
+  user      TenantUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fieldId   Int
+  field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
 }
-  // Inventory-related models.
+
+// Inventory-related models.
 
 model Part {
-  id               String @id @default(cuid())
+  id               String @id @default(cuid()) @db.VarChar(30)
   name             String
   number           Int
   criticalQty      Int
@@ -168,9 +171,9 @@ model Part {
   locations  LocationsOnParts[]
   vendors    VendorOnParts[]
 
-  createdBy String
-  updatedBy String
-  deletedBy String
+  createdBy String @db.VarChar(30)
+  updatedBy String @db.VarChar(30)
+  deletedBy String @db.VarChar(30)
 
   // Relations.
   creationAuthor TenantUser @relation("creationAuthor", fields: [createdBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -178,12 +181,12 @@ model Part {
   deletionAuthor TenantUser @relation("deletionAuthor", fields: [deletedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   // Multi-tenant identification.
-  tenantId String
+  tenantId String @db.VarChar(30)
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Category {
-  id   String @id @default(cuid())
+  id   String @id @default(cuid()) @db.VarChar(30)
   name String @unique
 
   // Built-in.
@@ -194,12 +197,12 @@ model Category {
   parts CategoriesOnParts[]
 
   // Multi-tenant identification.
-  tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String
 }
 
 model Location {
-  id   String @id @default(cuid())
+  id   String @id @default(cuid()) @db.VarChar(30)
   name String @unique
 
   // Built-in.
@@ -210,12 +213,12 @@ model Location {
   parts LocationsOnParts[]
 
   // Multi-tenant identification.
-  tenantId String
+  tenantId String @db.VarChar(30)
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Vendor {
-  id   String @id @default(cuid())
+  id   String @id @default(cuid()) @db.VarChar(30)
   name String @unique
 
   // Built-in.
@@ -226,24 +229,24 @@ model Vendor {
   parts VendorOnParts[]
 
   // Multi-tenant identification.
-  tenantId String
+  tenantId String @db.VarChar(30)
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model CategoriesOnParts {
   part       Part     @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  partId     String   @unique
+  partId     String   @db.VarChar(30)
   category   Category @relation(fields: [categoryId], references: [id])
-  categoryId String
+  categoryId String   @db.VarChar(30)
 
   @@id([partId, categoryId])
 }
 
 model LocationsOnParts {
   part       Part     @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  partId     String   @unique
+  partId     String   @db.VarChar(30)
   Location   Location @relation(fields: [locationId], references: [id])
-  locationId String
+  locationId String   @db.VarChar(30)
 
   // Location-per-part fields.
   quantity Int
@@ -254,9 +257,9 @@ model LocationsOnParts {
 
 model VendorOnParts {
   part     Part   @relation(fields: [partId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  partId   String @unique
+  partId   String @db.VarChar(30)
   vendor   Vendor @relation(fields: [vendorId], references: [id])
-  vendorId String
+  vendorId String @db.VarChar(30)
 
   // Vendor-per-part price.
   cost Float

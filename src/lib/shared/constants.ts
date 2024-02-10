@@ -3,6 +3,7 @@ export const // HTTP request constants.
 	USER_TENANT_HEADER = 'X-User-Tenant',
 	// Status.
 	FORBIDDEN_ACCESS_STATUS = 403,
+	INVALID_FORM_DATA_STATUS = 400,
 	SUCCESSFUL_REQUEST_STATUS = 200,
 	MISSING_SECURITY_HEADER_STATUS = 400,
 	// Responses.
