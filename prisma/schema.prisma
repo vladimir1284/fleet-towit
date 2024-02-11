@@ -79,7 +79,7 @@ model TenantUser {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  default  Boolean @default(false)
+  is_default  Boolean @default(false)
 }
 
 model Client {

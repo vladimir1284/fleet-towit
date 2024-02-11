@@ -9,7 +9,8 @@
 	$: if (currentTenant === 'initial') {
 		tenantActor.send({ type: 'tenant.init', value: 'currentTenant' });
 	}
-	tenantActor.subscribe((state) => {
+	
+	$: tenantActor.subscribe((state) => {
 		currentTenant = state.context.currentTenant;
 	});
 
@@ -38,13 +39,7 @@
 		}
 	}
 
-	$: if (
-		data.session &&
-		data.session.user &&
-		!data.session.user?.tenantUsers.some(
-			(tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id
-		)
-	) {
+	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id)) {
 		goto('/select-tenant');
 	}
 

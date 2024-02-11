@@ -88,7 +88,7 @@ export const getTenantUser = async ({ tenantUserId }: { tenantUserId: string }) 
 			user: true,
 		}});
 	
-	return { tenantUser };
+	return tenantUser;
 };
 
 export const listTenants = async () => {
@@ -117,13 +117,16 @@ export const getTenant = async ({ tenantId }: { tenantId: string }) => {
 };
 
 export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: string }) => {
-	const _users = await bypassPrisma.tenantUser.findMany({ where: { tenantId: tenantId } });
-	const users = await Promise.all(
-		_users.map(async (user) => {
-			const _user = await bypassPrisma.user.findUnique({ where: { id: user.userId } });
-			return { ...user, user: _user };
-		})
-	);
+	const users = await bypassPrisma.tenantUser.findMany({ where: { tenantId: tenantId }, 
+		select: {
+			id: true,
+			role: true,
+			userId: true,
+			tenantId: true,
+			is_default: true,
+			user: true,
+		}});
+	console.log('listTenantUsersOnTenant', users)
 	return users;
 };
 
@@ -133,10 +136,12 @@ export const listAllTenantUsers = async () => {
 			id: true,
 			role: true,
 			userId: true,
-			user: true,
 			tenantId: true,
+			is_default: true,
+			user: true,
 			tenant: true,
 		}});
+	console.log('listAllTenantUsers', users)
 	return users;
 };
 
