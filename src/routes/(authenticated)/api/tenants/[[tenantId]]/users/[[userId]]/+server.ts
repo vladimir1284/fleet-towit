@@ -17,6 +17,9 @@ const fixSchema = z.object({
 
 export const GET: RequestHandler = async ({ params, locals, request }) => {
 	const session = await locals.getSession();
+	const currentPrismaClient = locals.currentPrismaClient;
+	console.log(currentPrismaClient)
+
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
@@ -58,7 +61,7 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
-		(_user) => _user.id === request.headers.get('X-User-Tenant')
+		(_user: { id: string | null; }) => _user.id === request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
 	if (currentUserData.tenant.id === adminTenant?.id) {
@@ -92,6 +95,42 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 		});
 	}
 	return actionResult('success', { form }, { status: 200 });
+};
+
+export const PATCH: RequestHandler = async ({locals, params, request}) => {
+	const formData = await request.formData();
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
+	//@ts-expect-error Error on tenantUser wich exists but is not detected
+	const currentUserData = session.user.tenantUsers.find(
+		(_user: { id: string | null; }) => _user.id === request.headers.get('X-User-Tenant')
+	);
+	const adminTenant = await getAdminTenant();
+	if (currentUserData.tenant.id === adminTenant?.id) {
+		console.log('Using admin prisma');
+		currentPrisma = bypassPrisma;
+	} else {
+		console.log('Using normal prisma');
+		currentPrisma = tenantPrisma(currentUserData.tenant.id);
+	}
+	const tenantUserId = params.userId ?? (formData.get('tenantUserId') as string);
+    const isDefault = formData.get('is_default') === 'true';
+    if (isDefault) {
+        // Set all other tenantUsers to is_default: false
+        await currentPrisma.tenantUser.updateMany({
+            where: { tenantId: currentUserData.tenant.id, id: { not: tenantUserId } },
+            data: { is_default: false }
+        });
+    }
+    // Update the specified tenantUser
+    const tenantUser = await currentPrisma.tenantUser.update({
+        where: { id: tenantUserId },
+        data: { is_default: isDefault }
+    });
+
+	return new Response(JSON.stringify(tenantUser), { status: 200 });
 };
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {

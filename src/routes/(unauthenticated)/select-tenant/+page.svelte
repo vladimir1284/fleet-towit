@@ -5,6 +5,16 @@
 	import { goto } from '$app/navigation';
 	export let data: PageData;
 	import { tenantActor } from '$lib/store/context-store';
+	import { onMount } from 'svelte';
+
+	onMount(async () => {
+		if (data.session?.user.defaultTenantUser){
+			const currentUserTenant = data.session.user.defaultTenantUser;
+			tenantActor.send({ type: 'tenant.update', value: { ...currentUserTenant.tenant, currentUserTenant } });
+		}
+		goto('/dashboard');
+	});
+
 
 	async function handleSelectTenant(tenant) {
 		const currentUserTenant = data.session.user.tenantUsers.find(

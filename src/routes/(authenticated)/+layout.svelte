@@ -10,11 +10,20 @@
 		tenantActor.send({ type: 'tenant.init', value: 'currentTenant' });
 	}
 	
+	$: currentTenant = tenantActor.getSnapshot().context.currentTenant;
+
+	$: if(currentTenant === undefined){
+		goto('/select-tenant');
+	}
+
 	$: tenantActor.subscribe((state) => {
 		currentTenant = state.context.currentTenant;
 	});
 
-	$: currentTenant = tenantActor.getSnapshot().context.currentTenant;
+	
+	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id)) {
+		goto('/select-tenant');
+	}
 
 	$: if (currentTenant !== 'initial') {
 		if (!currentTenant) {
@@ -39,9 +48,6 @@
 		}
 	}
 
-	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id)) {
-		goto('/select-tenant');
-	}
 
 </script>
 

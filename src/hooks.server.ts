@@ -49,12 +49,14 @@ const handleAuth = (async (...args) => {
 			},
 			async session({ session, user }) {
 				const tenantUsers = await getTenantUsers({ userId: user.id });
+				const defaultTenantUser = tenantUsers.find(tenantUser => tenantUser.is_default);
 				session.user = {
 					id: user.id,
 					name: user.name,
 					email: user.email,
 					image: user.image,
-					tenantUsers
+					tenantUsers,
+					defaultTenantUser
 				};
 				event.locals.session = session;
 				return session;
