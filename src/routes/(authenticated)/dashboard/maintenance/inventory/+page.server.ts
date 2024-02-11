@@ -1,14 +1,14 @@
 import { PartSchema } from '$lib/zod';
 import { message, superValidate } from 'sveltekit-superforms/server';
-
 // import { buildQueryParams } from './helpers';
 
+import { USER_TENANT_HEADER } from '$lib/shared';
 import {
 	// PART_RETRIEVAL_CONSTRAINTS,
 	FAILED_PART_RECORD_CREATION,
 	ZOD_ECLUDED_VALIDATION_PROPERTIES,
-	PART_SCHEMA_CREATION_ACTION_ROUTE
-	// INVALID_PART_SCHEMA_VALIDATION_MESSAGE
+	PART_SCHEMA_CREATION_ACTION_ROUTE,
+	INVALID_PART_SCHEMA_VALIDATION_MESSAGE
 } from './helpers';
 
 import type { RequestEvent } from './$types';
@@ -51,21 +51,15 @@ export const actions = {
 		const untainedPartValidationSchema = PartSchema.omit(ZOD_ECLUDED_VALIDATION_PROPERTIES);
 
 		const superValidatedPart = await superValidate(event.request, untainedPartValidationSchema);
-		// console.log(superValidatedPart.errors);
-		// if (!superValidatedPart.valid) {
-		// 	return message(superValidatedPart, INVALID_PART_SCHEMA_VALIDATION_MESSAGE);
-		// }
-
-		superValidatedPart.data.tenantId = 'clsghkufd0000tudqm0mv3t4b';
-		superValidatedPart.data.image = '';
-		superValidatedPart.data.extendedPartData = {};
-
+		if (!superValidatedPart.valid) {
+			return message(superValidatedPart, INVALID_PART_SCHEMA_VALIDATION_MESSAGE);
+		}
 		// Request to create a new part into the database.
-		console.log(superValidatedPart.data);
 		const creationResponse = await event.fetch(PART_SCHEMA_CREATION_ACTION_ROUTE, {
 			method: 'POST',
 			body: JSON.stringify(superValidatedPart.data)
 		});
+
 		if (!creationResponse.ok) {
 			return message(superValidatedPart, FAILED_PART_RECORD_CREATION);
 		}

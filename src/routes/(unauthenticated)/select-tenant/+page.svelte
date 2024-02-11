@@ -1,16 +1,26 @@
 <script lang="ts">
 	//@ts-nocheck
-	import { Card, Button } from 'flowbite-svelte';
-	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	export let data: PageData;
-
+	import { Card, Button } from 'flowbite-svelte';
 	import { tenantActor } from '$lib/store/context-store';
+
+	import bcrypt from 'bcryptjs';
+	import { USER_TENANT_HEADER } from '$lib/shared';
+
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 
 	async function handleSelectTenant(tenant) {
 		const currentUserTenant = data.session.user.tenantUsers.find(
 			(tenantUser) => tenantUser.tenantId === tenant.id
 		);
+
+		// Set X-User-Tenant cookie on browser level.
+		const salt = bcrypt.genSaltSync(10);
+		const currentUserTenantHash = await bcrypt.hash(currentUserTenant.id, salt);
+		document.cookie = `${USER_TENANT_HEADER}=${currentUserTenantHash};`;
+
 		tenantActor.send({ type: 'tenant.update', value: { ...tenant, currentUserTenant } });
 		await goto('/dashboard');
 	}

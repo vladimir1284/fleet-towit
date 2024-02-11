@@ -1,57 +1,67 @@
 import { json } from '@sveltejs/kit';
-// import { PartSchema } from '$lib/zod';
-// import { superValidate, actionResult } from 'sveltekit-superforms/server';
-
 import {
-	// INVALID_FORM_DATA_STATUS,
 	SUCCESSFUL_REQUEST_STATUS,
-	TAKE_PAGINATION_PARAMETER
-} from '../../../dashboard/maintenance/inventory/helpers';
+	// TAKE_PAGINATION_PARAMETER,
+	FORBIDDEN_ACCESS_RESPONSE
+} from '$lib/shared';
 
 import type { RequestHandler } from '@sveltejs/kit';
 
-import { bypassPrisma, tenantPrisma } from '$lib/prisma';
-
 // GET: /api/inventory/parts
-export const GET: RequestHandler = async ({ locals, request }): Promise<Response> => {
+// export const GET: RequestHandler = async ({ locals, request }): Promise<Response> => {
+// 	try {
+// 		if (locals.currentPrismaClient) {
+// 			const { currentTenant, currentTenantUser, currentPrismaClient } =
+// 				locals.inventoryActionObject;
+
+// 			const userParts = await currentPrismaClient.part.findMany({
+// 				take: TAKE_PAGINATION_PARAMETER
+// 			});
+
+// 			// Return json response to client.
+// 			return json({
+// 				acknowledged: true,
+// 				status: SUCCESSFUL_REQUEST_STATUS,
+// 				data: userParts,
+// 				method: request.method
+// 			});
+// 		} else {
+// 			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
+// 		}
+// 	} catch (error) {
+// 		return new Response(JSON.stringify(error), { status: 400 });
+// 	}
+// };
+
+// POST: /api/inventory/parts
+export const POST: RequestHandler = async ({ request, locals }): Promise<Response> => {
 	try {
-		const currentPrismaClient = locals.currentPrismaClient;
+		if (locals.inventoryActionObject) {
+			const { currentTenant, currentTenantUser, currentPrismaClient } =
+				locals.inventoryActionObject;
 
-		const userParts = await currentPrismaClient.part.findMany({
-			take: TAKE_PAGINATION_PARAMETER
-		});
+			// Part properties retrieval.
+			const part = await request.json();
+			const newClientSidePart = await currentPrismaClient.part.create({
+				data: {
+					...part,
+					createdBy: currentTenantUser,
+					tenantId: currentTenant
+				}
+			});
 
-		// Return json response to client.
-		return json({
-			acknowledged: true,
-			status: SUCCESSFUL_REQUEST_STATUS,
-			data: userParts,
-			method: request.method
-		});
+			// Return json response to client.
+			return json({
+				acknowledged: true,
+				status: SUCCESSFUL_REQUEST_STATUS,
+				data: newClientSidePart,
+				method: request.method
+			});
+		} else {
+			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
+		}
 	} catch (error) {
 		console.log(error);
 		return new Response(JSON.stringify(error), { status: 400 });
 	}
-};
-
-// POST: /api/inventory/parts
-export const POST: RequestHandler = async ({ request, locals }): Promise<Response> => {
-	// const partFormData = await request.json();
-	// const currentPrismaClient = locals.currentPrismaClient;
-
-	// const superValidatedPart = await superValidate(partFormData, PartSchema);
-	// if (!superValidatedPart.valid) {
-	// 	return actionResult('failure', { superValidatedPart }, { status: INVALID_FORM_DATA_STATUS });
-	// }
-	// console.log(partFormData);
-	const asdasd = await request.json();
-	asdasd.createdBy = 'clsghkutn000otudq8br7oyzz';
-	asdasd.updatedBy = 'clsghkutn000otudq8br7oyzz';
-	asdasd.deletedBy = 'clsghkutn000otudq8br7oyzz';
-	console.log(asdasd);
-	await bypassPrisma.part.create({
-		data: asdasd
-	});
-	return new Response('OKOK', { status: 200 });
-	// return actionResult('success', { superValidatedPart }, { status: SUCCESSFUL_REQUEST_STATUS });
 };

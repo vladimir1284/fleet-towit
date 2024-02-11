@@ -23,9 +23,10 @@ import { PrismaClient } from '@prisma/client';
 import { getTenantUsers } from '$lib/actions/user';
 const prisma = new PrismaClient();
 
-// import { getAdminTenant } from '$lib/actions/admin';
-// import { bypassPrisma, tenantPrisma } from '$lib/prisma';
-// import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
+import bcrypt from 'bcryptjs';
+import { getAdminTenant } from '$lib/actions/admin';
+import { bypassPrisma, tenantPrisma } from '$lib/prisma';
+import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
 
 const handleAuth = (async (...args) => {
 	const [{ event }] = args;
@@ -56,7 +57,7 @@ const handleAuth = (async (...args) => {
 				return session;
 			},
 			async redirect({ url, baseUrl }) {
-				return baseUrl
+				return baseUrl;
 			}
 		},
 		adapter: PrismaAdapter(prisma),
@@ -95,37 +96,48 @@ if (ENVIRONMENT === 'Production') {
 	});
 }
 
-// const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
-// 	// Remove the conditional to turn it into a generic handle.
-// 	if (event.url.pathname.startsWith('/api/inventory/parts')) {
-// 		const session = await event.locals.getSession();
-// 		if (!session?.user) {
-// 			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
-// 		}
-// 		// Request header configuration.
-// 		const userTenantHeader = event.request.headers.get(USER_TENANT_HEADER);
-// 		const user = session.user as CustomUserSession;
-// 		const currentUserData = user.tenantUsers.find(
-// 			(tenantUser) => tenantUser.id === userTenantHeader
-// 		);
+const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
+	// Remove the conditional to turn it into a generic handle.
+	if (event.url.pathname.startsWith('/api/inventory/parts')) {
+		const session = await event.locals.getSession();
+		if (!session?.user) {
+			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
+		}
+		// Request header configuration.
+		const userTenantHeaderHash = event.cookies.get(USER_TENANT_HEADER) ?? '';
 
-// 		if (!currentUserData) {
-// 			return new Response(BAD_REQUEST_RESPONSE, { status: 400 });
-// 		}
-// 		const adminTenant = await getAdminTenant();
-// 		const currentPrismaClient =
-// 			currentUserData.tenant.id === adminTenant?.id
-// 				? bypassPrisma
-// 				: tenantPrisma(currentUserData.tenant.id);
+		const user = session.user as CustomUserSession;
+		const tenantUserValidations = await Promise.all(
+			user.tenantUsers.map(async (tenantUser) => {
+				const tenantUserValidation = await bcrypt.compare(tenantUser.id, userTenantHeaderHash);
+				return tenantUserValidation ? tenantUser : false;
+			})
+		);
+		const currentUserData = tenantUserValidations.find(
+			(tenantUserValidation) => tenantUserValidation
+		);
 
-// 		event.locals.currentPrismaClient = currentPrismaClient;
-// 	}
-// 	const response = await resolve(event);
-// 	return response;
-// };
+		if (!currentUserData) {
+			return new Response(BAD_REQUEST_RESPONSE, { status: 400 });
+		}
+		const adminTenant = await getAdminTenant();
+		const currentPrismaClient =
+			currentUserData.tenant.id === adminTenant?.id // currentUserData.TenantId is also correct.
+				? bypassPrisma
+				: tenantPrisma(currentUserData.tenant.id);
+
+		event.locals.inventoryActionObject = {
+			currentTenant: currentUserData.tenantId,
+			currentTenantUser: currentUserData.id,
+			currentPrismaClient: currentPrismaClient
+		};
+	}
+	const response = await resolve(event);
+	return response;
+};
 
 // If you have custom handlers, make sure to place them after `sentryHandle()` in the `sequence` function.
-export const handle = sequence(sentryHandle(), handleAuth);
+export const handle = sequence(sentryHandle(), handleAuth, handleGenericActionRequest);
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`
 export const handleError = handleErrorWithSentry();
