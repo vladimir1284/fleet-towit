@@ -42,7 +42,7 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime 
+  expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -55,11 +55,11 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  createdParts Part[] @relation("creationAuthor")
-  updatedParts Part[] @relation("updateAuthor")
-  deletedParts Part[] @relation("deletionAuthor")
-  tenantUsers   TenantUser[]
-  
+  createdParts Part[]       @relation("creationAuthor")
+  updatedParts Part[]       @relation("updateAuthor")
+  deletedParts Part[]       @relation("deletionAuthor")
+  tenantUsers  TenantUser[]
+
   customForms          CustomForm[]
   customFieldResponses CustomFieldResponse[]
 }
@@ -79,6 +79,7 @@ model TenantUser {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  default  Boolean @default(false)
 }
 
 model Client {
@@ -145,6 +146,7 @@ model CustomFieldResponse {
   field     CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   createdAt DateTime    @default(now())
 }
+
 // Inventory-related models.
 
 model Part {
@@ -263,4 +265,3 @@ model VendorOnParts {
 
   @@id([partId, vendorId])
 }
-

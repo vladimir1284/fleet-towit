@@ -1,8 +1,9 @@
-import type { RequestHandler } from '@sveltejs/kit';
 import { createTenantUser, deleteUser, getAdminTenant, updateTenantUser } from '$lib/actions/admin';
-import { bypassPrisma, tenantPrisma } from '$lib/prisma';
 import { superValidate } from 'sveltekit-superforms/server';
 import { actionResult } from 'sveltekit-superforms/server';
+import { bypassPrisma, tenantPrisma } from '$lib/prisma';
+import { sendWelcomeEmail } from '$lib/actions/emails';
+import type { RequestHandler } from '@sveltejs/kit';
 import { Role } from '@prisma/client';
 import { z } from 'zod';
 
@@ -80,6 +81,8 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 			email: form.data.email,
 			userRole: Role[form.data.role]
 		});
+		const tenant = await bypassPrisma.tenant.findUnique({where: {id: form.data.tenantId}});
+		await sendWelcomeEmail(form.data.email, tenant?.name ?? '' , form.data.role);
 	} else {
 		await updateTenantUser({
 			tenantUserId: params.userId,

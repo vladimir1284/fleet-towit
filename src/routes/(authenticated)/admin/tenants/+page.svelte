@@ -110,23 +110,23 @@
 			<UsersTable users={selectedTenantUsersList}/>
 		</Table>
 	</Modal>
-
+	
 	<Card size="xl" padding="md" class="fixed w-full md:w-auto h-auto z-0">
 		<Table>
 			<caption
-				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
+			class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
 			>
 				<GradientButton shadow color="blue" on:click={() => (createModal = true)}
 					>Create Tenant</GradientButton
-				>
-			</caption>
-			<TableHead>
-				<TableHeadCell class="text-center">TENANT NAME</TableHeadCell>
-				<TableHeadCell class="text-center">TENANT EMAIL</TableHeadCell>
-				<TableHeadCell class="text-center">TENANT OWNER</TableHeadCell>
-				<TableHeadCell class="text-center">TENANT USERS</TableHeadCell>
-				<TableHeadCell class="text-center"></TableHeadCell>
-			</TableHead>
+					>
+				</caption>
+				<TableHead>
+					<TableHeadCell class="text-center">TENANT NAME</TableHeadCell>
+					<TableHeadCell class="text-center">TENANT EMAIL</TableHeadCell>
+					<TableHeadCell class="text-center">TENANT OWNER</TableHeadCell>
+					<TableHeadCell class="text-center">TENANT USERS</TableHeadCell>
+					<TableHeadCell class="text-center"></TableHeadCell>
+				</TableHead>
 			<TableBody class="divide-y">
 				{#each tenants as tenant}
 					<TableBodyRow>
@@ -136,22 +136,23 @@
 						<TableBodyCell
 							class="text-center text-blue-500 cursor-pointer"
 							on:click={() => handleUsers(tenant)}
-						>
+							>
 							See users
 						</TableBodyCell>
 						<TableBodyCell class="flex w-32 justify-between">
-							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(tenant)} />
+						<FileEditSolid class="text-gray-400" on:click={() => handleEdit(tenant)} />
 							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(tenant.id)} />
-						</TableBodyCell>
+							</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			</TableBody>
 		</Table>
 	</Card>
-
+		
 	{#if showAlert}
 		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
 			{message}
 		</Alert>
 	{/if}
 {/if}
+		
