@@ -2,14 +2,15 @@
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { FormFieldType } from '@prisma/client';
-	import { Button, Input, Label, Select, Helper, Modal } from 'flowbite-svelte';
+	import { Button, Input, Label, Select, Helper } from 'flowbite-svelte';
 	import {
-		ExclamationCircleOutline,
 		TrashBinOutline,
 		PenOutline,
 		CheckOutline,
 		CloseOutline
 	} from 'flowbite-svelte-icons';
+	import DeleteCustomFromModal from '$lib/components/forms-components/custom-forms/DeleteCustomFormModal.svelte';
+	import DeleteCardModal from '$lib/components/forms-components/custom-forms/DeleteCardModal.svelte';
 
 	export let data: PageData;
 
@@ -17,7 +18,10 @@
 
 	// modals
 	let openDeleteFormModal = false;
+	const handleDeleteFormModalClose = () => (openDeleteFormModal = false);
+
 	let openDeleteCardModal = false;
+	const handleDeleteCardModalClose = () => (openDeleteCardModal = false);
 
 	// edit form name
 	let isEditFormName = false;
@@ -242,44 +246,18 @@
 		</div>
 	</div>
 
-	<!-- Modal to delete Card-->
-	<Modal bind:open={openDeleteCardModal} size="xs">
-		<div class="text-center">
-			<ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
-			<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-				Are you sure you want to delete this card ?
-			</h3>
-			<!-- Form -->
-			<form method="post" action="?/deleteCard">
-				<input type="hidden" bind:value={idCardSelected} name="card_id" />
-				<input type="hidden" value={data.customForm.id} name="form_id" />
-
-				<Button type="submit" color="red" class="me-2">Yes, I'm sure</Button>
-				<Button on:click={() => (openDeleteCardModal = false)} color="alternative"
-					>No, cancel</Button
-				>
-			</form>
-			<!-- Form -->
-		</div>
-	</Modal>
-
 	<!-- Modal to delete Form-->
-	<Modal bind:open={openDeleteFormModal} size="xs">
-		<div class="text-center">
-			<ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
-			<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-				Are you sure you want to delete this form?
-			</h3>
-			<!-- Form -->
-			<form method="post" action="?/deleteForm">
-				<input type="hidden" value={data.customForm.id} name="form_id" />
+	<DeleteCustomFromModal
+		isOpen={openDeleteFormModal}
+		onClose={handleDeleteFormModalClose}
+		customFormId={data.customForm.id}
+	/>
 
-				<Button type="submit" color="red" class="me-2">Yes, I'm sure</Button>
-				<Button on:click={() => (openDeleteFormModal = false)} color="alternative"
-					>No, cancel</Button
-				>
-			</form>
-			<!-- Form -->
-		</div>
-	</Modal>
+	<!-- Modal to delete Card-->
+	<DeleteCardModal
+		isOpen={openDeleteCardModal}
+		onClose={handleDeleteCardModalClose}
+		customFormId={data.customForm.id}
+		{idCardSelected}
+	/>
 </section>
