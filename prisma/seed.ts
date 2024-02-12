@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { PrismaClient } from '@prisma/client';
-import { createTenantUser } from "$lib/actions/admin";
-import { bypassPrisma } from '$lib/prisma';
+import { createTenantUser } from "../src/lib/actions/admin";
+import { bypassPrisma } from '../src/lib/prisma';
 import { Role } from "@prisma/client";
 const prisma = bypassPrisma
 
@@ -13,6 +13,13 @@ async function main() {
         { email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
         // Add more users as needed
     ];
+	const tenantsData = {
+        admin: { name: 'admin', email: 'gissell111284@gmail.com', isAdmin: true },
+        test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false  },
+        // Add more tenants as needed
+    };
+
+    // Admin tenant
 	const existingAdminTenant = await prisma.tenant.findFirst({
         where: {
             isAdmin: true
@@ -22,25 +29,46 @@ async function main() {
     let tenantId;
     if (!existingAdminTenant) {
         const admin_tenant = await prisma.tenant.create({
-            data: {
-                name: 'admin',
-                email: 'gissell111284@gmail.com',
-                isAdmin: true
-            }
+            data: tenantsData['admin']
         });
         tenantId = admin_tenant.id;
     } else {
         tenantId = existingAdminTenant.id;
     }
 
+    // Regular tenant
+	const existingTenant = await prisma.tenant.findFirst({
+        where: {
+            isAdmin: false
+        }
+    });
+
+    let testTenantId;
+    if (!existingTenant) {
+        const test_tenant = await prisma.tenant.create({
+            data: tenantsData['test']
+        });
+        testTenantId = test_tenant.id;
+    } else {
+        testTenantId = existingTenant.id;
+    }
+
     for (const userData of usersData) {
-		const existingUser = await prisma.user.findUnique({
-			where: { email: userData.email }
+        const array = [tenantId, testTenantId];
+        for (let index = 0; index < array.length; index++) {
+            
+		const existingUser = await prisma.tenantUser.findFirst({
+			where: { 
+                tenantId: array[index],
+                user: {email: userData.email}
+            }
 		});
 	
 		if (!existingUser) {
-			await createTenantUser({ ...userData, tenantId });
+		    await createTenantUser({ ...userData, tenantId: array[index]});
 		}
+            
+        }
 	}
 
 
