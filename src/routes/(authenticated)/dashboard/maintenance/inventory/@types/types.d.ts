@@ -9,7 +9,7 @@ export interface CustomUserSession extends User {
 	tenantUsers: CustomTenantUser[];
 }
 
-export interface QueryContraint {
+export interface QueryStringifyContraint {
 	[key: string]: string;
 }
 

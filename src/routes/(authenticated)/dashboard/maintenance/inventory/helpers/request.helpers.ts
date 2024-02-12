@@ -1,4 +1,4 @@
-import type { QueryContraint } from '../@types/types';
+import type { QueryStringifyContraint } from '../@types/types';
 
 /**
  * Build a FECTH-API valid query parameter pattern.
@@ -6,7 +6,7 @@ import type { QueryContraint } from '../@types/types';
  * @returns {string}
  */
 
-export const buildQueryParams = (constraints: QueryContraint): string => {
+export const buildQueryParams = (constraints: QueryStringifyContraint): string => {
 	let queryContraints = '?';
 	Object.entries(constraints).forEach(([key, value]) => {
 		// Same as queryContraints += ...

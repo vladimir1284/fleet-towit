@@ -98,14 +98,16 @@ if (ENVIRONMENT === 'Production') {
 
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 	// Remove the conditional to turn it into a generic handle.
-	if (event.url.pathname.startsWith('/api/inventory/parts')) {
+	if (event.url.pathname.startsWith('/api/maintenance/inventory/parts')) {
+		// Retrieve validation data.
 		const session = await event.locals.getSession();
-		if (!session?.user) {
+		const userTenantHeaderHash = event.cookies.get(USER_TENANT_HEADER);
+
+		if (!session?.user || !userTenantHeaderHash) {
 			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
 		}
-		// Request header configuration.
-		const userTenantHeaderHash = event.cookies.get(USER_TENANT_HEADER) ?? '';
 
+		// Request header verification.
 		const user = session.user as CustomUserSession;
 		const tenantUserValidations = await Promise.all(
 			user.tenantUsers.map(async (tenantUser) => {

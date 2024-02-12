@@ -1,4 +1,4 @@
-import type { QueryContraint } from '../@types/types';
+import type { QueryStringifyContraint } from '../@types/types';
 
 export const // SuperForm-zod related constants.
 
@@ -25,12 +25,12 @@ export const // SuperForm-zod related constants.
 
 export const // Actions related constants.
 
-	PART_SCHEMA_CREATION_ACTION_ROUTE = '/api/inventory/parts',
-	PART_SCHEMA_RETRIEVAL_ACTION_ROUTE = '/api/inventory/parts',
-	PART_SCHEMA_UPDATE_ACTION_ROUTE = '/api/inventory/parts',
-	PART_SCHEMA_DELETION_ACTION_ROUTE = '/api/inventory/parts';
+	PART_SCHEMA_CREATION_ACTION_ROUTE = '/api/maintenance/inventory/parts',
+	PART_SCHEMA_RETRIEVAL_ACTION_ROUTE = '/api/maintenance/inventory/parts',
+	PART_SCHEMA_UPDATE_ACTION_ROUTE = '/api/maintenance/inventory/parts',
+	PART_SCHEMA_DELETION_ACTION_ROUTE = '/api/maintenance/inventory/parts';
 
-export const PART_RETRIEVAL_CONSTRAINTS: QueryContraint = {
+export const PART_RETRIEVAL_CONSTRAINTS: QueryStringifyContraint = {
 	// Workaround to retrieve it once the query paramers are used.
 	deletedAt: JSON.stringify({
 		not: null
