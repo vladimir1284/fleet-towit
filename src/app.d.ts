@@ -4,7 +4,11 @@ import type { PrismaClient } from '@prisma/client';
 declare global {
 	namespace App {
 		interface Locals {
-			currentPrismaClient: PrismaClient;
+			inventoryActionObject: {
+				currentTenant: string;
+				currentTenantUser: string;
+				currentPrismaClient: PrismaClient;
+			};
 		}
 		// interface Error {}
 		// interface PageData {}
