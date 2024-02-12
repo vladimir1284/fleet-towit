@@ -7,10 +7,10 @@ const prisma = bypassPrisma
 
 async function main() {
 	const usersData = [
-        { email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN },
-        { email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN },
-        { email: 'raulodev@gmail.com', userRole: Role.ADMIN },
-        { email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN },
+        { email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, is_default: true },
+        { email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, is_default: true },
+        { email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
+        { email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
         // Add more users as needed
     ];
 	const existingAdminTenant = await prisma.tenant.findFirst({

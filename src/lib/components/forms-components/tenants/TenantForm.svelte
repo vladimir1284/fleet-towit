@@ -19,9 +19,11 @@
 			}
 		}
 	});
+	$: $form.email = $form.email.trim();
 	if (selectedTenant) {
 		$form.name = selectedTenant.name;
 		$form.email = selectedTenant.email;
+		$form.email = $form.email.trim();
 		actionURL = actionURL + `/${selectedTenant.id}`;
 	}
 </script>

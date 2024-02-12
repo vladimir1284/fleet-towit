@@ -20,32 +20,10 @@
 		currentTenant = state.context.currentTenant;
 	});
 
-	
+	$: console.log(currentTenant)
+
 	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id)) {
 		goto('/select-tenant');
-	}
-
-	$: if (currentTenant !== 'initial') {
-		if (!currentTenant) {
-			goto('/select-tenant');
-		}
-		const actualTenant = data.session.user.tenantUsers.find(
-			(user) => user.id === currentTenant.currentUserTenant.id
-		);
-		if (actualTenant.role !== currentTenant.currentUserTenant.role) {
-			tenantActor.send({
-				type: 'tenant.update',
-				value: {
-					...actualTenant.tenant,
-					currentUserTenant: {
-						id: actualTenant.id,
-						tentantId: actualTenant.tentantId,
-						role: actualTenant.role,
-						userId: actualTenant.userId
-					}
-				}
-			});
-		}
 	}
 
 

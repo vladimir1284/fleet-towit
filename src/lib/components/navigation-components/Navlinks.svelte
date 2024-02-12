@@ -6,6 +6,7 @@
 	import { tenantActor } from '$lib/store/context-store';
 	export let data;
 	export let currentTenant;
+	console.log(currentTenant)
 
 	async function handleChangeUserTenant(tenantUser) {
 		const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
@@ -37,7 +38,7 @@
 	{/if}
 	{#if data.tenantUsers.length}
 		<NavLi class="cursor-pointer">
-			Change tenant<ChevronDownOutline
+			{currentTenant.name}<ChevronDownOutline
 				class="w-3 h-3 ms-2 text-primary-800 dark:text-white inline"
 			/>
 		</NavLi>

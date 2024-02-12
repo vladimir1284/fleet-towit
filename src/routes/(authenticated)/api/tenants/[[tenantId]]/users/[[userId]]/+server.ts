@@ -1,4 +1,5 @@
 import { createTenantUser, deleteUser, getAdminTenant, updateTenantUser } from '$lib/actions/admin';
+import { getTenantUsers } from '$lib/actions/tenant';
 import { superValidate } from 'sveltekit-superforms/server';
 import { actionResult } from 'sveltekit-superforms/server';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
@@ -16,10 +17,8 @@ const fixSchema = z.object({
 });
 
 export const GET: RequestHandler = async ({ params, locals, request }) => {
+	let users;
 	const session = await locals.getSession();
-	const currentPrismaClient = locals.currentPrismaClient;
-	console.log(currentPrismaClient)
-
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
@@ -31,19 +30,27 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 	const adminTenant = await getAdminTenant();
 	if (currentUserData.tenant.id === adminTenant?.id) {
 		currentPrisma = bypassPrisma;
+		users = await currentPrisma.tenantUser.findMany({
+			select: {
+				role: true,
+				id: true,
+				tenant: true,
+				user: true
+			}
+		});
 	} else {
 		currentPrisma = tenantPrisma(currentUserData.tenant.id);
+		users = await currentPrisma.tenantUser.findMany({
+			where: { tenantId: params.tenantId },
+			select: {
+				role: true,
+				id: true,
+				tenant: true,
+				user: true
+			}
+		});
 	}
-
-	const users = await currentPrisma.tenantUser.findMany({
-		where: { tenantId: params.tenantId },
-		select: {
-			role: true,
-			id: true,
-			tenant: true,
-			user: true
-		}
-	});
+	
 	if (currentUserData.role === Role.STAFF && !(currentUserData.tenant.id === adminTenant?.id)) {
 		return new Response('Forbiden', { status: 403 });
 	} else {

@@ -2,7 +2,7 @@ import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
 
 type createTenantType = { name: string; email?: string | null };
-type createUserType = { email: string; tenantId: string; userRole?: Role };
+type createUserType = { email: string; tenantId: string; userRole?: Role, is_default?: boolean };
 type editTenantType = createTenantType & { tenantId: string };
 type editUserType = createUserType & { tenantUserId: string };
 
@@ -19,7 +19,8 @@ export const createTenant = async ({ name, email = null }: createTenantType) => 
 export const createTenantUser = async ({
 	email,
 	tenantId,
-	userRole = Role.STAFF
+	userRole = Role.STAFF,
+	is_default
 }: createUserType) => {
 	let user = await bypassPrisma.user.findUnique({ where: { email: email } });
 	if (!user) {
@@ -29,7 +30,8 @@ export const createTenantUser = async ({
 		data: {
 			userId: user.id,
 			tenantId: tenantId,
-			role: userRole
+			role: userRole,
+			is_default: is_default,
 		}
 	});
 

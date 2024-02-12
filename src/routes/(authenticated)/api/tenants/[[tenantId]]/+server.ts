@@ -1,8 +1,9 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { actionResult } from 'sveltekit-superforms/server';
-import { listTenants, deleteTenant, updateTenant, createTenant } from '$lib/actions/admin';
+import { listTenants, deleteTenant, updateTenant, createTenant, getAdminTenant, listTenantUsersOnTenant, createTenantUser } from '$lib/actions/admin';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
+import { Role } from '@prisma/client';
 
 const fixSchema = z.object({
 	name: z.string(),
@@ -21,6 +22,9 @@ export const GET: RequestHandler = async ({ locals }) => {
 
 export const POST: RequestHandler = async ({ locals, request, params }) => {
 	const session = await locals.getSession();
+	const adminTenant = await getAdminTenant();
+	const allAdminTenantUsers = adminTenant ? await listTenantUsersOnTenant({ tenantId: adminTenant.id }) : [];
+	console.log(allAdminTenantUsers)
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
@@ -33,7 +37,12 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 	if (params.tenantId) {
 		await updateTenant({ tenantId: params.tenantId, name: form.data.name, email: form.data.email });
 	} else {
-		await createTenant({ name: form.data.name, email: form.data.email });
+		const newTenant = await createTenant({ name: form.data.name, email: form.data.email });
+		for (const user of allAdminTenantUsers) {
+			if (user.user.email !== null) {
+			await createTenantUser({ tenantId: newTenant.id, email: user.user.email, userRole: Role.ADMIN });
+			}
+		}
 	}
 	return actionResult('success', { form }, { status: 200 });
 };

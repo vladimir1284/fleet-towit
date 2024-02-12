@@ -18,7 +18,7 @@
 
 <div class="flex">
 	<ButtonComponent
-		styles="text-black focus:ring-0 w-10 h-10"
+		styles="flex text-black justify-between focus:ring-0 w-20 h-10"
 		color="none"
 		placeholder={userData && userData.name !== null ? userData.name : '-'}
 	>
@@ -34,6 +34,7 @@
 		<DropdownItem on:click={handleSignOut}>Sign out</DropdownItem>
 	</Dropdown>
 	<Avatar
+		class="hidden sm:flex"
 		src="https://minios3.crabdance.com/develop/users/{userData.id}/{userData.image}"
 		rounded
 	/>

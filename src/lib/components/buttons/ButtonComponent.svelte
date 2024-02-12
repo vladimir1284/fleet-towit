@@ -7,4 +7,4 @@
     export let onClick: ((event: MouseEvent) => void) | undefined = undefined;
 </script>
 
-<Button class={styles} {outline} {color} on:click={onClick}>{placeholder} <slot/></Button>
+<Button class={styles} {outline} {color} on:click={onClick}> <slot/> {placeholder} </Button>

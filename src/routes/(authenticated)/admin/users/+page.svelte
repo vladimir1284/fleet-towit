@@ -26,21 +26,10 @@
 
 	onMount(async () => {
 		try {
-			const response = await fetch('/api/tenants', { headers });
-			tenants = [...(await response.json())];
-			let usersList = await Promise.all(
-				tenants.map(async (tenant) => {
-					let tempList = await fetch(`/api/tenants/${tenant.id}/users`, { headers });
-					let tenantUsersList = await tempList.json();
-					let augmentedTenantUser = await Promise.all(
-						tenantUsersList.map(async (_user) => {
-							return { ..._user, tenant };
-						})
-					);
-					return augmentedTenantUser;
-				})
-			);
-			users = [...usersList.flat()];
+			const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+			users = await response.json();
+			const response1 = await fetch('/api/tenants', { headers });
+			tenants = await response1.json();
 			loading = false;
 		} catch (error) {
 			console.error('Error:', error);
