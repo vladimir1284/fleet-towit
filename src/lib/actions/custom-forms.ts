@@ -107,11 +107,10 @@ export const renameCustomForm = async ({
  *  The following function are related to custom field
  */
 
-const getFieldType = (type: 'text' | 'number') => {
-	let fieldType;
-	if (type === 'number') fieldType = FormFieldType.NUMBER;
-	else fieldType = FormFieldType.TEXT;
-	return fieldType;
+const getFieldType = (FieldType: 'text' | 'number') => {
+	if (FieldType === 'number') return FormFieldType.NUMBER;
+
+	return FormFieldType.TEXT;
 };
 
 /*
