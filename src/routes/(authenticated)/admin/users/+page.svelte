@@ -28,8 +28,8 @@
 		try {
 			const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
 			users = await response.json();
-			const response1 = await fetch('/api/tenants', { headers });
-			tenants = await response1.json();
+			const tenantsResponse = await fetch('/api/tenants', { headers });
+			tenants = await tenantsResponse.json();
 			loading = false;
 		} catch (error) {
 			console.error('Error:', error);

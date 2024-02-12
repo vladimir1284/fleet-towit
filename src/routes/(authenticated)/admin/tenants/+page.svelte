@@ -22,6 +22,7 @@
 
 	export let data: PageData;
 	let tenants = [];
+	let users = [];
 	let showAlert = false;
 	let showUsers = false;
 	let createModal = false;
@@ -35,11 +36,13 @@
 
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
-
+	$: console.log(tenants)
 	onMount(async () => {
 		try {
 			const response = await fetch('/api/tenants');
+			const usersResponse = await fetch('/api/tenants/users', {headers});
 			tenants = [...(await response.json())];
+			users = [...(await usersResponse.json())]
 			loading = false;
 		} catch (error) {
 			console.error('Error:', error);
@@ -98,7 +101,7 @@
 	</Modal>
 
 	<Modal bind:open={editModal} size="xs">
-		<TenantForm {data} {selectedTenant} on:formvalid={handleCloseEditModal} />
+		<TenantForm {data} {selectedTenant} usersList={users} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
@@ -132,7 +135,9 @@
 					<TableBodyRow>
 						<TableBodyCell class="text-center">{tenant.name}</TableBodyCell>
 						<TableBodyCell class="text-center">{tenant.email}</TableBodyCell>
-						<TableBodyCell class="text-center">{tenant.owner?.email || '-'}</TableBodyCell>
+						<TableBodyCell class="text-center">
+							{tenant.owner ? (tenant.owner?.user.name ?? tenant.owner.user.email) : '-'}
+						</TableBodyCell>
 						<TableBodyCell
 							class="text-center text-blue-500 cursor-pointer"
 							on:click={() => handleUsers(tenant)}

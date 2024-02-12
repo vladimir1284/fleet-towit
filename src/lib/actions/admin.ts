@@ -99,7 +99,7 @@ export const listTenants = async () => {
 		tenants.map(async (tenant) => {
 			let owner;
 			const _owner = await bypassPrisma.tenantUser.findFirst({
-				where: { AND: { tenantId: tenant.id, role: Role.OWNER } }
+				where: { tenantId: tenant.id, role: Role.OWNER}
 			});
 			if (_owner) {
 				const user = await bypassPrisma.user.findUnique({ where: { id: _owner.userId } });
@@ -109,7 +109,7 @@ export const listTenants = async () => {
 			}
 			return { ...tenant, owner };
 		})
-	);
+		);
 	return augmentedTenants;
 };
 
@@ -128,7 +128,6 @@ export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: string }
 			is_default: true,
 			user: true,
 		}});
-	console.log('listTenantUsersOnTenant', users)
 	return users;
 };
 
