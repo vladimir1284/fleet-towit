@@ -58,7 +58,7 @@
 			placeholder="Sign in with Google"
 			color="light"
 			styles="justify-evenly text-blue-700 text-lg font-bold"
-			on:click={() => signIn('google')}
+			onClick={() => signIn('google')}
 		>
 			<!-- svelte-ignore illegal-attribute-character -->
 			<svg

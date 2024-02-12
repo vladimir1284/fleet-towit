@@ -60,6 +60,9 @@ const handleAuth = (async (...args) => {
 				};
 				event.locals.session = session;
 				return session;
+			},
+			async redirect({ url, baseUrl }) {
+				return baseUrl;
 			}
 		},
 		adapter: PrismaAdapter(prisma),
