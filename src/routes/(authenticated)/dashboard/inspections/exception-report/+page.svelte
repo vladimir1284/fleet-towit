@@ -1,1 +1,1 @@
-exceptions Reports
+<section>Mostrar lista de las inpecciones</section>

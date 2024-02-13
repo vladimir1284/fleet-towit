@@ -23,13 +23,10 @@ import { PrismaClient } from '@prisma/client';
 import { getTenantUsers } from '$lib/actions/user';
 const prisma = new PrismaClient();
 
+import bcrypt from 'bcryptjs';
 import { getAdminTenant } from '$lib/actions/admin';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
-import {
-	USER_TENANT_HEADER,
-	BAD_REQUEST_RESPONSE,
-	FORBIDDEN_ACCESS_RESPONSE
-} from '$lib/shared/helpers';
+import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
 
 const handleAuth = (async (...args) => {
 	const [{ event }] = args;
@@ -81,8 +78,7 @@ const handleAuth = (async (...args) => {
 						pass: SMTP_PASSWORD
 					}
 				},
-				from: EMAIL_FROM,
-				allowDangerousEmailAccountLinking: true
+				from: EMAIL_FROM
 			})
 		],
 		pages: {
@@ -104,16 +100,25 @@ if (ENVIRONMENT === 'Production') {
 
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 	// Remove the conditional to turn it into a generic handle.
-	if (event.url.pathname.startsWith('/api/inventory/parts')) {
+	if (event.url.pathname.startsWith('/api/maintenance/inventory/parts')) {
+		// Retrieve validation data.
 		const session = await event.locals.getSession();
-		if (!session?.user) {
+		const userTenantHeaderHash = event.cookies.get(USER_TENANT_HEADER);
+
+		if (!session?.user || !userTenantHeaderHash) {
 			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
 		}
-		// Request header configuration.
-		const userTenantHeader = event.request.headers.get(USER_TENANT_HEADER);
+
+		// Request header verification.
 		const user = session.user as CustomUserSession;
-		const currentUserData = user.tenantUsers.find(
-			(tenantUser) => tenantUser.id === userTenantHeader
+		const tenantUserValidations = await Promise.all(
+			user.tenantUsers.map(async (tenantUser) => {
+				const tenantUserValidation = await bcrypt.compare(tenantUser.id, userTenantHeaderHash);
+				return tenantUserValidation ? tenantUser : false;
+			})
+		);
+		const currentUserData = tenantUserValidations.find(
+			(tenantUserValidation) => tenantUserValidation
 		);
 
 		if (!currentUserData) {
@@ -121,11 +126,15 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 		}
 		const adminTenant = await getAdminTenant();
 		const currentPrismaClient =
-			currentUserData.tenant.id === adminTenant?.id
+			currentUserData.tenant.id === adminTenant?.id // currentUserData.TenantId is also correct.
 				? bypassPrisma
 				: tenantPrisma(currentUserData.tenant.id);
 
-		event.locals.currentPrismaClient = currentPrismaClient;
+		event.locals.inventoryActionObject = {
+			currentTenant: currentUserData.tenantId,
+			currentTenantUser: currentUserData.id,
+			currentPrismaClient: currentPrismaClient
+		};
 	}
 	const response = await resolve(event);
 	return response;
