@@ -23,3 +23,4 @@ build/*
 prisma/dbml/schema.dbml
 src/lib/zod/index.ts
 prisma/migrations/*
+.vscode/settings.json

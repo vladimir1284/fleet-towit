@@ -2,7 +2,6 @@ import { tenantPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
 
 type createUserType = { tenantId: string; email: string; role?: Role };
-type editUserType = createUserType & { tenantUserId: string };
 
 export const createNewUser = async ({ tenantId, email, role = Role.STAFF }: createUserType) => {
 	const tenantContext = tenantPrisma(tenantId);

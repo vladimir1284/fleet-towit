@@ -1,68 +1,79 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { createTenantUser } from '$lib/actions/admin';
-import { bypassPrisma } from '$lib/prisma';
-import { Role } from '@prisma/client';
-const prisma = bypassPrisma;
+import { PrismaClient } from '@prisma/client';
+import { createTenantUser } from "../src/lib/actions/admin";
+import { bypassPrisma } from '../src/lib/prisma';
+import { Role } from "@prisma/client";
+const prisma = bypassPrisma
 
-/**
- * To run this function use: npx prisma db seed
- */
 async function main() {
-	let existingAdminTenant = await prisma.tenant.findFirst({
-		where: {
-			name: 'admin'
+	const usersData = [
+        { email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, is_default: true },
+        { email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, is_default: true },
+        { email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
+        { email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
+        // Add more users as needed
+    ];
+	const tenantsData = {
+        admin: { name: 'admin', email: 'gissell111284@gmail.com', isAdmin: true },
+        test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false  },
+        // Add more tenants as needed
+    };
+
+    // Admin tenant
+	const existingAdminTenant = await prisma.tenant.findFirst({
+        where: {
+            isAdmin: true
+        }
+    });
+
+    let tenantId;
+    if (!existingAdminTenant) {
+        const admin_tenant = await prisma.tenant.create({
+            data: tenantsData['admin']
+        });
+        tenantId = admin_tenant.id;
+    } else {
+        tenantId = existingAdminTenant.id;
+    }
+
+    // Regular tenant
+	const existingTenant = await prisma.tenant.findFirst({
+        where: {
+            isAdmin: false
+        }
+    });
+
+    let testTenantId;
+    if (!existingTenant) {
+        const test_tenant = await prisma.tenant.create({
+            data: tenantsData['test']
+        });
+        testTenantId = test_tenant.id;
+    } else {
+        testTenantId = existingTenant.id;
+    }
+
+    for (const userData of usersData) {
+        const array = [tenantId, testTenantId];
+        for (let index = 0; index < array.length; index++) {
+            
+		const existingUser = await prisma.tenantUser.findFirst({
+			where: { 
+                tenantId: array[index],
+                user: {email: userData.email}
+            }
+		});
+	
+		if (!existingUser) {
+		    await createTenantUser({ ...userData, tenantId: array[index]});
 		}
-	});
-
-	let existingTenant = await prisma.tenant.findFirst({
-		where: {
-			name: 'TEST'
-		}
-	});
-
-	if (!existingAdminTenant) {
-		existingAdminTenant = await prisma.tenant.create({
-			data: {
-				name: 'admin',
-				email: 'gissell111284@gmail.com',
-				isAdmin: true
-			}
-		});
-	}
-
-	if (!existingTenant) {
-		existingTenant = await prisma.tenant.create({
-			data: {
-				name: 'TEST',
-				email: 'gissell111284@gmail.com',
-				isAdmin: false
-			}
-		});
-	}
-
-	const users_admin_emails = [
-		'gsg2604@gmail.com',
-		'luis.ulloa75360@gmail.com',
-		'vladimir.rdguez@gmail.com',
-		'raulodev@gmail.com',
-		'ymansfarroll@gmail.com'
-		];
-
-	for (const email of users_admin_emails) {
-		await createTenantUser({
-			email: email,
-			userRole: Role.ADMIN,
-			tenantId: existingAdminTenant.id
-		});
-		await createTenantUser({
-			email: email,
-			userRole: Role.ADMIN,
-			tenantId: existingTenant.id
-		});
+            
+        }
 	}
 
 
 }
+
 main()
 	.then(async () => {
 		await prisma.$disconnect();

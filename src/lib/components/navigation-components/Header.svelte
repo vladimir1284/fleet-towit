@@ -20,9 +20,9 @@
 			<Notifications />
 		</div>
 		<div class="order-3 w-full flex items-center justify-center sm:order-2 p-25%">
-			<Navlinks {currentTenant} />
+			<Navlinks {data} {currentTenant} />
 		</div>
-		<div class="hidden order-4 sm:flex sm:items-center sm:ml-auto order-2 sm:order-4">
+		<div class="order-4 sm:flex sm:items-center sm:ml-auto order-2 sm:order-4">
 			<ProfileHeader userData={data} />
 		</div>
 		<div class="sm:hidden order-5">

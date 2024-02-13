@@ -55,7 +55,13 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  tenantUsers TenantUser[]
+  createdParts Part[]       @relation("creationAuthor")
+  updatedParts Part[]       @relation("updateAuthor")
+  deletedParts Part[]       @relation("deletionAuthor")
+  tenantUsers  TenantUser[]
+
+  customForms          CustomForm[]
+  customFieldResponses CustomFieldResponse[]
 }
 
 model VerificationToken {
@@ -73,6 +79,7 @@ model TenantUser {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  is_default  Boolean @default(false)
 
   createdParts Part[] @relation("creationAuthor")
   updatedParts Part[] @relation("updateAuthor")
