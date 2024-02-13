@@ -1,16 +1,21 @@
-import { userPrisma, companyPrisma } from "$lib/prisma";
+import { userPrisma, prisma } from '$lib/prisma';
 
-export const getCompanyUsers = async({userId}: {userId: string}) => {
-    const userContext = userPrisma(userId);
-    const baseCompanyUsers = await userContext.companyUser.findMany({where:{userId: userId}})
-    const augmentedCompanyUsers = await Promise.all(
-        baseCompanyUsers.map(async(companyUser) => {
-            const companyContext = companyPrisma(companyUser.companyId);
-            const company = await companyContext.company.findUnique({where: {id: companyUser.companyId}})
+type editUserType = { userId: string; email: string; name?: string; image?: string };
 
-            return {...companyUser, company}
-        })
-    )
-    return augmentedCompanyUsers
-}
-  
+export const getTenantUsers = async ({ userId }: { userId: string }) => {
+	const userContext = userPrisma(userId);
+	const tenantUsers = await userContext.tenantUser.findMany({where:{userId: userId},
+    select: {
+        id: true,
+        userId: true,
+        tenantId: true,
+        role: true,
+        is_default: true,
+        tenant: true
+    }})
+	return tenantUsers;
+};
+
+export const editUser = async ({ userId, email, name, image }: editUserType) => {
+	await prisma.user.update({ where: { id: userId }, data: { email, name, image } });
+};

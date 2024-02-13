@@ -20,4 +20,7 @@ fleet-towit.rar
 .vscode/sftp.json
 backend.tar.gz
 build/*
+prisma/dbml/schema.dbml
 src/lib/zod/index.ts
+prisma/migrations/*
+.vscode/settings.json

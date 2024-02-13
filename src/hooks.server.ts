@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
 import { sequence } from '@sveltejs/kit/hooks';
 import { handleErrorWithSentry, sentryHandle } from '@sentry/sveltekit';
@@ -5,7 +6,6 @@ import * as Sentry from '@sentry/sveltekit';
 import { type Handle } from '@sveltejs/kit';
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/core/providers/google';
-import { userContext } from '$lib/store/context-store';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -20,15 +20,20 @@ import {
 import EmailProvider from '@auth/core/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
-import { getCompanyUsers } from '$lib/actions/user';
+import { getTenantUsers } from '$lib/actions/user';
 const prisma = new PrismaClient();
 
-const handleAuth = (async(...args) => {
-	const [{event}] = args;
+import bcrypt from 'bcryptjs';
+import { getAdminTenant } from '$lib/actions/admin';
+import { bypassPrisma, tenantPrisma } from '$lib/prisma';
+import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
+
+const handleAuth = (async (...args) => {
+	const [{ event }] = args;
 	return SvelteKitAuth({
 		callbacks: {
 			async signIn({ user }) {
-				let guest = await prisma.user.findFirst({ where: { email: user.email } });
+				const guest = await prisma.user.findFirst({ where: { email: user.email } });
 				if (guest) {
 					return true;
 				} else {
@@ -40,17 +45,22 @@ const handleAuth = (async(...args) => {
 				}
 			},
 			async session({ session, user }) {
-				const companyUsers = await getCompanyUsers({userId: user.id})
+				const tenantUsers = await getTenantUsers({ userId: user.id });
+				const defaultTenantUser = tenantUsers.find(tenantUser => tenantUser.is_default);
 				session.user = {
 					id: user.id,
 					name: user.name,
 					email: user.email,
 					image: user.image,
-					companyUsers,
+					tenantUsers,
+					defaultTenantUser
 				};
 				event.locals.session = session;
 				return session;
 			},
+			async redirect({ url, baseUrl }) {
+				return baseUrl;
+			}
 		},
 		adapter: PrismaAdapter(prisma),
 		providers: [
@@ -68,28 +78,70 @@ const handleAuth = (async(...args) => {
 						pass: SMTP_PASSWORD
 					}
 				},
-				from: EMAIL_FROM,
-				allowDangerousEmailAccountLinking: true
+				from: EMAIL_FROM
 			})
 		],
 		pages: {
 			signIn: '/signin',
 			error: '/error', // Error code passed in query string as ?error=
-			verifyRequest: '/verifyRequest',
+			verifyRequest: '/verifyRequest'
 		},
 		trustHost: true,
 		secret: AUTH_SECRET
-	})(...args)
+	})(...args);
 }) satisfies Handle;
 
-if (ENVIRONMENT==="Production") {
+if (ENVIRONMENT === 'Production') {
 	Sentry.init({
 		dsn: 'https://264c6d3e8448a85d1a3717e5ef22a502@o4506418139299840.ingest.sentry.io/4506418143035392',
 		tracesSampleRate: 1.0
-	});		
+	});
 }
+
+const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
+	// Remove the conditional to turn it into a generic handle.
+	if (event.url.pathname.startsWith('/api/maintenance/inventory/parts')) {
+		// Retrieve validation data.
+		const session = await event.locals.getSession();
+		const userTenantHeaderHash = event.cookies.get(USER_TENANT_HEADER);
+
+		if (!session?.user || !userTenantHeaderHash) {
+			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
+		}
+
+		// Request header verification.
+		const user = session.user as CustomUserSession;
+		const tenantUserValidations = await Promise.all(
+			user.tenantUsers.map(async (tenantUser) => {
+				const tenantUserValidation = await bcrypt.compare(tenantUser.id, userTenantHeaderHash);
+				return tenantUserValidation ? tenantUser : false;
+			})
+		);
+		const currentUserData = tenantUserValidations.find(
+			(tenantUserValidation) => tenantUserValidation
+		);
+
+		if (!currentUserData) {
+			return new Response(BAD_REQUEST_RESPONSE, { status: 400 });
+		}
+		const adminTenant = await getAdminTenant();
+		const currentPrismaClient =
+			currentUserData.tenant.id === adminTenant?.id // currentUserData.TenantId is also correct.
+				? bypassPrisma
+				: tenantPrisma(currentUserData.tenant.id);
+
+		event.locals.inventoryActionObject = {
+			currentTenant: currentUserData.tenantId,
+			currentTenantUser: currentUserData.id,
+			currentPrismaClient: currentPrismaClient
+		};
+	}
+	const response = await resolve(event);
+	return response;
+};
+
 // If you have custom handlers, make sure to place them after `sentryHandle()` in the `sequence` function.
-export const handle = sequence(sentryHandle(), handleAuth);
+export const handle = sequence(sentryHandle(), handleAuth, handleGenericActionRequest);
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`
 export const handleError = handleErrorWithSentry();
