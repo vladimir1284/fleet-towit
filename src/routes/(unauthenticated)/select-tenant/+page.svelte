@@ -9,7 +9,6 @@
 
 	import type { PageData } from './$types';
 	export let data: PageData;
-	import { tenantActor } from '$lib/store/context-store';
 	import { onMount } from 'svelte';
 	
 	onMount(() => {
