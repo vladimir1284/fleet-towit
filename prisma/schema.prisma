@@ -19,6 +19,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ************************ //
+// AUTHENTICATION AND ROLES //
+// ************************ //
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -117,6 +121,80 @@ enum Role {
   STAFF
   ADMIN
   OWNER
+}
+
+// ************************ //
+//      VEHICLES MODELS     //
+// ************************ //
+
+enum Type {
+  ATV
+  Boat
+  Bus
+  Car
+  Chassis
+  Equipment
+  Forklift
+  Freightliner
+  Generator
+  Machinery
+  Motorcycle
+  Plane
+  RV
+  SUV
+  Tractor
+  Trailer
+  Truck
+  Van
+  Custom
+}
+
+model Vehicle {
+  id              Int              @id @default(autoincrement())
+  type            Type
+  year            Int
+  make            String
+  model           String
+  trim            String
+  plate           String
+  vin             String
+  odometer        Int
+  nickname        String
+  spare_tires     Int
+  extraFields     Json?
+  vehiclePictures VehiclePicture[] 
+  documents       Document[]       
+}
+
+model VehiclePicture {
+  id         Int     @id @default(autoincrement())
+  image      String
+  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicleId      Int
+  pinned     Boolean @default(false)
+}
+
+model Document {
+  id              Int           @id @default(autoincrement())
+  file            String
+  name            String
+  note            String
+  document_type   String
+  expiration_date DateTime?
+  remainder_days  Int?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  vehicle         Vehicle       @relation(fields: [vehicleId], references: [id])
+  vehicleId      Int
+  tags            DocumentTag[] 
+  extraFields     Json?
+}
+
+model DocumentTag {
+  id        Int        @id @default(autoincrement())
+  name      String
+  document Document @relation(fields: [documentId], references: [id])
+  documentId Int
 }
 
 model CustomForm {
