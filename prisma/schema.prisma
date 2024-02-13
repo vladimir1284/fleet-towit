@@ -58,14 +58,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-
-  createdParts Part[]       @relation("creationAuthor")
-  updatedParts Part[]       @relation("updateAuthor")
-  deletedParts Part[]       @relation("deletionAuthor")
   tenantUsers  TenantUser[]
-
-  customForms          CustomForm[]
-  customFieldResponses CustomFieldResponse[]
 }
 
 model VerificationToken {
