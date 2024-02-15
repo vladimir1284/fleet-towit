@@ -144,7 +144,7 @@ export const actions = {
 		// this code is for testing purposes only
 		const tenant = session?.user.tenantUsers[0].tenant;
 
-		let checkboxes: string[];
+		let checkboxes: string[] | undefined = undefined ;
 		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
 
 		await addFieldToCustomFrom({
