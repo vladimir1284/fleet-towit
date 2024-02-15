@@ -1,13 +1,14 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { FormFieldType } from '@prisma/client';
+	import { FormFieldType, CheckOption } from '@prisma/client';
 	import { Button, Input, Label, Select, Helper } from 'flowbite-svelte';
 	import {
 		TrashBinOutline,
 		PenOutline,
 		CheckOutline,
-		CloseOutline
+		CloseOutline,
+		PlusOutline
 	} from 'flowbite-svelte-icons';
 	import DeleteCustomFromModal from '$lib/components/forms-components/custom-forms/DeleteCustomFormModal.svelte';
 	import DeleteCardModal from '$lib/components/forms-components/custom-forms/DeleteCardModal.svelte';
@@ -29,22 +30,51 @@
 
 	// edit card
 	let isEditCard = false;
+
+	let editCheckOptions: (CheckOption | string)[];
+	$: stringifyEditCheckOptions = JSON.stringify(editCheckOptions);
+
+	// FIXME : hay un error aqui no se cambia bien
 	let cardTypeSelect: string;
+
 	let newCardName: string;
+
 	const setCardTypeToEdit = (fieldType: FormFieldType) => {
 		if (fieldType === FormFieldType.TEXT) cardTypeSelect = 'text';
 
 		if (fieldType === FormFieldType.NUMBER) cardTypeSelect = 'number';
+
+		if (fieldType === FormFieldType.CHECKBOXES) cardTypeSelect = 'checkboxes';
+
+		console.log(cardTypeSelect);
 	};
+
+	// checkboxes input
+	let checkBoxes = [''];
+	$: stringifyCheckBoxes = JSON.stringify(checkBoxes);
 
 	// delete and edit card
 	let idCardSelected: number;
 
 	// select component
 	let selected: string;
+
 	let cardTypes = [
-		{ value: 'number', name: 'Data Entry Numeric' },
-		{ value: 'text', name: 'Data Entry Alphanumeric' }
+		{
+			value: 'number',
+			name: 'Data Entry Numeric',
+			description: 'User is able to input numeric data.'
+		},
+		{
+			value: 'text',
+			name: 'Data Entry Alphanumeric',
+			description: 'User is able to input alphanumeric data.'
+		},
+		{
+			value: 'checkboxes',
+			name: 'Checkboxes',
+			description: 'User is able to select multiple options.'
+		}
 	];
 </script>
 
@@ -103,8 +133,8 @@
 	</div>
 
 	<div class="flex flex-col lg:flex-row gap-4">
+		<!-- Edit Card -->
 		{#if isEditCard}
-			<!-- Edit Card -->
 			<div class="w-full lg:w-1/2 h-max bg-white rounded-lg shadow p-6">
 				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
 					Edit card
@@ -115,11 +145,11 @@
 						<Select class="mt-2" items={cardTypes} bind:value={cardTypeSelect} />
 					</Label>
 					<Helper class="mt-2">
-						{#if selected === 'number'}
-							User is able to input numeric data.
-						{:else if selected === 'text'}
-							User is able to input alphanumeric data.
-						{/if}
+						{#each cardTypes as { value, description }}
+							{#if cardTypeSelect === value}
+								<p>{description}</p>
+							{/if}
+						{/each}
 					</Helper>
 				</div>
 
@@ -128,16 +158,64 @@
 					<form method="post" class="space-y-4" action="?/updateField">
 						<input name="card_type" type="hidden" bind:value={cardTypeSelect} />
 						<input name="card_id" type="hidden" bind:value={idCardSelected} />
-						{#if cardTypeSelect === 'number' || cardTypeSelect === 'text'}
-							<Label class="space-y-2">
-								<span>Card name*</span>
-								<Input
-									name="new_card_name"
-									type="text"
-									placeholder="Type here"
-									bind:value={newCardName}
-								/>
-							</Label>
+						<input name="checkboxes" type="hidden" bind:value={stringifyEditCheckOptions} />
+
+						<Label class="space-y-2">
+							<span>Card name*</span>
+							<Input
+								name="new_card_name"
+								type="text"
+								placeholder="Type here"
+								bind:value={newCardName}
+							/>
+						</Label>
+
+						<!-- checkboxes -->
+
+						{#if cardTypeSelect === 'checkboxes'}
+							<div class="space-y-4 mb-4">
+								{#if editCheckOptions}
+									{#each editCheckOptions as options, index}
+										<Button
+											disabled={editCheckOptions.length <= 1 ? true : false}
+											type="button"
+											size="xs"
+											color="light"
+											on:click={() =>
+												(editCheckOptions = editCheckOptions.filter((_, i) => i !== index))}
+										>
+											<CloseOutline class="w-2 h-2" />
+										</Button>
+										<Label class="space-y-2" key={index}>
+											<span>Point {index + 1}*</span>
+											{#if options?.id}
+												<Input
+													type="text"
+													placeholder="Type here"
+													bind:value={options.name}
+													required
+												/>
+											{:else}
+												<Input
+													type="text"
+													placeholder="Type here"
+													bind:value={editCheckOptions[index]}
+													required
+												/>
+											{/if}
+										</Label>
+									{/each}
+								{/if}
+
+								<Button
+									color="light"
+									size="xs"
+									on:click={() => (editCheckOptions = [...editCheckOptions, ''])}
+								>
+									<PlusOutline class="w-3 h-3 me-2" />
+									Add another option</Button
+								>
+							</div>
 						{/if}
 
 						<div class="inline-flex gap-4">
@@ -160,11 +238,11 @@
 						<Select class="mt-2" items={cardTypes} bind:value={selected} />
 					</Label>
 					<Helper class="mt-2">
-						{#if selected === 'number'}
-							User is able to input numeric data.
-						{:else if selected === 'text'}
-							User is able to input alphanumeric data.
-						{/if}
+						{#each cardTypes as { value, description }}
+							{#if selected === value}
+								<p>{description}</p>
+							{/if}
+						{/each}
 					</Helper>
 				</div>
 
@@ -173,7 +251,8 @@
 						<form method="post" class="space-y-4" action="?/addField">
 							<input name="form_id" type="hidden" bind:value={data.customForm.id} />
 							<input name="card_type" type="hidden" bind:value={selected} />
-							{#if selected === 'number' || selected === 'text'}
+
+							{#if selected}
 								<Label class="space-y-2">
 									<span>Card name*</span>
 									<Input
@@ -184,6 +263,42 @@
 										bind:value={$form.card_name}
 									/>
 								</Label>
+							{/if}
+							<!-- checkboxes -->
+							{#if selected === 'checkboxes'}
+								<input type="hidden" name="checkboxes" bind:value={stringifyCheckBoxes} />
+
+								<div class="space-y-4 mb-4">
+									{#each checkBoxes as checkbox, index}
+										<Button
+											disabled={checkBoxes.length <= 1 ? true : false}
+											type="button"
+											size="xs"
+											color="light"
+											on:click={() => (checkBoxes = checkBoxes.filter((_, i) => i !== index))}
+										>
+											<CloseOutline class="w-2 h-2" />
+										</Button>
+										<Label class="space-y-2" key={index}>
+											<span>Point {index + 1}*</span>
+											<Input
+												type="text"
+												placeholder="Type here"
+												bind:value={checkBoxes[index]}
+												required
+											/>
+										</Label>
+									{/each}
+
+									<Button
+										color="light"
+										size="xs"
+										on:click={() => (checkBoxes = [...checkBoxes, ''])}
+									>
+										<PlusOutline class="w-3 h-3 me-2" />
+										Add another option</Button
+									>
+								</div>
 							{/if}
 
 							<div class="inline-flex gap-4">
@@ -196,25 +311,39 @@
 			</div>
 		{/if}
 
-		<!-- List Cards -->
 		<div class="w-full lg:w-1/2 bg-white rounded-lg shadow p-6 h-max">
 			<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
 				Cards ({data.customForm.fields.length})
 			</h5>
+
 			<div class="grid grid-cols-1 gap-4">
+				<!-- List Cards -->
 				{#each data.customForm.fields as field}
 					<div class="shadow bg-white p-6 rounded-lg">
 						<h5 class="font-medium text-lg text-gray-800">
 							{field.name}
 						</h5>
 
-						{#if field.type === FormFieldType.TEXT}
-							{cardTypes[1].name}
-						{:else if field.type === FormFieldType.NUMBER}
-							{cardTypes[0].name}
+						{#if field.type === FormFieldType.NUMBER}
+							<p class="text-blue-500">{cardTypes[0].name}</p>
+						{:else if field.type === FormFieldType.TEXT}
+							<p class="text-blue-500">{cardTypes[1].name}</p>
+						{:else if field.type === FormFieldType.CHECKBOXES}
+							<!-- list options -->
+							{#if field.checkOptions}
+								<ul class="list-disc list-inside">
+									{#each field.checkOptions as options}
+										<li>
+											{options.name}
+										</li>
+									{/each}
+								</ul>
+							{/if}
+							<p class="text-blue-500">{cardTypes[2].name}</p>
 						{/if}
 
 						<div class="flex gap-4">
+							<!-- delete button -->
 							<Button
 								outline
 								size="xs"
@@ -226,12 +355,14 @@
 							>
 								<TrashBinOutline class="h-4 w-4" />
 							</Button>
+							<!-- edit button -->
 							<Button
 								on:click={() => {
 									isEditCard = true;
 									newCardName = field.name;
 									idCardSelected = field.id;
 									setCardTypeToEdit(field.type);
+									editCheckOptions = field.checkOptions.length >= 1 ? field.checkOptions : [''];
 								}}
 								outline
 								size="xs"

@@ -22,5 +22,3 @@ export const // Prisma constants.
 
 	SKIP_PAGINATION_PARAMETER = 0,
 	TAKE_PAGINATION_PARAMETER = 10;
-
-

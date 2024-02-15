@@ -1,5 +1,6 @@
 import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
+import type { CheckOption } from '@prisma/client';
 
 /*
  *  The following function are related to CustomForm
@@ -73,7 +74,11 @@ export const retrieveCustomFormById = async ({
 			tenantId: tenantId
 		},
 		include: {
-			fields: true
+			fields: {
+				include: {
+					checkOptions: true
+				}
+			}
 		}
 	});
 
@@ -107,8 +112,10 @@ export const renameCustomForm = async ({
  *  The following function are related to custom field
  */
 
-const getFieldType = (FieldType: 'text' | 'number') => {
+const getFieldType = (FieldType: 'text' | 'number' | 'checkboxes') => {
 	if (FieldType === 'number') return FormFieldType.NUMBER;
+
+	if (FieldType === 'checkboxes') return FormFieldType.CHECKBOXES;
 
 	return FormFieldType.TEXT;
 };
@@ -120,18 +127,23 @@ export const addFieldToCustomFrom = async ({
 	name,
 	formId,
 	cardType,
-	tenantId
+	tenantId,
+	checkboxes
 }: {
 	name: string;
 	formId: number;
-	cardType: 'number' | 'text';
+	cardType: 'number' | 'text' | 'checkboxes';
 	tenantId: string;
+	checkboxes?: string[];
 }) => {
 	await tenantPrisma(tenantId).customField.create({
 		data: {
 			formId: formId,
 			name: name,
-			type: getFieldType(cardType)
+			type: getFieldType(cardType),
+			checkOptions: {
+				create: checkboxes?.map((name) => ({ name }))
+			}
 		}
 	});
 };
@@ -174,20 +186,67 @@ export const updateCustomField = async ({
 	cardId,
 	cardType,
 	newName,
-	tenantId
+	tenantId,
+	checkboxes
 }: {
 	cardId: number;
-	cardType: 'text' | 'number';
+	cardType: 'text' | 'number' | 'checkboxes';
 	newName: string;
 	tenantId: string;
+	checkboxes: (CheckOption | string)[] | undefined;
 }) => {
+	let idsToSkip: number[] | undefined = checkboxes
+		?.filter((el) => typeof el !== 'string')
+		.map((el) => el?.id);
+
+	// if card type is not checkboxe then delete all checkOptions
+	if (cardType !== 'checkboxes') idsToSkip = [];
+
+	await tenantPrisma(tenantId).checkOption.deleteMany({
+		where: {
+			id: {
+				notIn: idsToSkip
+			},
+			fieldId: cardId
+		}
+	});
+
+	// update checkboxes
+	if (cardType === 'checkboxes') {
+		const checkBoxesToUpdate: CheckOption[] | undefined = checkboxes?.filter(
+			(el) => typeof el !== 'string'
+		) as CheckOption[];
+
+		for (const checkbox of checkBoxesToUpdate) {
+			await tenantPrisma(tenantId).checkOption.update({
+				where: {
+					id: checkbox.id
+				},
+				data: {
+					name: checkbox.name
+				}
+			});
+		}
+	}
+
+	// update card
+	const checkBoxesToCreate = checkboxes?.filter(
+		(el) => typeof el === 'string' && el != ''
+	) as string[];
+
 	await tenantPrisma(tenantId).customField.update({
 		where: {
 			id: cardId
 		},
 		data: {
 			type: getFieldType(cardType),
-			name: newName
+			name: newName,
+			checkOptions: {
+				create: checkBoxesToCreate?.map((name) => ({ name }))
+			}
+		},
+		include: {
+			checkOptions: true
 		}
 	});
 };

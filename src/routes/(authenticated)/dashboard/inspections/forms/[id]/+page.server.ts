@@ -14,12 +14,16 @@ import {
 	PERMANENT_REDIRECT_STATUS,
 	TEMPORARY_REDIRECT_STATUS,
 	MISSING_SECURITY_HEADER_STATUS
-} from '$lib/shared/helpers';
+} from '$lib/shared';
+import type { CheckOption } from '@prisma/client';
+
+const cardTypeSchema = z.enum(['text', 'number', 'checkboxes']);
 
 const addCardSchema = z.object({
 	card_name: z.string(),
 	form_id: z.number(),
-	card_type: z.enum(['text', 'number'])
+	card_type: cardTypeSchema,
+	checkboxes: z.string().optional()
 });
 
 const deleteFormSchema = z.object({
@@ -38,8 +42,9 @@ const renameFormSchema = z.object({
 
 const updateCardSchema = z.object({
 	card_id: z.number(),
-	card_type: z.enum(['text', 'number']),
-	new_card_name: z.string()
+	card_type: cardTypeSchema,
+	new_card_name: z.string(),
+	checkboxes: z.string().optional()
 });
 
 const verifySession = async (locals: any) => {
@@ -139,11 +144,15 @@ export const actions = {
 		// this code is for testing purposes only
 		const tenant = session?.user.tenantUsers[0].tenant;
 
+		let checkboxes: string[];
+		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
+
 		await addFieldToCustomFrom({
 			tenantId: tenant.id,
 			cardType: form.data.card_type,
 			name: form.data.card_name,
-			formId: form.data.form_id
+			formId: form.data.form_id,
+			checkboxes: checkboxes
 		});
 
 		return { form };
@@ -186,11 +195,15 @@ export const actions = {
 		// this code is for testing purposes only
 		const tenant = session?.user.tenantUsers[0].tenant;
 
+		let checkboxes: (CheckOption | string)[] | undefined = undefined;
+		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
+
 		await updateCustomField({
 			tenantId: tenant.id,
 			newName: form.data.new_card_name,
 			cardId: form.data.card_id,
-			cardType: form.data.card_type
+			cardType: form.data.card_type,
+			checkboxes: checkboxes
 		});
 	}
 } satisfies Actions;

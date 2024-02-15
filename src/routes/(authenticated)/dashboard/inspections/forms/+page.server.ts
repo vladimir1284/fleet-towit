@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import type { Actions, PageServerLoad } from './$types';
-import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared/helpers';
+import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 
 const createFormSchema = z.object({
 	form_name: z.string()

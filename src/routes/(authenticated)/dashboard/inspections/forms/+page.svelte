@@ -41,7 +41,7 @@
 			<TableHeadCell>Created</TableHeadCell>
 			<TableHeadCell>Action</TableHeadCell>
 		</TableHead>
-		<TableBody class="divide-y">
+		<TableBody>
 			{#each filteredForms as form}
 				<TableBodyRow>
 					<TableBodyCell>{form.name}</TableBodyCell>

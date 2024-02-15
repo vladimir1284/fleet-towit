@@ -67,16 +67,15 @@ model VerificationToken {
 }
 
 model TenantUser {
-
-  id       String @id @default(cuid()) @db.VarChar(30)
-  role     Role   @default(STAFF)
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdParts Part[] @relation("creationAuthor")
-  updatedParts Part[] @relation("updateAuthor")
-  deletedParts Part[] @relation("deletionAuthor")
+  id                   String                @id @default(cuid()) @db.VarChar(30)
+  role                 Role                  @default(STAFF)
+  tenantId             String
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdParts         Part[]                @relation("creationAuthor")
+  updatedParts         Part[]                @relation("updateAuthor")
+  deletedParts         Part[]                @relation("deletionAuthor")
   customFieldResponses CustomFieldResponse[]
 }
 
@@ -98,7 +97,7 @@ model Tenant {
   isAdmin     Boolean      @default(false)
   clients     Client[]
   tenantUsers TenantUser[]
-  customForms          CustomForm[]
+  customForms CustomForm[]
   Part        Part[]
   Category    Category[]
   Location    Location[]
@@ -112,40 +111,57 @@ enum Role {
 }
 
 model CustomForm {
-  id           Int           @id @default(autoincrement())
-  name         String
-  tenantId String
-  user         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt    DateTime      @default(now())
-  fields       CustomField[]
+  id        Int           @id @default(autoincrement())
+  name      String
+  tenantId  String
+  user      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  fields    CustomField[]
 }
 
 enum FormFieldType {
   TEXT
   NUMBER
   RADIO
-  CHECKBOX
+  SINGLE_CHECK
+  MULTI_CHECK
+  CHECKBOXES
+  DATE
+}
+
+model CheckOption {
+  id        Int                   @id @default(autoincrement())
+  name      String?
+  fieldId   Int
+  field     CustomField           @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  responses CustomFieldResponse[]
 }
 
 model CustomField {
-  id        Int                   @id @default(autoincrement())
-  name      String
-  type      FormFieldType
-  required  Boolean?              @default(true)
-  formId    Int
-  form      CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
-  responses CustomFieldResponse[]
+  id           Int                   @id @default(autoincrement())
+  name         String
+  type         FormFieldType
+  required     Boolean?              @default(true)
+  formId       Int
+  form         CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  checkOptions CheckOption[]
+  // tenant user responses
+  responses    CustomFieldResponse[]
 }
 
 model CustomFieldResponse {
   id           Int         @id @default(autoincrement())
   content      String
+  createdAt    DateTime    @default(now())
+  // tenant relation
   tenantUserId String
   user         TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  // custom field relation
   fieldId      Int
   field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-  createdAt    DateTime    @default(now())
 
+  optionId Int?
+  option   CheckOption? @relation(fields: [optionId], references: [id])
 }
 
 // Inventory-related models.
