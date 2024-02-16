@@ -20,3 +20,7 @@ export const // Prisma constants.
 
 	SKIP_PAGINATION_PARAMETER = 0,
 	TAKE_PAGINATION_PARAMETER = 10;
+
+export const // zod constants.
+
+	INVALID_ADDRESS_EMAIL = 'INVALID_ADDRESS_EMAIL';
