@@ -9,44 +9,24 @@
 	$: if (currentTenant === 'initial') {
 		tenantActor.send({ type: 'tenant.init', value: 'currentTenant' });
 	}
-	tenantActor.subscribe((state) => {
+	
+	$: currentTenant = tenantActor.getSnapshot().context.currentTenant;
+
+	$: if(currentTenant === undefined){
+		goto('/select-tenant');
+	}
+
+	$: tenantActor.subscribe((state) => {
 		currentTenant = state.context.currentTenant;
 	});
 
-	$: currentTenant = tenantActor.getSnapshot().context.currentTenant;
+	$: console.log(currentTenant)
 
-	$: if (currentTenant !== 'initial') {
-		if (!currentTenant) {
-			goto('/select-tenant');
-		}
-		const actualTenant = data.session.user.tenantUsers.find(
-			(user) => user.id === currentTenant.currentUserTenant.id
-		);
-		if (actualTenant.role !== currentTenant.currentUserTenant.role) {
-			tenantActor.send({
-				type: 'tenant.update',
-				value: {
-					...actualTenant.tenant,
-					currentUserTenant: {
-						id: actualTenant.id,
-						tentantId: actualTenant.tentantId,
-						role: actualTenant.role,
-						userId: actualTenant.userId
-					}
-				}
-			});
-		}
-	}
-
-	$: if (
-		data.session &&
-		data.session.user &&
-		!data.session.user?.tenantUsers.some(
-			(tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id
-		)
-	) {
+	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id)) {
 		goto('/select-tenant');
 	}
+
+
 </script>
 
 <svelte:head>

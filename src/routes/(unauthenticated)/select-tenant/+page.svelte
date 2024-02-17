@@ -8,8 +8,16 @@
 	import { USER_TENANT_HEADER } from '$lib/shared';
 
 	import type { PageData } from './$types';
-
 	export let data: PageData;
+	import { onMount } from 'svelte';
+	
+	onMount(() => {
+		if (data.session?.user.defaultTenantUser){
+			const currentUserTenant = data.session.user.defaultTenantUser;
+			tenantActor.send({ type: 'tenant.update', value: { ...currentUserTenant.tenant, currentUserTenant } });
+			goto('/dashboard');
+		}
+	});
 
 	async function handleSelectTenant(tenant) {
 		const currentUserTenant = data.session.user.tenantUsers.find(
@@ -27,14 +35,16 @@
 </script>
 
 {#if data?.session}
-	{#each data?.aviableTenants as tenant}
-		<Card padding="sm" size="xl" class="flex flex-col justify-evenly min-w-[300px] min-h-[200px]">
-			<div class="flex flex-col items-center pb-4">
-				<h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{tenant.name}</h5>
-				<div class="flex mt-4 space-x-3 rtl:space-x-reverse lg:mt-6">
-					<Button on:click={() => handleSelectTenant(tenant)}>Enter</Button>
+	<div class="flex flex-wrap gap-2 justify-center">
+		{#each data?.aviableTenants as tenant}
+			<Card padding="sm" size="xl" class="flex flex-col justify-evenly min-w-[300px] min-h-[200px]">
+				<div class="flex flex-col items-center pb-4">
+					<h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{tenant.name}</h5>
+					<div class="flex mt-4 space-x-3 rtl:space-x-reverse lg:mt-6">
+						<Button on:click={() => handleSelectTenant(tenant)}>Enter</Button>
+					</div>
 				</div>
-			</div>
-		</Card>
-	{/each}
+			</Card>
+		{/each}
+	</div>
 {/if}

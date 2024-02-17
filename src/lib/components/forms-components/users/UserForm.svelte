@@ -54,6 +54,7 @@
 
 	async function handleSubmit(event) {
 		event.preventDefault();
+		$form.email = $form.email.trim();
 		const formData = new FormData(event.target);
 		const headers = {
 			'X-User-Tenant': currentTenant.currentUserTenant.id
