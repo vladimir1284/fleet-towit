@@ -58,12 +58,17 @@ async function main() {
 			const existingUser = await prisma.tenantUser.findFirst({
 				where: {
 					tenantId: array[index],
-					user: { email: userData.email, password: '1234' }
+					user: { email: userData.email }
 				}
 			});
 
 			if (!existingUser) {
-				await createTenantUser({ ...userData, tenantId: array[index] });
+				const FALLBACK_SEED_PROCESS_ROOT_PASSWORD = 'fleet-towit';
+				await createTenantUser({
+					...userData,
+					password: process.env.SEED_PROCESS_ROOT_PASSWORD ?? FALLBACK_SEED_PROCESS_ROOT_PASSWORD,
+					tenantId: array[index]
+				});
 			}
 		}
 	}

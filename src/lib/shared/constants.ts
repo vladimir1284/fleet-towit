@@ -18,6 +18,7 @@ export const // HTTP request constants.
 
 export const // Prisma constants.
 
+	BCRYPT_SALT_LENGTH = 10,
 	SKIP_PAGINATION_PARAMETER = 0,
 	TAKE_PAGINATION_PARAMETER = 10;
 

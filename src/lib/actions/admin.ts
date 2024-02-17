@@ -2,7 +2,13 @@ import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
 
 type createTenantType = { name: string; email?: string | null };
-type createUserType = { email: string; tenantId: string; userRole?: Role; is_default?: boolean };
+type createUserType = {
+	email: string;
+	password: string;
+	tenantId: string;
+	userRole?: Role;
+	is_default?: boolean;
+};
 type editTenantType = createTenantType & { tenantId: string };
 type editUserType = createUserType & { tenantUserId: string };
 
@@ -18,13 +24,16 @@ export const createTenant = async ({ name, email = null }: createTenantType) => 
 
 export const createTenantUser = async ({
 	email,
+	password,
 	tenantId,
 	userRole = Role.STAFF,
 	is_default
 }: createUserType) => {
 	let user = await bypassPrisma.user.findUnique({ where: { email: email } });
 	if (!user) {
-		user = await bypassPrisma.user.create({ data: { email: email, password: '1234' } });
+		user = await bypassPrisma.user.create({
+			data: { email, password }
+		});
 	}
 	const tenantUser = await bypassPrisma.tenantUser.create({
 		data: {
@@ -49,12 +58,15 @@ export const updateTenant = async ({ tenantId, name, email }: editTenantType) =>
 export const updateTenantUser = async ({
 	tenantUserId,
 	email,
+	password,
 	tenantId,
 	userRole
 }: editUserType) => {
 	let user = await bypassPrisma.user.findUnique({ where: { email: email } });
 	if (!user) {
-		user = await bypassPrisma.user.create({ data: { email: email, password: '1234' } });
+		user = await bypassPrisma.user.create({
+			data: { email, password }
+		});
 	}
 	const tenantUser = await bypassPrisma.tenantUser.update({
 		where: { id: tenantUserId },
