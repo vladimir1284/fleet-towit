@@ -85,16 +85,15 @@ const handleAuth = (async (...args) => {
 				from: EMAIL_FROM
 			}),
 			CredentialsProvider({
-				id: 'tenant-user-login', // Unique id across providers.
 				name: 'credentials',
 				credentials: {}, // Customized-layout instead.
 				async authorize(credentials) {
 					try {
 						const guest = await prisma.user.findFirst({ where: { email: credentials.email } });
-						if (guest?.password) {
+						if (guest) {
 							const guestPasswordValidation = await bcrypt.compare(
 								credentials.password,
-								guest?.password
+								guest.password
 							);
 							return guestPasswordValidation ?? null;
 						}

@@ -7,6 +7,7 @@
 	import { signIn } from '@auth/sveltekit/client';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
+	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -19,11 +20,14 @@
 				if (useMagicLink) {
 					signIn('email', { email: form.data.email, callbackUrl: '/select-tenant' });
 				} else {
-					signIn('credentials', {
+					const validAuthProcess = await signIn('credentials', {
 						email: form.data.email,
 						password: form.data.password,
-						callbackUrl: '/select-tenant'
+						redirect: false
 					});
+					if (validAuthProcess?.ok) {
+						goto('/select-tenant');
+					}
 				}
 			}
 		}
