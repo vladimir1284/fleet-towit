@@ -77,6 +77,7 @@ model TenantUser {
   updatedParts         Part[]                @relation("updateAuthor")
   deletedParts         Part[]                @relation("deletionAuthor")
   customFieldResponses CustomFieldResponse[]
+  inspectionResponse   InspectionResponse[]
 }
 
 model Client {
@@ -102,6 +103,7 @@ model Tenant {
   Category    Category[]
   Location    Location[]
   Vendor      Vendor[]
+  Inspection  Inspection[]
 }
 
 enum Role {
@@ -111,12 +113,13 @@ enum Role {
 }
 
 model CustomForm {
-  id        Int           @id @default(autoincrement())
-  name      String
-  tenantId  String
-  user      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt DateTime      @default(now())
-  fields    CustomField[]
+  id          Int           @id @default(autoincrement())
+  name        String
+  tenantId    String
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  fields      CustomField[]
+  inspections Inspection[]
 }
 
 enum FormFieldType {
@@ -150,8 +153,12 @@ model CustomField {
 }
 
 model CustomFieldResponse {
-  id           Int         @id @default(autoincrement())
-  content      String
+  id      Int      @id @default(autoincrement())
+  // if is text , number etc
+  content String?
+  // if is checkbox ,radio
+  checked Boolean?
+
   createdAt    DateTime    @default(now())
   // tenant relation
   tenantUserId String
@@ -160,8 +167,36 @@ model CustomFieldResponse {
   fieldId      Int
   field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
-  optionId Int?
-  option   CheckOption? @relation(fields: [optionId], references: [id])
+  checkOptionId Int?
+  checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id])
+
+  inspectionResponse   InspectionResponse? @relation(fields: [inspectionResponseId], references: [id])
+  inspectionResponseId Int?
+}
+
+model Inspection {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  customFormId Int
+  customForm   CustomForm @relation(fields: [customFormId], references: [id], onDelete: Cascade)
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  responses InspectionResponse[]
+}
+
+model InspectionResponse {
+  id Int @id @default(autoincrement())
+
+  inspection   Inspection @relation(fields: [inspectionId], references: [id] , onDelete: Cascade)
+  inspectionId Int
+
+  tenantUserId String
+  user         TenantUser @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+
+  responses CustomFieldResponse[]
 }
 
 // Inventory-related models.
