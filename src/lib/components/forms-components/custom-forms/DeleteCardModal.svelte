@@ -2,10 +2,10 @@
 	import { Button, Modal } from 'flowbite-svelte';
 	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 
-	export let customFormId;
-	export let idCardSelected;
+	export let customFormId: number;
+	export let idCardSelected: number;
 
-	export let isOpen;
+	export let isOpen=false;
 	export let onClose = () => {};
 
 	const closeModal = () => {
