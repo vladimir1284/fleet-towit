@@ -1,7 +1,7 @@
 import { superValidate } from 'sveltekit-superforms/server';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import {z} from 'zod';
+import { z } from 'zod';
 
 const loginSchema = z.object({
 	email: z.string().email(),

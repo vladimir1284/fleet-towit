@@ -1,12 +1,13 @@
-import { createCustomForm, fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
+import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
-import type { Actions, PageServerLoad } from './$types';
+import { fetchInspections, createInspection } from '$lib/actions/inspections';
 import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
+import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
 
-const createFormSchema = z.object({
-	form_name: z.string()
+const createInspectionSchema = z.object({
+	form_id: z.number()
 });
 
 const verifySession = async (locals: any) => {
@@ -20,21 +21,25 @@ const verifySession = async (locals: any) => {
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await verifySession(locals);
 
-	const form = await superValidate(createFormSchema);
+	const form = await superValidate(createInspectionSchema);
 
 	// this code is for testing purposes only
 	const tenant = session?.user.tenantUsers[0].tenant;
 
+	const inspections = await fetchInspections({ tenantId: tenant.id });
+
 	const customForms = await fetchCustomFormsByTenant({ tenantId: tenant.id });
 
-	return { form, customForms };
+	const listCustomForm = customForms.map((el) => ({ value: el.id, name: el.name }));
+
+	return { form, inspections, listCustomForm };
 };
 
 export const actions = {
-	default: async ({ request, url, locals }) => {
+	default: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, createFormSchema);
+		const form = await superValidate(request, createInspectionSchema);
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -43,13 +48,9 @@ export const actions = {
 		// this code is for testing purposes only
 		const tenant = session?.user.tenantUsers[0].tenant;
 
-		const newForm = await createCustomForm({
+		await createInspection({
 			tenantId: tenant.id,
-			name: form.data.form_name
+			formId: form.data.form_id
 		});
-
-		if (newForm) {
-			throw redirect(TEMPORARY_REDIRECT_STATUS, `${url.pathname}/${newForm.id}`);
-		}
 	}
 } satisfies Actions;

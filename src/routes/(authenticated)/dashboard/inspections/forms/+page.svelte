@@ -30,7 +30,7 @@
 	);
 </script>
 
-<section class="flex flex-col w-full p-4">
+<section class="flex flex-col w-full sm:w-2/3 p-4">
 	<div class="flex justify-end">
 		<Button color="blue" on:click={() => (createFormModal = true)}>Create new form</Button>
 	</div>
@@ -41,7 +41,7 @@
 			<TableHeadCell>Created</TableHeadCell>
 			<TableHeadCell>Action</TableHeadCell>
 		</TableHead>
-		<TableBody class="divide-y">
+		<TableBody>
 			{#each filteredForms as form}
 				<TableBodyRow>
 					<TableBodyCell>{form.name}</TableBodyCell>
