@@ -18,11 +18,11 @@ import {
 	AUTH_SECRET
 } from '$env/static/private';
 import EmailProvider from '@auth/core/providers/email';
+import CredentialsProvider from '@auth/core/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
 import { getTenantUsers } from '$lib/actions/user';
 const prisma = new PrismaClient();
-
 import bcrypt from 'bcryptjs';
 import { getAdminTenant } from '$lib/actions/admin';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
@@ -32,21 +32,25 @@ const handleAuth = (async (...args) => {
 	const [{ event }] = args;
 	return SvelteKitAuth({
 		callbacks: {
-			async signIn({ user }) {
-				const guest = await prisma.user.findFirst({ where: { email: user.email } });
-				if (guest) {
+			async signIn({ user, account }) {
+				if (account?.provider === 'credentials') {
 					return true;
 				} else {
-					console.log('Unauthorized: ', user);
-					// Return false to display a default error message
-					return false;
-					// Or you can return a URL to redirect to:
-					// return '/unauthorized'
+					const guest = await prisma.user.findFirst({ where: { email: user.email } });
+					if (guest) {
+						return true;
+					} else {
+						console.log('Unauthorized: ', user);
+						// Return false to display a default error message
+						return false;
+						// Or you can return a URL to redirect to:
+						// return '/unauthorized'
+					}
 				}
 			},
 			async session({ session, user }) {
 				const tenantUsers = await getTenantUsers({ userId: user.id });
-				const defaultTenantUser = tenantUsers.find(tenantUser => tenantUser.is_default);
+				const defaultTenantUser = tenantUsers.find((tenantUser) => tenantUser.is_default);
 				session.user = {
 					id: user.id,
 					name: user.name,
@@ -79,6 +83,25 @@ const handleAuth = (async (...args) => {
 					}
 				},
 				from: EMAIL_FROM
+			}),
+			CredentialsProvider({
+				name: 'credentials',
+				credentials: {}, // Customized-layout instead.
+				async authorize(credentials) {
+					try {
+						const guest = await prisma.user.findFirst({ where: { email: credentials.email } });
+						if (guest) {
+							const guestPasswordValidation = await bcrypt.compare(
+								credentials.password,
+								guest.password
+							);
+							return guestPasswordValidation ?? null;
+						}
+						return null;
+					} catch (error) {
+						return null;
+					}
+				}
 			})
 		],
 		pages: {
