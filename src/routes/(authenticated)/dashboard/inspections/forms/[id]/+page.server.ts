@@ -1,5 +1,5 @@
 import {
-	addFieldToCustomFrom,
+	addFieldToCustomForm,
 	deleteCustomForm,
 	retrieveCustomFormById,
 	deleteCustomField,
@@ -147,7 +147,7 @@ export const actions = {
 		let checkboxes: string[] | undefined = undefined;
 		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
 
-		await addFieldToCustomFrom({
+		await addFieldToCustomForm({
 			tenantId: tenant.id,
 			cardType: form.data.card_type,
 			name: form.data.card_name,

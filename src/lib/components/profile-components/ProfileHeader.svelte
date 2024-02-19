@@ -1,5 +1,5 @@
 <script>
-// @ts-nocheck
+	// @ts-nocheck
 
 	import { Avatar, Dropdown, DropdownItem, Button } from 'flowbite-svelte';
 	import { signOut } from '@auth/sveltekit/client';
@@ -27,7 +27,9 @@
 	<Dropdown>
 		<div slot="header" class="px-4 py-2">
 			<span class="block text-sm text-gray-900 dark:text-white">{userData.email}</span>
-			<span class="block truncate text-xs font-small">{userData?.defaultTenantUser?.tenant.name}</span>
+			<span class="block truncate text-xs font-small"
+				>{userData?.defaultTenantUser?.tenant.name}</span
+			>
 		</div>
 		<DropdownItem>Dashboard</DropdownItem>
 		<DropdownItem href="/profile">Profile</DropdownItem>

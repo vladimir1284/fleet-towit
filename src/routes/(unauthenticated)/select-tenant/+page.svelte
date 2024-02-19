@@ -10,11 +10,14 @@
 	import type { PageData } from './$types';
 	export let data: PageData;
 	import { onMount } from 'svelte';
-	
+
 	onMount(() => {
-		if (data.session?.user.defaultTenantUser){
+		if (data.session?.user.defaultTenantUser) {
 			const currentUserTenant = data.session.user.defaultTenantUser;
-			tenantActor.send({ type: 'tenant.update', value: { ...currentUserTenant.tenant, currentUserTenant } });
+			tenantActor.send({
+				type: 'tenant.update',
+				value: { ...currentUserTenant.tenant, currentUserTenant }
+			});
 			goto('/dashboard');
 		}
 	});

@@ -123,7 +123,7 @@ const getFieldType = (FieldType: 'text' | 'number' | 'checkboxes') => {
 /*
  *	add field to custom form
  */
-export const addFieldToCustomFrom = async ({
+export const addFieldToCustomForm = async ({
 	name,
 	formId,
 	cardType,

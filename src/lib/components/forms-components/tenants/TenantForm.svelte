@@ -11,7 +11,7 @@
 	export let selectedTenant: any;
 	export let usersList: [] = [];
 	let tenantUsersList = [];
-	let tenantUsersSelector: { value: any; name: any; }[] = [];
+	let tenantUsersSelector: { value: any; name: any }[] = [];
 	let actionURL = '/api/tenants';
 
 	const dispatch = createEventDispatcher();
@@ -29,14 +29,16 @@
 		$form.email = selectedTenant.email;
 		$form.email = $form.email.trim();
 		//@ts-expect-error
-		tenantUsersList = usersList.filter(user => user.tenant.id === selectedTenant.id);
+		tenantUsersList = usersList.filter((user) => user.tenant.id === selectedTenant.id);
 		tenantUsersList?.forEach((element) => {
 			//@ts-expect-error
-			tenantUsersSelector.push({ value: element.id, name: element.user.name ?? element.user.email });
+			tenantUsersSelector.push({
+				value: element.id,
+				name: element.user.name ?? element.user.email
+			});
 		});
 		actionURL = actionURL + `/${selectedTenant.id}`;
 	}
-
 </script>
 
 <form method="POST" use:enhance action={actionURL}>
@@ -60,7 +62,7 @@
 					placeholder="Select a user to be owner..."
 					bind:value={$form.ownerId}
 				/>
-			</div>	
+			</div>
 		{/if}
 		<div class="flex sm:col-span-2 justify-center items-center">
 			<SubmitButtonComponent
