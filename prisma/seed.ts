@@ -62,11 +62,10 @@ async function main() {
 				}
 			});
 
-			if (!existingUser) {
-				const FALLBACK_SEED_PROCESS_ROOT_PASSWORD = 'fleet-towit';
+			if (!existingUser && process.env.SEED_PROCESS_ROOT_PASSWORD) {
 				await createTenantUser({
 					...userData,
-					password: process.env.SEED_PROCESS_ROOT_PASSWORD ?? FALLBACK_SEED_PROCESS_ROOT_PASSWORD,
+					password: process.env.SEED_PROCESS_ROOT_PASSWORD,
 					tenantId: array[index]
 				});
 			}

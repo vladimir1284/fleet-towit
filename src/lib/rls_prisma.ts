@@ -39,7 +39,7 @@ export function bypassRLS() {
 										BCRYPT_SALT_LENGTH
 									);
 								}
-								if (args.update && args.update.password) {
+								if (args.update?.password) {
 									args.update.password = await bcrypt.hash(
 										<string>args.update.password, // as string is also valid.
 										BCRYPT_SALT_LENGTH
@@ -51,11 +51,18 @@ export function bypassRLS() {
 								if (Array.isArray(args.data)) {
 									args.data = await Promise.all(
 										args.data.map(
-											async (user) => await bcrypt.hash(user.password, BCRYPT_SALT_LENGTH)
+											async (user) => {
+												const cryptedUserPassword = await bcrypt.hash(user.password, BCRYPT_SALT_LENGTH)
+												return {
+													...user,
+													password: cryptedUserPassword
+												}
+
+											}
 										)
 									);
 								} else {
-									if (args.data.password) {
+									if (args.data?.password) {
 										args.data.password = await bcrypt.hash(
 											<string>args.data.password, // as string is also valid.
 											BCRYPT_SALT_LENGTH
@@ -112,7 +119,7 @@ export function forTenant(tenantId: string) {
 										BCRYPT_SALT_LENGTH
 									);
 								}
-								if (args.update && args.update.password) {
+								if (args.update?.password) {
 									args.update.password = await bcrypt.hash(
 										<string>args.update.password, // as string is also valid.
 										BCRYPT_SALT_LENGTH
@@ -124,11 +131,18 @@ export function forTenant(tenantId: string) {
 								if (Array.isArray(args.data)) {
 									args.data = await Promise.all(
 										args.data.map(
-											async (user) => await bcrypt.hash(user.password, BCRYPT_SALT_LENGTH)
+											async (user) => {
+												const cryptedUserPassword = await bcrypt.hash(user.password, BCRYPT_SALT_LENGTH)
+												return {
+													...user,
+													password: cryptedUserPassword
+												}
+
+											}
 										)
 									);
 								} else {
-									if (args.data.password) {
+									if (args.data?.password) {
 										args.data.password = await bcrypt.hash(
 											<string>args.data.password, // as string is also valid.
 											BCRYPT_SALT_LENGTH
@@ -185,7 +199,7 @@ export function forUser(userId: string) {
 										BCRYPT_SALT_LENGTH
 									);
 								}
-								if (args.update && args.update.password) {
+								if (args.update?.password) {
 									args.update.password = await bcrypt.hash(
 										<string>args.update.password, // as string is also valid.
 										BCRYPT_SALT_LENGTH
@@ -197,11 +211,18 @@ export function forUser(userId: string) {
 								if (Array.isArray(args.data)) {
 									args.data = await Promise.all(
 										args.data.map(
-											async (user) => await bcrypt.hash(user.password, BCRYPT_SALT_LENGTH)
+											async (user) => {
+												const cryptedUserPassword = await bcrypt.hash(user.password, BCRYPT_SALT_LENGTH)
+												return {
+													...user,
+													password: cryptedUserPassword
+												}
+
+											}
 										)
 									);
 								} else {
-									if (args.data.password) {
+									if (args.data?.password) {
 										args.data.password = await bcrypt.hash(
 											<string>args.data.password, // as string is also valid.
 											BCRYPT_SALT_LENGTH
