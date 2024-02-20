@@ -156,17 +156,24 @@ model Vehicle {
   nickname        String
   spare_tires     Int
   extraFields     Json?
+  status          VehicleStatus
   vehiclePictures VehiclePicture[] 
   documents       Document[]     
 
   contracts       Contract[]  
+  tolls           TollDue[]
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  UNAVAILABLE
 }
 
 model VehiclePicture {
   id         Int     @id @default(autoincrement())
   image      String
   vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
-  vehicleId      Int
+  vehicleId  Int
   pinned     Boolean @default(false)
 }
 
@@ -181,15 +188,15 @@ model Document {
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
   vehicle         Vehicle       @relation(fields: [vehicleId], references: [id])
-  vehicleId      Int
+  vehicleId       Int
   tags            DocumentTag[] 
   extraFields     Json?
 }
 
 model DocumentTag {
-  id        Int        @id @default(autoincrement())
-  name      String
-  document Document @relation(fields: [documentId], references: [id])
+  id         Int      @id @default(autoincrement())
+  name       String
+  document   Document @relation(fields: [documentId], references: [id])
   documentId Int
 }
 
@@ -398,4 +405,126 @@ enum Stage {
   ACTIVE
   ENDED
   DISMISS
+}
+
+model RentalPlan {
+  id          Int         @id @default(autoincrement())
+  amount      Int
+  name        String
+  periodicity Periodicity
+
+  contracts   Contract[]
+
+  @@unique([name, periodicity, amount])
+}
+
+enum Periodicity {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+model Contract {
+  id           Int         @id @default(autoincrement())
+  client       Client      @relation(fields: [clientId], references: [id])
+  clientId     Int
+  rentalPlan   RentalPlan  @relation(fields: [rentalPlanId], references: [id])
+  rentalPlanId Int
+  vehicle      Vehicle     @relation(fields: [vehicleId], references: [id])
+  vehicleId    Int
+  stage        StageUpdate @relation(fields: [stageId], references: [id])
+  stageId      Int
+  //inspections    Inspection[]  --- doesn't exists yet
+}
+
+model StageUpdate {
+  id              Int           @id @default(autoincrement())
+  date            DateTime
+  reason          String?
+  comments        String?
+  previousStage   StageUpdate?  @relation(name: "previousStage", fields: [previousStageId], references: [id])
+  previousStageId Int           @unique
+  stage           Stage
+  
+  //keeps for back ref
+  stageRef        StageUpdate?  @relation(name: "previousStage")
+  contracts       Contract[]
+}
+
+enum Stage {
+  PENDING
+  ACTIVE
+  ENDED
+  DISMISS
+}
+
+model RentalPlan {
+  id          Int         @id @default(autoincrement())
+  amount      Int
+  name        String
+  periodicity Periodicity
+
+  contracts   Contract[]
+
+  @@unique([name, periodicity, amount])
+}
+
+enum Periodicity {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+model Contract {
+  id           Int         @id @default(autoincrement())
+  client       Client      @relation(fields: [clientId], references: [id])
+  clientId     Int
+  rentalPlan   RentalPlan  @relation(fields: [rentalPlanId], references: [id])
+  rentalPlanId Int
+  vehicle      Vehicle     @relation(fields: [vehicleId], references: [id])
+  vehicleId    Int
+  stage        StageUpdate @relation(fields: [stageId], references: [id])
+  stageId      Int
+  //inspections    Inspection[]  --- doesn't exists yet
+  tolls        TollDue[]
+}
+
+model StageUpdate {
+  id              Int           @id @default(autoincrement())
+  date            DateTime
+  reason          String?
+  comments        String?
+  previousStage   StageUpdate?  @relation(name: "previousStage", fields: [previousStageId], references: [id])
+  previousStageId Int           @unique
+  stage           Stage
+  
+  //keeps for back ref
+  stageRef        StageUpdate?  @relation(name: "previousStage")
+  contracts       Contract[]
+}
+
+enum Stage {
+  PENDING
+  ACTIVE
+  ENDED
+  DISMISS
+}
+
+model TollDue {
+  id            Int          @id @default(autoincrement())
+  amount        Int
+  vehicle       Vehicle      @relation(fields: [vehicleId], references: [id])
+  vehicleId     Int
+  contract      Contract     @relation(fields: [contractId], references: [id])
+  contractId    Int
+  stage         TollDueStage
+  invoice       String?
+  invoiceNumber String?
+  createDate    DateTime
+  note          String?
+}
+
+enum TollDueStage {
+  PAID
+  UNPAID
 }
