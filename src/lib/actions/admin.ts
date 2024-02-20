@@ -80,18 +80,35 @@ export const deleteUser = async ({ tenantUserId }: { tenantUserId: string }) => 
 	return true;
 };
 
-export const getTenantUser = async ({ tenantUserId }: { tenantUserId: string }) => {
-	const tenantUser = await bypassPrisma.tenantUser.findUnique({ where: { id: tenantUserId }, 
-		select:{
+export const getTenantUser = async ({ tenantUserId }: { tenantUserId: string | undefined }) => {
+	if (!tenantUserId) {
+		throw new Error('TenantUser ID is required');
+	}
+	const tenantUser = await bypassPrisma.tenantUser.findUnique({
+		where: { id: tenantUserId },
+		select: {
 			id: true,
 			role: true,
 			tenantId: true,
 			userId: true,
 			user: true,
-		}});
-	
+		}
+	});
+
 	return tenantUser;
 };
+
+export const getTenantOwner = async ({ tenantId }: { tenantId: string | undefined }) => {
+	if (!tenantId) {
+		throw new Error('Tenant ID is required');
+	}
+	const ownerTenant = await bypassPrisma.tenantUser.findFirst({
+		where: { tenantId: tenantId, role: Role.OWNER },
+		include: {user: true}
+	});
+
+	return ownerTenant;
+}
 
 export const listTenants = async () => {
 	const tenants = await bypassPrisma.tenant.findMany();
@@ -99,7 +116,7 @@ export const listTenants = async () => {
 		tenants.map(async (tenant) => {
 			let owner;
 			const _owner = await bypassPrisma.tenantUser.findFirst({
-				where: { tenantId: tenant.id, role: Role.OWNER}
+				where: { tenantId: tenant.id, role: Role.OWNER }
 			});
 			if (_owner) {
 				const user = await bypassPrisma.user.findUnique({ where: { id: _owner.userId } });
@@ -109,7 +126,7 @@ export const listTenants = async () => {
 			}
 			return { ...tenant, owner };
 		})
-		);
+	);
 	return augmentedTenants;
 };
 
@@ -119,7 +136,8 @@ export const getTenant = async ({ tenantId }: { tenantId: string }) => {
 };
 
 export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: string }) => {
-	const users = await bypassPrisma.tenantUser.findMany({ where: { tenantId: tenantId }, 
+	const users = await bypassPrisma.tenantUser.findMany({
+		where: { tenantId: tenantId },
 		select: {
 			id: true,
 			role: true,
@@ -127,7 +145,8 @@ export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: string }
 			tenantId: true,
 			is_default: true,
 			user: true,
-		}});
+		}
+	});
 	return users;
 };
 
@@ -141,7 +160,8 @@ export const listAllTenantUsers = async () => {
 			is_default: true,
 			user: true,
 			tenant: true,
-		}});
+		}
+	});
 	console.log('listAllTenantUsers', users)
 	return users;
 };

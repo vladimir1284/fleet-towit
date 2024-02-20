@@ -1,11 +1,12 @@
 <script>
 	// @ts-nocheck
 
-	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
 	import { signOut } from '@auth/sveltekit/client';
+	import { tenantActor } from '$lib/store/context-store';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
 	import ButtonComponent from '../buttons/ButtonComponent.svelte';
+	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
 
 	/**
 	 * @type {{ id: string; name: null; email: any; defaultTenantUser: { tenant: { name: any; }; }[]; image: any; }}
@@ -13,7 +14,6 @@
 	export let userData;
 	export let currentTenant;
 
-	console.log(userData);
 	async function handleSignOut() {
 		await signOut();
 	}

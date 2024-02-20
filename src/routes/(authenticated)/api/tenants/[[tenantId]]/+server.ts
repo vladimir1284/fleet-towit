@@ -1,6 +1,17 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { actionResult } from 'sveltekit-superforms/server';
-import { listTenants, deleteTenant, updateTenant, createTenant, getAdminTenant, listTenantUsersOnTenant, createTenantUser, updateTenantUser, getTenantUser } from '$lib/actions/admin';
+import {
+	listTenants,
+	deleteTenant,
+	updateTenant,
+	createTenant,
+	getAdminTenant,
+	listTenantUsersOnTenant,
+	createTenantUser,
+	updateTenantUser,
+	getTenantUser,
+	getTenantOwner
+} from '$lib/actions/admin';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
@@ -36,15 +47,20 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 
 	if (params.tenantId) {
 		await updateTenant({ tenantId: params.tenantId, name: form.data.name, email: form.data.email });
+		const oldOwner = await getTenantOwner({ tenantId: params.tenantId })
+		const tenantUserToBeOwner = await getTenantUser({ tenantUserId: form.data.ownerId });
+		console.log(oldOwner)
+		if (oldOwner?.id !== tenantUserToBeOwner?.id) {
+			//@ts-expect-error It's detecting it as undefined
+			await updateTenantUser({ tenantUserId: oldOwner?.id, email: oldOwner?.user.email, userRole: Role.ADMIN })
+		}
 		//@ts-expect-error It's detecting it as undefined
-		const tenantUserToBeOwner = await getTenantUser({tenantUserId: form.data.ownerId});
-		//@ts-expect-error It's detecting it as undefined
-		await updateTenantUser({tenantUserId: tenantUserToBeOwner?.id, email: tenantUserToBeOwner?.user.email, userRole: Role.OWNER })
+		await updateTenantUser({ tenantUserId: tenantUserToBeOwner?.id, email: tenantUserToBeOwner?.user.email, userRole: Role.OWNER })
 	} else {
 		const newTenant = await createTenant({ name: form.data.name, email: form.data.email });
 		for (const user of allAdminTenantUsers) {
 			if (user.user.email !== null) {
-			await createTenantUser({ tenantId: newTenant.id, email: user.user.email, userRole: Role.ADMIN });
+				await createTenantUser({ tenantId: newTenant.id, email: user.user.email, userRole: Role.ADMIN });
 			}
 		}
 	}

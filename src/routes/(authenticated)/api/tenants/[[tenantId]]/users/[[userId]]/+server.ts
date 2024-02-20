@@ -1,5 +1,4 @@
 import { createTenantUser, deleteUser, getAdminTenant, updateTenantUser } from '$lib/actions/admin';
-import { getTenantUsers } from '$lib/actions/tenant';
 import { superValidate } from 'sveltekit-superforms/server';
 import { actionResult } from 'sveltekit-superforms/server';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
@@ -25,7 +24,7 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
-		(_user) => _user.id === request.headers.get('X-User-Tenant')
+		(_user: { id: string | null; }) => _user.id === request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
 	if (currentUserData.tenant.id === adminTenant?.id) {
