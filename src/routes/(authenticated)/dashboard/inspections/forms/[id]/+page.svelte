@@ -34,7 +34,6 @@
 	let editCheckOptions: (CheckOption | string)[];
 	$: stringifyEditCheckOptions = JSON.stringify(editCheckOptions);
 
-	// FIXME : hay un error aqui no se cambia bien
 	let cardTypeSelect: string;
 
 	let newCardName: string;

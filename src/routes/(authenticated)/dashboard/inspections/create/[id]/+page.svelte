@@ -9,7 +9,7 @@
 </script>
 
 <section>
-	<form class="flex flex-col gap-4 bg-white p-4 min-w-72" method="post">
+	<form class="flex flex-col gap-4 bg-white p-4 min-w-72" method="post" action="?/createResponse">
 		<div class="grid grid-cols-2 gap-4">
 			{#each data.inspection.customForm.fields as field}
 				<Label>

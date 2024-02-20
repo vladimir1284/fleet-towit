@@ -21,7 +21,7 @@ export const createCustomForm = async ({ tenantId, name }: { tenantId: string; n
 };
 
 /*
- * Delete custom form
+ *  Set isActive to false
  */
 export const deleteCustomForm = async ({
 	tenantId,
@@ -30,9 +30,12 @@ export const deleteCustomForm = async ({
 	formId: number;
 	tenantId: string;
 }) => {
-	await tenantPrisma(tenantId).customForm.delete({
+	await tenantPrisma(tenantId).customForm.update({
 		where: {
 			id: formId
+		},
+		data: {
+			isActive: false
 		}
 	});
 };
@@ -50,6 +53,10 @@ export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: string 
 			customForms: {
 				include: {
 					fields: true
+				},
+
+				where: {
+					isActive: true
 				}
 			}
 		}

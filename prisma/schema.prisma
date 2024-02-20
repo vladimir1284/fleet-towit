@@ -51,14 +51,14 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid()) /// @zod.custom.omit([model, input])
+  id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
-  email         String?   @unique
+  email         String?      @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  tenantUsers  TenantUser[]
+  tenantUsers   TenantUser[]
 }
 
 model VerificationToken {
@@ -70,21 +70,20 @@ model VerificationToken {
 }
 
 model TenantUser {
-
-  id       String @id @default(cuid()) @db.VarChar(30)
-  role     Role   @default(STAFF)
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  is_default  Boolean @default(false)
+  id         String  @id @default(cuid()) @db.VarChar(30)
+  role       Role    @default(STAFF)
+  tenantId   String
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  is_default Boolean @default(false)
 
   createdParts Part[] @relation("creationAuthor")
   updatedParts Part[] @relation("updateAuthor")
   deletedParts Part[] @relation("deletionAuthor")
 
   customFieldResponses CustomFieldResponse[]
-  inspectionResponse   InspectionResponse[]
+  inspections           Inspection[]
 }
 
 model Client {
@@ -110,7 +109,7 @@ model Tenant {
   Category    Category[]
   Location    Location[]
   Vendor      Vendor[]
-  Inspection  Inspection[]
+  inspections Inspection[]
 }
 
 enum Role {
@@ -158,16 +157,17 @@ model Vehicle {
   nickname        String
   spare_tires     Int
   extraFields     Json?
-  vehiclePictures VehiclePicture[] 
-  documents       Document[]       
+  vehiclePictures VehiclePicture[]
+  documents       Document[]
+  inspections      Inspection[]
 }
 
 model VehiclePicture {
-  id         Int     @id @default(autoincrement())
-  image      String
-  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
-  vehicleId      Int
-  pinned     Boolean @default(false)
+  id        Int     @id @default(autoincrement())
+  image     String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicleId Int
+  pinned    Boolean @default(false)
 }
 
 model Document {
@@ -181,15 +181,15 @@ model Document {
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
   vehicle         Vehicle       @relation(fields: [vehicleId], references: [id])
-  vehicleId      Int
-  tags            DocumentTag[] 
+  vehicleId       Int
+  tags            DocumentTag[]
   extraFields     Json?
 }
 
 model DocumentTag {
-  id        Int        @id @default(autoincrement())
-  name      String
-  document Document @relation(fields: [documentId], references: [id])
+  id         Int      @id @default(autoincrement())
+  name       String
+  document   Document @relation(fields: [documentId], references: [id])
   documentId Int
 }
 
@@ -199,6 +199,8 @@ model CustomForm {
   tenantId    String
   tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now())
+  // Only show form if is active
+  isActive    Boolean       @default(true)
   fields      CustomField[]
   inspections Inspection[]
 }
@@ -241,18 +243,18 @@ model CustomFieldResponse {
   checked Boolean?
 
   createdAt    DateTime    @default(now())
-  // tenant relation
+
   tenantUserId String
   user         TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-  // custom field relation
+
   fieldId      Int
   field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
   checkOptionId Int?
   checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id])
 
-  inspectionResponse   InspectionResponse? @relation(fields: [inspectionResponseId], references: [id])
-  inspectionResponseId Int?
+  inspectionId Int?
+  inspection   Inspection? @relation(fields: [inspectionId], references: [id])
 }
 
 model Inspection {
@@ -265,14 +267,8 @@ model Inspection {
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  responses InspectionResponse[]
-}
-
-model InspectionResponse {
-  id Int @id @default(autoincrement())
-
-  inspection   Inspection @relation(fields: [inspectionId], references: [id] , onDelete: Cascade)
-  inspectionId Int
+  vehicleId Int
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   tenantUserId String
   user         TenantUser @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)

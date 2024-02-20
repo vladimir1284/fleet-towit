@@ -1,24 +1,37 @@
 import { tenantPrisma } from '$lib/prisma';
+import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
 
 /*
  *	Get all inspections
  */
 export const fetchInspections = async ({ tenantId }: { tenantId: string }) => {
-	const inpections = await tenantPrisma(tenantId).inspection.findMany({
+	const inspections = await tenantPrisma(tenantId).inspection.findMany({
 		where: {
 			tenantId: tenantId
 		},
 		include: {
 			customForm: true,
-			responses: {
-				include: {
-					responses: true
-				}
-			}
+			responses: true
+		},
+		orderBy: {
+			createdAt: 'desc'
 		}
 	});
 
-	return inpections;
+	return inspections;
+};
+
+/*
+ *  Helper
+ */
+export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: string }) => {
+	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantId });
+	const listCustomForm = customForms.map((el) => ({ value: el.id, name: el.name }));
+
+	const vehicles = await tenantPrisma(tenantId).vehicle.findMany();
+	const listVehicles = vehicles.map((el) => ({ value: el.id, name: el.type }));
+
+	return { listCustomForm, listVehicles };
 };
 
 /*
@@ -26,17 +39,33 @@ export const fetchInspections = async ({ tenantId }: { tenantId: string }) => {
  */
 export const createInspection = async ({
 	tenantId,
-	formId
+	userId,
+	formId,
+	vehicleId
 }: {
 	tenantId: string;
+	userId: string;
 	formId: number;
+	vehicleId: number;
 }) => {
-	await tenantPrisma(tenantId).inspection.create({
-		data: {
-			tenantId: tenantId,
-			customFormId: formId
+	const tenantUser = await tenantPrisma(tenantId).tenantUser.findFirst({
+		where: {
+			userId: userId
 		}
 	});
+
+	if (!tenantUser) return;
+
+	const newInspection = await tenantPrisma(tenantId).inspection.create({
+		data: {
+			tenantId: tenantId,
+			tenantUserId: tenantUser.id,
+			customFormId: formId,
+			vehicleId: vehicleId
+		}
+	});
+
+	return newInspection;
 };
 
 /*
@@ -62,9 +91,11 @@ export const retrieveInspectionById = async ({
 						}
 					}
 				}
-			}
+			},
+			responses: true
 		}
 	});
+	console.log(inspection);
 
 	return inspection;
 };
@@ -72,7 +103,7 @@ export const retrieveInspectionById = async ({
 /*
  * Create inspections response
  */
-export const createInspectionResponse = async ({
+export const createResponseToInspection = async ({
 	form_data,
 	userId,
 	tenantId,
@@ -121,13 +152,15 @@ export const createInspectionResponse = async ({
 		}
 	}
 
-	await tenantPrisma(tenantId).inspectionResponse.create({
+	const response = await tenantPrisma(tenantId).inspection.update({
+		where: {
+			id: inspectionId
+		},
 		data: {
-			inspectionId: inspectionId,
-			tenantUserId: tenantUser.id,
 			responses: {
 				create: data
 			}
 		}
 	});
+	return response;
 };
