@@ -242,6 +242,8 @@ model CustomFieldResponse {
   // if is checkbox ,radio
   checked Boolean?
 
+  note String?
+
   createdAt    DateTime    @default(now())
 
   tenantUserId String
@@ -251,10 +253,10 @@ model CustomFieldResponse {
   field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
   checkOptionId Int?
-  checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id])
+  checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id] , onDelete: Cascade )
 
   inspectionId Int?
-  inspection   Inspection? @relation(fields: [inspectionId], references: [id])
+  inspection   Inspection? @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
 }
 
 model Inspection {

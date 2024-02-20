@@ -21,6 +21,8 @@ export const generateValidationSchema = (fields: CustomField[]) => {
 			for (const checkbox of field.checkOptions) {
 				schema = schema.extend({ [`${name}_checkbox_${checkbox.id}`]: z.boolean().optional() });
 			}
+		} else if (field.type === FormFieldType.SINGLE_CHECK) {
+			schema = schema.extend({ [`${name}_radio`]: z.number() });
 		}
 	}
 

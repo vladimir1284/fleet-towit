@@ -142,6 +142,14 @@ export const createResponseToInspection = async ({
 				checked: value as boolean,
 				tenantUserId: tenantUser.id
 			});
+		} else if (key.includes('radio')) {
+			// in radio (single check) only check 1 field from all fields
+			data.push({
+				fieldId: fieldId,
+				checkOptionId: value as number,
+				checked: true,
+				tenantUserId: tenantUser.id
+			});
 		} else {
 			data.push({
 				fieldId: fieldId,
