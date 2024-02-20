@@ -95,7 +95,6 @@ export const retrieveInspectionById = async ({
 			responses: true
 		}
 	});
-	console.log(inspection);
 
 	return inspection;
 };

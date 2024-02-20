@@ -17,7 +17,7 @@ import {
 } from '$lib/shared';
 import type { CheckOption } from '@prisma/client';
 
-const cardTypeSchema = z.enum(['text', 'number', 'checkboxes']);
+const cardTypeSchema = z.enum(['text', 'number', 'checkboxes', 'single_check']);
 
 const addCardSchema = z.object({
 	card_name: z.string(),

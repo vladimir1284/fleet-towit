@@ -2,6 +2,8 @@ import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
 import type { CheckOption } from '@prisma/client';
 
+type fieldType = 'number' | 'text' | 'checkboxes' | 'single_check';
+
 /*
  *  The following function are related to CustomForm
  */
@@ -119,10 +121,12 @@ export const renameCustomForm = async ({
  *  The following function are related to custom field
  */
 
-const getFieldType = (FieldType: 'text' | 'number' | 'checkboxes') => {
+const getFieldType = (FieldType: fieldType) => {
 	if (FieldType === 'number') return FormFieldType.NUMBER;
 
 	if (FieldType === 'checkboxes') return FormFieldType.CHECKBOXES;
+
+	if (FieldType === 'single_check') return FormFieldType.SINGLE_CHECK;
 
 	return FormFieldType.TEXT;
 };
@@ -139,7 +143,7 @@ export const addFieldToCustomForm = async ({
 }: {
 	name: string;
 	formId: number;
-	cardType: 'number' | 'text' | 'checkboxes';
+	cardType: fieldType;
 	tenantId: string;
 	checkboxes?: string[];
 }) => {
@@ -197,7 +201,7 @@ export const updateCustomField = async ({
 	checkboxes
 }: {
 	cardId: number;
-	cardType: 'text' | 'number' | 'checkboxes';
+	cardType: fieldType;
 	newName: string;
 	tenantId: string;
 	checkboxes: (CheckOption | string)[] | undefined;
@@ -206,8 +210,8 @@ export const updateCustomField = async ({
 		?.filter((el) => typeof el !== 'string')
 		.map((el) => el?.id);
 
-	// if card type is not checkboxe then delete all checkOptions
-	if (cardType !== 'checkboxes') idsToSkip = [];
+	// if card type is not check then delete all checkOptions
+	if (cardType !== 'checkboxes' && cardType !== 'single_check') idsToSkip = [];
 
 	await tenantPrisma(tenantId).checkOption.deleteMany({
 		where: {
@@ -219,7 +223,7 @@ export const updateCustomField = async ({
 	});
 
 	// update checkboxes
-	if (cardType === 'checkboxes') {
+	if (cardType === 'checkboxes' || cardType === 'single_check') {
 		const checkBoxesToUpdate: CheckOption[] | undefined = checkboxes?.filter(
 			(el) => typeof el !== 'string'
 		) as CheckOption[];

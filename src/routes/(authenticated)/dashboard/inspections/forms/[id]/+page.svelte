@@ -45,12 +45,16 @@
 
 		if (fieldType === FormFieldType.CHECKBOXES) cardTypeSelect = 'checkboxes';
 
-		console.log(cardTypeSelect);
+		if (fieldType === FormFieldType.SINGLE_CHECK) cardTypeSelect = 'single_check';
 	};
 
-	// checkboxes input
+	// checkboxes input (can have multiple inputs)
 	let checkBoxes = [''];
 	$: stringifyCheckBoxes = JSON.stringify(checkBoxes);
+
+	// single checkboxes (only have 2 inputs)
+	let singleCheckboxes = ['', ''];
+	$: stringifySingleCheckboxes = JSON.stringify(singleCheckboxes);
 
 	// delete and edit card
 	let idCardSelected: number;
@@ -73,6 +77,11 @@
 			value: 'checkboxes',
 			name: 'Checkboxes',
 			description: 'User is able to select multiple options.'
+		},
+		{
+			value: 'single_check',
+			name: 'Single Check',
+			description: 'User is able to check (pass or fail) a single point.'
 		}
 	];
 </script>
@@ -175,6 +184,7 @@
 							<div class="space-y-4 mb-4">
 								{#if editCheckOptions}
 									{#each editCheckOptions as options, index}
+										<!-- button to delete this option -->
 										<Button
 											disabled={editCheckOptions.length <= 1 ? true : false}
 											type="button"
@@ -185,6 +195,7 @@
 										>
 											<CloseOutline class="w-2 h-2" />
 										</Button>
+
 										<Label class="space-y-2" key={index}>
 											<span>Point {index + 1}*</span>
 											{#if options?.id}
@@ -205,7 +216,7 @@
 										</Label>
 									{/each}
 								{/if}
-
+								<!-- button to add another option -->
 								<Button
 									color="light"
 									size="xs"
@@ -214,6 +225,32 @@
 									<PlusOutline class="w-3 h-3 me-2" />
 									Add another option</Button
 								>
+							</div>
+
+							<!-- single checkbox -->
+
+							<!-- single check -->
+						{:else if cardTypeSelect === 'single_check'}
+							<div class="space-y-4 mb-4">
+								<Label class="space-y-2">
+									<span class="text-green-400">Point pass*</span>
+									<Input
+										type="text"
+										placeholder="Type here"
+										bind:value={editCheckOptions[0].name}
+										required
+									/>
+								</Label>
+
+								<Label class="space-y-2">
+									<span class="text-red-500">Point fail*</span>
+									<Input
+										type="text"
+										placeholder="Type here"
+										bind:value={editCheckOptions[1].name}
+										required
+									/>
+								</Label>
 							</div>
 						{/if}
 
@@ -247,6 +284,7 @@
 
 				{#if selected}
 					<div class="border-t mt-4 py-4">
+						<!-- Form -->
 						<form method="post" class="space-y-4" action="?/addField">
 							<input name="form_id" type="hidden" bind:value={data.customForm.id} />
 							<input name="card_type" type="hidden" bind:value={selected} />
@@ -298,6 +336,31 @@
 										Add another option</Button
 									>
 								</div>
+
+								<!-- single checkbox -->
+							{:else if selected === 'single_check'}
+								<input type="hidden" name="checkboxes" bind:value={stringifySingleCheckboxes} />
+								<div class="space-y-4 mb-4">
+									<Label class="space-y-2">
+										<span class="text-green-400">Point pass*</span>
+										<Input
+											type="text"
+											placeholder="Type here"
+											bind:value={singleCheckboxes[0]}
+											required
+										/>
+									</Label>
+
+									<Label class="space-y-2">
+										<span class="text-red-500">Point fail*</span>
+										<Input
+											type="text"
+											placeholder="Type here"
+											bind:value={singleCheckboxes[1]}
+											required
+										/>
+									</Label>
+								</div>
 							{/if}
 
 							<div class="inline-flex gap-4">
@@ -305,6 +368,7 @@
 								<Button type="submit" color="blue">Add</Button>
 							</div>
 						</form>
+						<!-- Form -->
 					</div>
 				{/if}
 			</div>
@@ -315,7 +379,7 @@
 				Cards ({data.customForm.fields.length})
 			</h5>
 
-			<div class="grid grid-cols-1 gap-4">
+			<div class="grid grid-cols-1 gap-4 h-96 overflow-y-auto">
 				<!-- List Cards -->
 				{#each data.customForm.fields as field}
 					<div class="shadow bg-white p-6 rounded-lg">
@@ -327,7 +391,7 @@
 							<p class="text-blue-500">{cardTypes[0].name}</p>
 						{:else if field.type === FormFieldType.TEXT}
 							<p class="text-blue-500">{cardTypes[1].name}</p>
-						{:else if field.type === FormFieldType.CHECKBOXES}
+						{:else if field.type === FormFieldType.CHECKBOXES || field.type === FormFieldType.SINGLE_CHECK}
 							<!-- list options -->
 							{#if field.checkOptions}
 								<ul class="list-disc list-inside">
@@ -338,7 +402,11 @@
 									{/each}
 								</ul>
 							{/if}
-							<p class="text-blue-500">{cardTypes[2].name}</p>
+							{#if field.type == 'SINGLE_CHECK'}
+								<p class="text-blue-500">{cardTypes[3].name}</p>
+							{:else}
+								<p class="text-blue-500">{cardTypes[2].name}</p>
+							{/if}
 						{/if}
 
 						<div class="flex gap-4">
