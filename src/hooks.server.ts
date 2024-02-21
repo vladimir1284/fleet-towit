@@ -26,7 +26,7 @@ const prisma = new PrismaClient();
 import bcrypt from 'bcryptjs';
 import { getAdminTenant } from '$lib/actions/admin';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
-import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
+import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared/helpers';
 
 const handleAuth = (async (...args) => {
 	const [{ event }] = args;

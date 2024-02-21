@@ -3,7 +3,7 @@ import {
 	PERMANENT_REDIRECT_STATUS,
 	TEMPORARY_REDIRECT_STATUS,
 	MISSING_SECURITY_HEADER_STATUS
-} from '$lib/shared';
+} from '$lib/shared/helpers';
 import { superValidate } from 'sveltekit-superforms/server';
 import { fail, redirect } from '@sveltejs/kit';
 import { retrieveInspectionById, createInspectionResponse } from '$lib/actions/inspections';

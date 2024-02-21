@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-import { BCRYPT_SALT_LENGTH } from './shared';
+import { BCRYPT_SALT_LENGTH } from './shared/helpers';
 
 export function bypassRLS() {
 	return Prisma.defineExtension((prisma) =>

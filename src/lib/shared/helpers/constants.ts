@@ -1,3 +1,5 @@
+import type { Vehicle } from '@prisma/client';
+
 export const // HTTP request constants.
 
 	USER_TENANT_HEADER = 'X-User-Tenant',
@@ -22,7 +24,10 @@ export const // Prisma constants.
 
 	BCRYPT_SALT_LENGTH = 10,
 	SKIP_PAGINATION_PARAMETER = 0,
-	TAKE_PAGINATION_PARAMETER = 10;
+	TAKE_PAGINATION_PARAMETER = 10,
+	PRISMA_SEARCH_INPUT_TYPE = 'findMany',
+	// API-related constants.
+	TRAILER_EXCLUDED_PROPERTIES: (keyof Vehicle)[] = ['extraFields', 'vin', 'nickname']; // Ex: ['CreatedAt', 'DeletedAt']
 
 export const // zod constants.
 

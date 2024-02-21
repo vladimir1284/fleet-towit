@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import {
 	SUCCESSFUL_REQUEST_STATUS,
 	TAKE_PAGINATION_PARAMETER
-} from '$lib/shared/constants';
+} from '$lib/shared/helpers/constants';
 
 import type { RequestHandler } from '@sveltejs/kit';
 

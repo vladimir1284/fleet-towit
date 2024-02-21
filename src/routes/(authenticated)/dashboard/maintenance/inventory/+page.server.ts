@@ -2,7 +2,7 @@ import { PartSchema } from '$lib/zod';
 import { message, superValidate } from 'sveltekit-superforms/server';
 // import { buildQueryParams } from './helpers';
 
-import { USER_TENANT_HEADER } from '$lib/shared';
+import { USER_TENANT_HEADER } from '$lib/shared/helpers';
 import {
 	// PART_RETRIEVAL_CONSTRAINTS,
 	FAILED_PART_RECORD_CREATION,

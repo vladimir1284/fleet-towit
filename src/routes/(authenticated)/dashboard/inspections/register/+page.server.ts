@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import { fetchInspections, createInspection } from '$lib/actions/inspections';
-import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
+import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared/helpers';
 import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
 
 const createInspectionSchema = z.object({

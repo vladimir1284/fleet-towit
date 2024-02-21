@@ -1,15 +1,42 @@
-import { json } from "@sveltejs/kit"
-import axios from 'axios'
+// import axios from 'axios'
+import { json } from '@sveltejs/kit';
+import { tenantPrisma } from '$lib/prisma';
 
-export const GET = async ({url}) => {
-  const vin = url.searchParams.get('vin')
+import {
+	// Functions.
+	exclude,
+	buildPrismaSearchInput,
+	// Constants.
+	SUCCESSFUL_REQUEST_STATUS,
+	TRAILER_EXCLUDED_PROPERTIES
+} from '$lib/shared/helpers';
 
-  const URL = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json&modelyear=2011`
+import type { ExtendedTenantPrismaClient } from '$lib/prisma';
+import type { SuccessfulVehicleBodyResponse } from '$lib/types.js';
 
-  try {
-    const response = await axios.get(URL)
-    return json(response.data)
-  } catch (error) {
-    return json(error)
-  }
-}
+// GET: /api/vehicles
+export const GET = async ({ request, url }): Promise<Response> => {
+	const tenant = 'clss8k69h0000uz4dqqyi3lic'; // Temporal.
+	try {
+		const currentPrismaClient: ExtendedTenantPrismaClient = tenantPrisma(tenant);
+
+		const vehicleSearchInput = buildPrismaSearchInput({
+			query: url,
+			model: currentPrismaClient.vehicle
+		});
+		const taintedVehicles = await currentPrismaClient.vehicle.findMany(vehicleSearchInput);
+		const untaintedVehicles = taintedVehicles.map((taintedVehicle) =>
+			exclude(taintedVehicle, TRAILER_EXCLUDED_PROPERTIES)
+		);
+
+		// Return json response to client.
+		return json({
+			acknowledged: true,
+			status: SUCCESSFUL_REQUEST_STATUS,
+			data: untaintedVehicles,
+			method: request.method
+		} satisfies SuccessfulVehicleBodyResponse);
+	} catch (error) {
+		return json(error);
+	}
+};

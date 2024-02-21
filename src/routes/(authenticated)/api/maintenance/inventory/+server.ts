@@ -1,12 +1,12 @@
 import { json } from '@sveltejs/kit';
 import {
+	// Functions.
+	buildPrismaSearchInput,
+	// Constants.
 	SUCCESSFUL_REQUEST_STATUS,
-	TAKE_PAGINATION_PARAMETER,
-	FORBIDDEN_ACCESS_RESPONSE,
-	SKIP_PAGINATION_PARAMETER
-} from '$lib/shared';
+	FORBIDDEN_ACCESS_RESPONSE
+} from '$lib/shared/helpers';
 
-import type { Prisma } from '@prisma/client';
 import type { RequestHandler } from '@sveltejs/kit';
 
 // GET: /api/maintenance/inventory/parts
@@ -15,45 +15,12 @@ export const GET: RequestHandler = async ({ locals, request, url }): Promise<Res
 		if (locals.inventoryActionObject) {
 			const { currentPrismaClient } = locals.inventoryActionObject;
 
-			// Generic part retrieval.
-			const partWhereInput = {
-				// Pagination params.
-				skip: SKIP_PAGINATION_PARAMETER,
-				take: TAKE_PAGINATION_PARAMETER,
-				orderBy: [],
-				// Constraint params.
-				where: {},
-				select: {}
-			} satisfies Prisma.PartFindManyArgs;
+			const partSearchInput = buildPrismaSearchInput({
+				query: url,
+				model: currentPrismaClient.part
+			});
 
-			for (const [key, value] of url.searchParams.entries()) {
-				const parsedSearchParam = JSON.parse(value);
-				const isSafePositiveNumber = /^(0|[1-9]\d*)$/.test(value);
-
-				if (key in partWhereInput) {
-					const literalKey = key as keyof typeof partWhereInput;
-
-					// Conditional assignment.
-					switch (partWhereInput[literalKey].constructor) {
-						case Number:
-							if (isSafePositiveNumber) {
-								partWhereInput[literalKey] = parsedSearchParam;
-							}
-							break;
-						case Array:
-							(partWhereInput[literalKey] as object[]).push(parsedSearchParam);
-							break;
-						default:
-							partWhereInput[literalKey] = {
-								...(partWhereInput[literalKey] as object),
-								...parsedSearchParam
-							};
-							break;
-					}
-				}
-			}
-
-			const tenantParts = await currentPrismaClient.part.findMany(partWhereInput);
+			const tenantParts = await currentPrismaClient.part.findMany(partSearchInput);
 			// Return json response to client.
 			return json({
 				acknowledged: true,

@@ -14,7 +14,7 @@ import {
 	PERMANENT_REDIRECT_STATUS,
 	TEMPORARY_REDIRECT_STATUS,
 	MISSING_SECURITY_HEADER_STATUS
-} from '$lib/shared';
+} from '$lib/shared/helpers';
 import type { CheckOption } from '@prisma/client';
 
 const cardTypeSchema = z.enum(['text', 'number', 'checkboxes']);

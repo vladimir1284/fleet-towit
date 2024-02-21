@@ -12,3 +12,7 @@ export function userPrisma(user: string) {
 	const extended = prisma.$extends(forUser(user));
 	return extended;
 }
+
+// Use these types along with prisma extensions.
+export type ExtendedTenantPrismaClient = ReturnType<typeof tenantPrisma>;
+export type ExtendedUserPrismaClient = ReturnType<typeof userPrisma>;
