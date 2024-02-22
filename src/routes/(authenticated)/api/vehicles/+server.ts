@@ -5,7 +5,7 @@ import { tenantPrisma } from '$lib/prisma';
 import {
 	// Functions.
 	exclude,
-	buildPrismaSearchInput,
+	buildFindManyInput,
 	// Constants.
 	SUCCESSFUL_REQUEST_STATUS,
 	TRAILER_EXCLUDED_PROPERTIES
@@ -20,11 +20,11 @@ export const GET = async ({ request, url }): Promise<Response> => {
 	try {
 		const currentPrismaClient: ExtendedTenantPrismaClient = tenantPrisma(tenant);
 
-		const vehicleSearchInput = buildPrismaSearchInput({
+		const vehicleFindManyInput = buildFindManyInput({
 			query: url,
 			model: currentPrismaClient.vehicle
 		});
-		const taintedVehicles = await currentPrismaClient.vehicle.findMany(vehicleSearchInput);
+		const taintedVehicles = await currentPrismaClient.vehicle.findMany(vehicleFindManyInput);
 		const untaintedVehicles = taintedVehicles.map((taintedVehicle) =>
 			exclude(taintedVehicle, TRAILER_EXCLUDED_PROPERTIES)
 		);

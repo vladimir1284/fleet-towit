@@ -19,45 +19,45 @@ export const exclude = <Model, Key extends keyof Model>(
  * Docs needed, complete it later.
  */
 
-export const buildPrismaSearchInput = <T>(params: { query: URL; model: T }) => {
+export const buildFindManyInput = <T>(params: { query: URL; model: T }) => {
 	type typedModel = typeof params.model;
-	type PrismaSearchInput = Prisma.Args<typedModel, typeof PRISMA_SEARCH_INPUT_TYPE>;
+	type PrismaFindManyInput = Prisma.Args<typedModel, typeof PRISMA_SEARCH_INPUT_TYPE>;
 
-	// Generic part retrieval.
-	const prismaSearchInput = {
+	// Generic prisma retrieval.
+	const prismaFindManyInput = {
 		// Pagination params.
 		skip: SKIP_PAGINATION_PARAMETER,
 		take: TAKE_PAGINATION_PARAMETER,
 		orderBy: [],
-		// Constraint params.
+		// Constraint param.
 		where: {}
-	} as PrismaSearchInput;
+	} as PrismaFindManyInput;
 
 	for (const [key, value] of params.query.searchParams.entries()) {
 		const parsedSearchParam = JSON.parse(value);
 		const isSafePositiveNumber = /^(0|[1-9]\d*)$/.test(value);
 
-		if (key in prismaSearchInput) {
-			const literalKey = key as keyof typeof prismaSearchInput;
+		if (key in prismaFindManyInput) {
+			const literalKey = key as keyof typeof prismaFindManyInput;
 
 			// Conditional assignment.
-			switch (prismaSearchInput[literalKey].constructor) {
+			switch (prismaFindManyInput[literalKey].constructor) {
 				case Number:
 					if (isSafePositiveNumber) {
-						prismaSearchInput[literalKey] = parsedSearchParam;
+						prismaFindManyInput[literalKey] = parsedSearchParam;
 					}
 					break;
 				case Array:
-					(prismaSearchInput[literalKey] as object[]).push(parsedSearchParam);
+					(prismaFindManyInput[literalKey] as object[]).push(parsedSearchParam);
 					break;
 				default:
-					prismaSearchInput[literalKey] = {
-						...(prismaSearchInput[literalKey] as object),
+					prismaFindManyInput[literalKey] = {
+						...(prismaFindManyInput[literalKey] as object),
 						...parsedSearchParam
 					};
 					break;
 			}
 		}
 	}
-	return prismaSearchInput;
+	return prismaFindManyInput;
 };

@@ -1,13 +1,20 @@
 <script lang="ts">
-	import { TableBodyCell, TableBodyRow } from 'flowbite-svelte';
+	import { TableBodyCell, TableBodyRow, Checkbox } from 'flowbite-svelte';
 
 	import type { Vehicle } from '@prisma/client';
 
 	export let trailer: Vehicle;
+
+	const trailerObjectValues = Object.values(trailer);
 </script>
 
 <TableBodyRow>
-	<TableBodyCell>
-		{trailer.type}
+	<TableBodyCell class="!p-4">
+		<Checkbox />
 	</TableBodyCell>
+	{#each trailerObjectValues as trailerObjectValue}
+		<TableBodyCell>
+			{trailerObjectValue}
+		</TableBodyCell>
+	{/each}
 </TableBodyRow>

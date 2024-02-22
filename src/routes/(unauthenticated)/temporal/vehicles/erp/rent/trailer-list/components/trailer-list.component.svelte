@@ -5,7 +5,7 @@
 	import type { Vehicle } from '@prisma/client';
 
 	export let trailers: Vehicle[];
-	const trailerTableHeaders = Object.entries(trailers[0]);
+	const trailerTableHeaders = Object.keys(trailers[0]);
 </script>
 
 <Table>
