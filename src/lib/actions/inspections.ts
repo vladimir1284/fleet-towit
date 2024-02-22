@@ -87,12 +87,18 @@ export const retrieveInspectionById = async ({
 				include: {
 					fields: {
 						include: {
-							checkOptions: true
+							checkOptions: true,
+							responses: {
+								where: {
+									inspectionId: id
+								}
+							}
 						}
 					}
 				}
 			},
-			responses: true
+			responses: true,
+			vehicle: true
 		}
 	});
 
@@ -121,12 +127,15 @@ export const createResponseToInspection = async ({
 
 	if (!tenantUser) return;
 
+	console.log(form_data);
+
 	const data: {
 		fieldId: number;
 		tenantUserId: string;
 		checkOptionId?: number;
 		content?: string;
 		checked?: boolean;
+		note?: string;
 	}[] = [];
 
 	for (const [key, value] of Object.entries(form_data)) {
@@ -142,14 +151,17 @@ export const createResponseToInspection = async ({
 				checked: value as boolean,
 				tenantUserId: tenantUser.id
 			});
-		} else if (key.includes('radio')) {
 			// in radio (single check) only check 1 field from all fields
+		} else if (key.includes('radio')) {
 			data.push({
 				fieldId: fieldId,
 				checkOptionId: value as number,
 				checked: true,
 				tenantUserId: tenantUser.id
 			});
+			// add note to response
+		} else if (key.includes('note')) {
+			data.map((el) => (el.fieldId === fieldId ? (el.note = value) : el));
 		} else {
 			data.push({
 				fieldId: fieldId,

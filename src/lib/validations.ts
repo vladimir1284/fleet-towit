@@ -22,7 +22,10 @@ export const generateValidationSchema = (fields: CustomField[]) => {
 				schema = schema.extend({ [`${name}_checkbox_${checkbox.id}`]: z.boolean().optional() });
 			}
 		} else if (field.type === FormFieldType.SINGLE_CHECK) {
-			schema = schema.extend({ [`${name}_radio`]: z.number() });
+			schema = schema.extend({
+				[`${name}_radio`]: z.number(),
+				[`${name}_note`]: z.string().optional()
+			});
 		}
 	}
 

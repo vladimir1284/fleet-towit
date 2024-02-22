@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { FormFieldType } from '@prisma/client';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button, Input, Label, Select, Checkbox, Radio } from 'flowbite-svelte';
+	import { Button, Input, Label, Select, Checkbox, Radio, Textarea } from 'flowbite-svelte';
 	export let data: PageData;
 
 	const { form, constraints, errors } = superForm(data.form);
@@ -13,7 +13,7 @@
 		<div class="grid grid-cols-2 gap-4">
 			{#each data.inspection.customForm.fields as field}
 				<Label>
-					{field.name}
+					<h5 class="font-semibold">{field.name}</h5>
 
 					<!-- alphanumeric fields -->
 					{#if field.type == FormFieldType.TEXT}
@@ -49,6 +49,7 @@
 								{checkOptions.name}
 							</Checkbox>
 						{/each}
+
 						<!-- single check field -->
 					{:else if field.type == FormFieldType.SINGLE_CHECK}
 						{#each field.checkOptions as checkOptions}
@@ -61,6 +62,7 @@
 								{checkOptions.name}
 							</Radio>
 						{/each}
+						<Textarea name={`field_${field.id}_note`} placeholder="Note" />
 					{/if}
 				</Label>
 				{#if $errors[`field_${field.id}`]}

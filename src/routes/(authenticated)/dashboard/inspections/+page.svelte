@@ -45,8 +45,7 @@
 						{inspection.createdAt.getFullYear() + 1}
 					</TableBodyCell>
 					<TableBodyCell
-						><a href={`${$page.url.pathname.replace('register', `make/${inspection.id}`)}/`}>Read</a
-						></TableBodyCell
+						><a href={`${$page.url.pathname}/read/${inspection.id}`}>Read</a></TableBodyCell
 					>
 				</TableBodyRow>
 			{/each}
