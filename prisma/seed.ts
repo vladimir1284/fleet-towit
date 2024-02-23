@@ -2,6 +2,7 @@ import { createTenantUser } from '../src/lib/actions/admin';
 import { bypassPrisma } from '../src/lib/prisma';
 import { Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
+import seedInspection from './seeders/inspections.seed';
 const prisma = bypassPrisma;
 
 async function main() {
@@ -70,6 +71,8 @@ async function main() {
 
 	// Vehicles
 	await seedVehicles(prisma);
+	// Inspection
+	await seedInspection(prisma, tenantId);
 }
 
 main()
