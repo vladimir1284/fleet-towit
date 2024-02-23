@@ -89,7 +89,7 @@ const seedVehicles = async (prisma) => {
       plate: "GHI789",
       vin: "01234567890123456",
       odometer: 20000,
-      nickname: "El Aventurero",
+      nickname: "Mcarro",
       spare_tires: 1,
       extraFields: { color: "rojo metalizado", asientos_cuero: true },
       status: 'AVAILABLE',

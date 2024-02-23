@@ -8,7 +8,8 @@ const createFormSchema = z.object({
 	form_name: z.string()
 });
 
-const verifySession = async (locals: any) => {
+const verifySession = async (locals: unknown) => {
+	//@ts-expect-error Error type on locals
 	const session = await locals.getSession();
 
 	if (!session?.user) throw redirect(307, '/signin');

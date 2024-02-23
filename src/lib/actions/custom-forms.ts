@@ -1,7 +1,7 @@
 import { bypassPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
 
-const selectTenantUser = async (userId: string) => {
+const selectTenantUser = async (userId: number) => {
 	const tenantUser = await bypassPrisma.tenantUser.findFirst({
 		where: {
 			userId: userId
@@ -19,7 +19,7 @@ const getFieldType = (type: 'text' | 'number') => {
 	return fieldType;
 };
 
-export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: string }) => {
+export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: number }) => {
 	const tenantUser = await bypassPrisma.tenantUser.findFirst({
 		where: {
 			userId: userId
@@ -37,7 +37,7 @@ export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: string 
 	return tenantUser?.customForms || [];
 };
 
-export const createNewCustomForm = async ({ userId, name }: { userId: string; name: string }) => {
+export const createNewCustomForm = async ({ userId, name }: { userId: number; name: string }) => {
 	const tenantUser = await selectTenantUser(userId);
 
 	if (tenantUser) {
@@ -52,7 +52,7 @@ export const createNewCustomForm = async ({ userId, name }: { userId: string; na
 	}
 };
 
-export const fetchOneFormById = async (userId: string, formId: number) => {
+export const fetchOneFormById = async (userId: number, formId: number) => {
 	const tenantUser = await selectTenantUser(userId);
 
 	if (tenantUser) {
@@ -88,7 +88,7 @@ export const addFieldToCustomFrom = async ({
 	});
 };
 
-export const deleteCustomForm = async (formId: number, userId: string) => {
+export const deleteCustomForm = async (formId: number, userId: number) => {
 	const tenantUser = await selectTenantUser(userId);
 
 	if (tenantUser) {
@@ -108,7 +108,7 @@ export const deleteCustomField = async ({
 }: {
 	fieldId: number;
 	formId: number;
-	userId: string;
+	userId: number;
 }) => {
 	const tenantUser = await selectTenantUser(userId);
 
@@ -138,7 +138,7 @@ export const renameCustomForm = async ({
 }: {
 	formId: number;
 	newName: string;
-	userId: string;
+	userId: number;
 }) => {
 	const tenantUser = await selectTenantUser(userId);
 
@@ -164,7 +164,7 @@ export const updateCustomField = async ({
 	cardId: number;
 	cardType: 'text' | 'number';
 	newName: string;
-	userId: string;
+	userId: number;
 }) => {
 	const tenantUser = await selectTenantUser(userId);
 

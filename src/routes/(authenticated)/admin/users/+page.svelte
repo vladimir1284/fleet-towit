@@ -72,6 +72,8 @@
 		handleAlert('User deleted succesfully!');
 		location.reload();
 	}
+
+	$: console.log('PASSED USERS LIST: ', users)
 </script>
 
 {#if loading}

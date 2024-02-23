@@ -6,7 +6,6 @@
 	import { tenantActor } from '$lib/store/context-store';
 	export let data;
 	export let currentTenant;
-	console.log(currentTenant)
 
 	async function handleChangeUserTenant(tenantUser) {
 		const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };

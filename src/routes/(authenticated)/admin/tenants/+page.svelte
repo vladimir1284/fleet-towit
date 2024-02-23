@@ -36,7 +36,6 @@
 
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
-	$: console.log(tenants)
 	onMount(async () => {
 		try {
 			const response = await fetch('/api/tenants');

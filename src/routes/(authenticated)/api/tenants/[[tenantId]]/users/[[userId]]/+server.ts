@@ -1,5 +1,4 @@
 import { createTenantUser, deleteUser, getAdminTenant, updateTenantUser } from '$lib/actions/admin';
-import { getTenantUsers } from '$lib/actions/tenant';
 import { superValidate } from 'sveltekit-superforms/server';
 import { actionResult } from 'sveltekit-superforms/server';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
@@ -12,8 +11,8 @@ let currentPrisma;
 const fixSchema = z.object({
 	role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
 	email: z.string().email(),
-	tenantId: z.string(),
-	id: z.string().optional()
+	tenantId: z.number(),
+	id: z.number().optional()
 });
 
 export const GET: RequestHandler = async ({ params, locals, request }) => {
@@ -25,10 +24,10 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
-		(_user) => _user.id === request.headers.get('X-User-Tenant')
+		(_user) => _user.id == request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
-	if (currentUserData.tenant.id === adminTenant?.id) {
+	if (currentUserData.tenant.id == adminTenant?.id) {
 		currentPrisma = bypassPrisma;
 		users = await currentPrisma.tenantUser.findMany({
 			select: {
@@ -41,7 +40,7 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 	} else {
 		currentPrisma = tenantPrisma(currentUserData.tenant.id);
 		users = await currentPrisma.tenantUser.findMany({
-			where: { tenantId: params.tenantId },
+			where: { tenantId: parseInt(params.tenantId || '0', 10) },
 			select: {
 				role: true,
 				id: true,
@@ -50,8 +49,8 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 			}
 		});
 	}
-	
-	if (currentUserData.role === Role.STAFF && !(currentUserData.tenant.id === adminTenant?.id)) {
+
+	if (currentUserData.role === Role.STAFF && !(currentUserData.tenant.id == adminTenant?.id)) {
 		return new Response('Forbiden', { status: 403 });
 	} else {
 		return new Response(JSON.stringify(users), { status: 200 });
@@ -60,7 +59,6 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 
 export const POST: RequestHandler = async ({ params, locals, request }) => {
 	const formData = await request.formData();
-	console.log(params.userId);
 	const session = await locals.getSession();
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
@@ -68,10 +66,10 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
-		(_user: { id: string | null; }) => _user.id === request.headers.get('X-User-Tenant')
+		(_user: { id: number | null; }) => _user.id == request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
-	if (currentUserData.tenant.id === adminTenant?.id) {
+	if (currentUserData.tenant.id == adminTenant?.id) {
 		console.log('Using admin prisma');
 		currentPrisma = bypassPrisma;
 	} else {
@@ -91,11 +89,11 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 			email: form.data.email,
 			userRole: Role[form.data.role]
 		});
-		const tenant = await bypassPrisma.tenant.findUnique({where: {id: form.data.tenantId}});
-		await sendWelcomeEmail(form.data.email, tenant?.name ?? '' , form.data.role);
+		const tenant = await bypassPrisma.tenant.findUnique({ where: { id: form.data.tenantId } });
+		await sendWelcomeEmail(form.data.email, tenant?.name ?? '', form.data.role);
 	} else {
 		await updateTenantUser({
-			tenantUserId: params.userId,
+			tenantUserId: parseInt(params.userId, 10),
 			tenantId: form.data.tenantId,
 			email: form.data.email,
 			userRole: Role[form.data.role]
@@ -104,7 +102,7 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 	return actionResult('success', { form }, { status: 200 });
 };
 
-export const PATCH: RequestHandler = async ({locals, params, request}) => {
+export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const formData = await request.formData();
 	const session = await locals.getSession();
 	if (!session?.user) {
@@ -112,30 +110,30 @@ export const PATCH: RequestHandler = async ({locals, params, request}) => {
 	}
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
-		(_user: { id: string | null; }) => _user.id === request.headers.get('X-User-Tenant')
+		(_user: { id: number | null; }) => _user.id == request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
-	if (currentUserData.tenant.id === adminTenant?.id) {
+	if (currentUserData.tenant.id == adminTenant?.id) {
 		console.log('Using admin prisma');
 		currentPrisma = bypassPrisma;
 	} else {
 		console.log('Using normal prisma');
 		currentPrisma = tenantPrisma(currentUserData.tenant.id);
 	}
-	const tenantUserId = params.userId ?? (formData.get('tenantUserId') as string);
-    const isDefault = formData.get('is_default') === 'true';
-    if (isDefault) {
-        // Set all other tenantUsers to is_default: false
-        await currentPrisma.tenantUser.updateMany({
-            where: { tenantId: currentUserData.tenant.id, id: { not: tenantUserId } },
-            data: { is_default: false }
-        });
-    }
-    // Update the specified tenantUser
-    const tenantUser = await currentPrisma.tenantUser.update({
-        where: { id: tenantUserId },
-        data: { is_default: isDefault }
-    });
+	const tenantUserId = parseInt(formData.get('tenantUserId') as string, 10) || undefined;
+	const isDefault = formData.get('is_default') === 'true';
+	if (isDefault) {
+		// Set all other tenantUsers to is_default: false
+		await currentPrisma.tenantUser.updateMany({
+			where: { tenantId: currentUserData.tenant.id, id: { not: tenantUserId } },
+			data: { is_default: false }
+		});
+	}
+	// Update the specified tenantUser
+	const tenantUser = await currentPrisma.tenantUser.update({
+		where: { id: tenantUserId },
+		data: { is_default: isDefault }
+	});
 
 	return new Response(JSON.stringify(tenantUser), { status: 200 });
 };
@@ -146,7 +144,8 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 	try {
-		await deleteUser({ tenantUserId: params.userId || '' });
+		//@ts-expect-error Need to check this weird error
+		await deleteUser({ tenantUserId: params.userId || 0 });
 		return new Response(null, { status: 204 });
 	} catch (error) {
 		console.error(error);

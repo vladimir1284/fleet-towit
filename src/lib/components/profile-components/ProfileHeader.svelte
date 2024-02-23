@@ -7,7 +7,7 @@
 	import ButtonComponent from '../buttons/ButtonComponent.svelte';
 
 	/**
-	 * @type {{ id: string; name: null; email: any; defaultTenantUser: { tenant: { name: any; }; }[]; image: any; }}
+	 * @type {{ id: number; name: null; email: any; defaultTenantUser: { tenant: { name: any; }; }[]; image: any; }}
 	 */
 	export let userData;
 

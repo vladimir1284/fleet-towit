@@ -18,14 +18,14 @@ export function bypassRLS() {
 	);
 }
 
-export function forTenant(tenantId: string) {
+export function forTenant(tenantId: number) {
 	return Prisma.defineExtension((prisma) =>
 		prisma.$extends({
 			query: {
 				$allModels: {
 					async $allOperations({ args, query }) {
 						const [, result] = await prisma.$transaction([
-							prisma.$executeRaw`SELECT set_config('app.current_tenant_id',  ${tenantId}, 'TRUE')`,
+							prisma.$executeRaw`SELECT set_config('app.current_tenant_id',  ${"" + tenantId + ""}, 'TRUE')`,
 							query(args)
 						]);
 						return result;

@@ -28,8 +28,9 @@
 		$form.name = selectedTenant.name;
 		$form.email = selectedTenant.email;
 		$form.email = $form.email.trim();
+		$form.ownerId = selectedTenant.owner?.id;
 		//@ts-expect-error
-		tenantUsersList = usersList.filter(user => user.tenant.id === selectedTenant.id);
+		tenantUsersList = usersList.filter(user => user.tenant.id == selectedTenant.id);
 		tenantUsersList?.forEach((element) => {
 			//@ts-expect-error
 			tenantUsersSelector.push({ value: element.id, name: element.user.name ?? element.user.email });
