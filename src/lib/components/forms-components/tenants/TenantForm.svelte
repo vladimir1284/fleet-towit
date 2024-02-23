@@ -11,7 +11,7 @@
 	export let selectedTenant: any;
 	export let usersList: [] = [];
 	let tenantUsersList = [];
-	let tenantUsersSelector: { value: any; name: any; }[] = [];
+	let tenantUsersSelector: { value: any; name: any }[] = [];
 	let actionURL = '/api/tenants';
 
 	const dispatch = createEventDispatcher();
@@ -25,19 +25,25 @@
 	});
 	$: $form.email = $form.email.trim();
 	if (selectedTenant) {
+		console.log(selectedTenant);
+
 		$form.name = selectedTenant.name;
 		$form.email = selectedTenant.email;
+		$form.ownerId = selectedTenant.owner?.id;
 		$form.email = $form.email.trim();
 		$form.ownerId = selectedTenant.owner?.id;
 		//@ts-expect-error
 		tenantUsersList = usersList.filter(user => user.tenant.id == selectedTenant.id);
 		tenantUsersList?.forEach((element) => {
-			//@ts-expect-error
-			tenantUsersSelector.push({ value: element.id, name: element.user.name ?? element.user.email });
+			tenantUsersSelector.push({
+				//@ts-expect-error Eslint throws does not exist on type 'never'
+				value: element.id,
+				//@ts-expect-error Eslint throws does not exist on type 'never'
+				name: element.user.name ?? element.user.email
+			});
 		});
 		actionURL = actionURL + `/${selectedTenant.id}`;
 	}
-
 </script>
 
 <form method="POST" use:enhance action={actionURL}>
@@ -61,11 +67,11 @@
 					placeholder="Select a user to be owner..."
 					bind:value={$form.ownerId}
 				/>
-			</div>	
+			</div>
 		{/if}
 		<div class="flex sm:col-span-2 justify-center items-center">
 			<SubmitButtonComponent
-				placeholder={!$form.id ? 'Create tenant' : 'Update tenant'}
+				placeholder={!selectedTenant ? 'Create tenant' : 'Update tenant'}
 				styles="w-40"
 			/>
 		</div>

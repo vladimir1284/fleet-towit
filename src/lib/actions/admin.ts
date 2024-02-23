@@ -80,7 +80,10 @@ export const deleteUser = async ({ tenantUserId }: { tenantUserId: number }) => 
 	return true;
 };
 
-export const getTenantUser = async ({ tenantUserId }: { tenantUserId: number }) => {
+export const getTenantUser = async ({ tenantUserId }: { tenantUserId: number | undefined }) => {
+	if (!tenantUserId) {
+		throw new Error('TenantUser ID is required');
+	}
 	const tenantUser = await bypassPrisma.tenantUser.findUnique({
 		where: { id: tenantUserId },
 		select: {
@@ -94,6 +97,18 @@ export const getTenantUser = async ({ tenantUserId }: { tenantUserId: number }) 
 
 	return tenantUser;
 };
+
+export const getTenantOwner = async ({ tenantId }: { tenantId: number | undefined }) => {
+	if (!tenantId) {
+		throw new Error('Tenant ID is required');
+	}
+	const ownerTenant = await bypassPrisma.tenantUser.findFirst({
+		where: { tenantId: tenantId, role: Role.OWNER },
+		include: {user: true}
+	});
+
+	return ownerTenant;
+}
 
 export const listTenants = async () => {
 	const tenants = await bypassPrisma.tenant.findMany();

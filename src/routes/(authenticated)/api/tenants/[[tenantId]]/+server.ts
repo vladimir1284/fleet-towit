@@ -1,6 +1,17 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { actionResult } from 'sveltekit-superforms/server';
-import { listTenants, deleteTenant, updateTenant, createTenant, getAdminTenant, listTenantUsersOnTenant, createTenantUser, updateTenantUser, getTenantUser } from '$lib/actions/admin';
+import {
+	listTenants,
+	deleteTenant,
+	updateTenant,
+	createTenant,
+	getAdminTenant,
+	listTenantUsersOnTenant,
+	createTenantUser,
+	updateTenantUser,
+	getTenantUser,
+	getTenantOwner
+} from '$lib/actions/admin';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
@@ -35,9 +46,13 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 	}
 
 	if (params.tenantId) {
-		await updateTenant({ tenantId: parseInt(params.tenantId, 10), name: form.data.name, email: form.data.email });
-		//@ts-expect-error It's detecting it as undefined
+		await updateTenant({ tenantId: parseInt(params.tenantId), name: form.data.name, email: form.data.email });
+		const oldOwner = await getTenantOwner({ tenantId: parseInt(params.tenantId) })
 		const tenantUserToBeOwner = await getTenantUser({ tenantUserId: form.data.ownerId });
+		if (oldOwner?.id !== tenantUserToBeOwner?.id) {
+			//@ts-expect-error It's detecting it as undefined
+			await updateTenantUser({ tenantUserId: oldOwner?.id, email: oldOwner?.user.email, userRole: Role.ADMIN })
+		}
 		//@ts-expect-error It's detecting it as undefined
 		await updateTenantUser({ tenantUserId: tenantUserToBeOwner?.id, email: tenantUserToBeOwner?.user.email, userRole: Role.OWNER })
 	} else {

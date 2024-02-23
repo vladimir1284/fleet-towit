@@ -24,6 +24,7 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
+		//@ts-expect-error _user is a tenantUser instance
 		(_user) => _user.id == request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
@@ -102,7 +103,7 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 	return actionResult('success', { form }, { status: 200 });
 };
 
-export const PATCH: RequestHandler = async ({ locals, params, request }) => {
+export const PATCH: RequestHandler = async ({ locals, request }) => {
 	const formData = await request.formData();
 	const session = await locals.getSession();
 	if (!session?.user) {
