@@ -6,7 +6,7 @@
 </script>
 
 <section class="bg-white p-4 flex flex-col gap-4 w-2/3">
-	<div class="flex gap-4">
+	<div class="flex flex-wrap lg:flex-nowrap gap-4">
 		<h2 class="font-semibold">
 			Model: <span class="font-normal">{data.inspection.vehicle.model}</span>
 		</h2>
@@ -23,7 +23,7 @@
 			</span>
 		</h2>
 	</div>
-	<div class="flex justify-between">
+	<div class="flex flex-wrap justify-between">
 		<h2 class="font-semibold">Inspector:</h2>
 		<h2 class="font-semibold">Signature:</h2>
 		<h2 class="font-semibold">Rentador:</h2>

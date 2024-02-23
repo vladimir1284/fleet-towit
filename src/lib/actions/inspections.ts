@@ -127,8 +127,6 @@ export const createResponseToInspection = async ({
 
 	if (!tenantUser) return;
 
-	console.log(form_data);
-
 	const data: {
 		fieldId: number;
 		tenantUserId: string;

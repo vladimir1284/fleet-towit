@@ -1,5 +1,3 @@
-// import { PrismaClient } from '@prisma/client';
-
 const seedInspection = async (prisma, tenantId: string) => {
 	console.log('Seeding inspections data...');
 

@@ -32,8 +32,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				id: inspectionId
 			});
 
-			console.log(inspection);
-
 			if (!inspection) redirect_to_back();
 
 			// if inspection not have responses
