@@ -12,7 +12,6 @@
 	export let users;
 	export let showOptions = false;
 	const dispatch = createEventDispatcher();
-	console.log("USERS LIST: ", users)
 </script>
 
 <TableHead>
