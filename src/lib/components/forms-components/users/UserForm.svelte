@@ -15,11 +15,11 @@
 	let actionURL = `/api/tenants/${currentTenant.currentUserTenant.tenantId}/users`;
 
 	const fixSchema = z.object({
-		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
-		email: z.string().email(),
-		tenantId: z.string(),
-		id: z.string().optional()
-	});
+  		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
+  		email: z.string().email(),
+  		tenantId: z.number(),
+  		id: z.string().optional()
+	})
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		SPA: true,
