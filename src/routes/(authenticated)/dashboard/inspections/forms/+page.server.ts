@@ -49,7 +49,7 @@ export const actions = {
 		});
 
 		if (newForm) {
-			throw redirect(TEMPORARY_REDIRECT_STATUS, `${url.pathname}/${newForm.id}`);
+			redirect(TEMPORARY_REDIRECT_STATUS, `${url.pathname}/${newForm.id}`);
 		}
 	}
 } satisfies Actions;

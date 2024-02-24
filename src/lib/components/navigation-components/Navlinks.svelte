@@ -6,7 +6,7 @@
 	import { tenantActor } from '$lib/store/context-store';
 	export let data;
 	export let currentTenant;
-	console.log(currentTenant)
+	console.log(currentTenant);
 
 	async function handleChangeUserTenant(tenantUser) {
 		const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
@@ -51,7 +51,7 @@
 					{/if}
 				</DropdownItem>
 			{/each}
-		  </Dropdown>
+		</Dropdown>
 	{/if}
 	{#if currentTenant.isAdmin}
 		<NavLi class="cursor-pointer" href="/admin/tenants">Tenants</NavLi>
