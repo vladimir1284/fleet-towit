@@ -24,5 +24,9 @@
 	<div class="sm:col-span-2">
 		<h1>Delete user?</h1>
 	</div>
-    <SubmitButtonComponent placeholder="Delete" styles="w-[50%] mx-auto block" onClick={handleSubmit}/>
+	<SubmitButtonComponent
+		placeholder="Delete"
+		styles="w-[50%] mx-auto block"
+		onClick={handleSubmit}
+	/>
 </div>

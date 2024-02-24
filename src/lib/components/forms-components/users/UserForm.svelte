@@ -81,7 +81,7 @@
 >
 	<input hidden name="id" bind:value={$form.id} />
 	<div class="sm:col-span-2">
-		<EmailInputComponent placeholder="Insert user email" form={form} errors={errors} constraints={constraints}/>
+		<EmailInputComponent placeholder="Insert user email" {form} {errors} {constraints} />
 	</div>
 	<Select
 		class="mt-2"
@@ -99,7 +99,10 @@
 			bind:value={$form.tenantId}
 		/>
 	{:else}
-		<input hidden name='tenantId' bind:value={$form.tenantId}>
+		<input hidden name="tenantId" bind:value={$form.tenantId} />
 	{/if}
-	<SubmitButtonComponent placeholder={!selectedUser ? 'Create user' : 'Update user'} styles="w-[50%] mx-auto block"/>
+	<SubmitButtonComponent
+		placeholder={!selectedUser ? 'Create user' : 'Update user'}
+		styles="w-[50%] mx-auto block"
+	/>
 </form>

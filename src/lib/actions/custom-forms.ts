@@ -1,28 +1,52 @@
-import { bypassPrisma } from '$lib/prisma';
+import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
+import type { CheckOption } from '@prisma/client';
 
 const selectTenantUser = async (userId: number) => {
 	const tenantUser = await bypassPrisma.tenantUser.findFirst({
 		where: {
 			userId: userId
+    }
+  });
+/*
+ *  The following function are related to CustomForm
+ */
+
+/*
+ * Create new custom form
+ */
+export const createCustomForm = async ({ tenantId, name }: { tenantId: string; name: string }) => {
+	const newForm = await tenantPrisma(tenantId).customForm.create({
+		data: {
+			name: name,
+			tenantId: tenantId
 		}
 	});
 
-	return tenantUser;
+	return newForm;
 };
 
-const getFieldType = (type: 'text' | 'number') => {
-	let fieldType;
-	if (type === 'number') fieldType = FormFieldType.NUMBER;
-	else fieldType = FormFieldType.TEXT;
-
-	return fieldType;
+/*
+ * Delete custom form
+ */
+export const deleteCustomForm = async ({
+	tenantId,
+	formId
+}: {
+	formId: number;
+	tenantId: string;
+}) => {
+	await tenantPrisma(tenantId).customForm.delete({
+		where: {
+			id: formId
+		}
+	});
 };
 
 export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: number }) => {
 	const tenantUser = await bypassPrisma.tenantUser.findFirst({
-		where: {
-			userId: userId
+    		where: {
+			id: tenantId
 		},
 
 		include: {
@@ -34,7 +58,25 @@ export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: number 
 		}
 	});
 
-	return tenantUser?.customForms || [];
+/*
+ *  Return all custom forms
+ */
+export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: string }) => {
+	const tenant = await tenantPrisma(tenantId).tenant.findFirst({
+		where: {
+			id: tenantId
+		},
+
+		include: {
+			customForms: {
+				include: {
+					fields: true
+				}
+			}
+		}
+	});
+
+	return tenant?.customForms || [];
 };
 
 export const createNewCustomForm = async ({ userId, name }: { userId: number; name: string }) => {
@@ -44,46 +86,103 @@ export const createNewCustomForm = async ({ userId, name }: { userId: number; na
 		const newForm = await bypassPrisma.customForm.create({
 			data: {
 				name: name,
-				tenantUserId: tenantUser.id
+				tenantUserId: tenantUser.id        
 			}
-		});
+		}
+	});
+    
+/*
+ *  Retrieve 1 custom form by id
+ */
+export const retrieveCustomFormById = async ({
+	tenantId,
+	formId
+}: {
+	tenantId: string;
+	formId: number;
+}) => {
+	const customForm = await tenantPrisma(tenantId).customForm.findUnique({
+		where: {
+			id: formId,
+			tenantId: tenantId
+		},
+		include: {
+			fields: {
+				include: {
+					checkOptions: true
+				}
+			}
+		}
+	});
 
-		return newForm;
-	}
+	return customForm;
 };
 
 export const fetchOneFormById = async (userId: number, formId: number) => {
 	const tenantUser = await selectTenantUser(userId);
-
-	if (tenantUser) {
-		const customForm = await bypassPrisma.customForm.findUnique({
-			where: {
-				id: formId,
-				tenantUserId: tenantUser.id
-			},
-			include: {
-				fields: true
-			}
-		});
-
-		return customForm;
-	}
+		data: {
+			name: newName
+		}
+	});
+};
+/*
+ *  Rename custom form
+ */
+export const renameCustomForm = async ({
+	formId,
+	newName,
+	tenantId
+}: {
+	formId: number;
+	newName: string;
+	tenantId: string;
+}) => {
+	await tenantPrisma(tenantId).customForm.update({
+		where: {
+			id: formId
+		},
+		data: {
+			name: newName
+		}
+	});
 };
 
+/*
+ *  The following function are related to custom field
+ */
+
+const getFieldType = (FieldType: 'text' | 'number' | 'checkboxes') => {
+	if (FieldType === 'number') return FormFieldType.NUMBER;
+
+	if (FieldType === 'checkboxes') return FormFieldType.CHECKBOXES;
+
+	return FormFieldType.TEXT;
+};
+
+/*
+ *	add field to custom form
+ */
 export const addFieldToCustomFrom = async ({
 	name,
 	formId,
-	cardType
+	cardType,
+	tenantId,
+	checkboxes
 }: {
 	name: string;
 	formId: number;
-	cardType: 'number' | 'text';
+	cardType: 'number' | 'text' | 'checkboxes';
+	tenantId: string;
+	checkboxes?: string[];
 }) => {
-	await bypassPrisma.customField.create({
+	await tenantPrisma(tenantId).customField.create({
 		data: {
 			formId: formId,
 			name: name,
-			type: getFieldType(cardType)
+			type: getFieldType(cardType),
+			checkOptions: {
+				create: checkboxes?.map((name) => ({ name }))
+			}
 		}
 	});
 };
@@ -101,28 +200,29 @@ export const deleteCustomForm = async (formId: number, userId: number) => {
 	}
 };
 
+/*
+ * 	delete custom field
+ */
 export const deleteCustomField = async ({
 	fieldId,
 	formId,
-	userId
+	tenantId
 }: {
 	fieldId: number;
 	formId: number;
 	userId: number;
 }) => {
-	const tenantUser = await selectTenantUser(userId);
-
-	if (!tenantUser) return;
-
-	const customForm = await bypassPrisma.customForm.findFirst({
+	// this step is for security , checking the tenant is the owner
+	// of this custom form
+	const customForm = await tenantPrisma(tenantId).customForm.findFirst({
 		where: {
 			id: formId,
-			tenantUserId: tenantUser.id
+			tenantId: tenantId
 		}
 	});
 
 	if (customForm) {
-		await bypassPrisma.customField.delete({
+		await tenantPrisma(tenantId).customField.delete({
 			where: {
 				id: fieldId,
 				formId: customForm.id
@@ -131,29 +231,38 @@ export const deleteCustomField = async ({
 	}
 };
 
-export const renameCustomForm = async ({
-	formId,
+/*
+ *  update custom field
+ */
+export const updateCustomField = async ({
+	cardId,
+	cardType,
 	newName,
-	userId
+	tenantId,
+	checkboxes
 }: {
-	formId: number;
+	cardId: number;
+	cardType: 'text' | 'number' | 'checkboxes';
 	newName: string;
 	userId: number;
+	tenantId: string;
+	checkboxes: (CheckOption | string)[] | undefined;
 }) => {
-	const tenantUser = await selectTenantUser(userId);
+	let idsToSkip: number[] | undefined = checkboxes
+		?.filter((el) => typeof el !== 'string')
+		.map((el) => el?.id);
 
-	if (!tenantUser) return;
+	// if card type is not checkboxe then delete all checkOptions
+	if (cardType !== 'checkboxes') idsToSkip = [];
 
-	await bypassPrisma.customForm.update({
+	await tenantPrisma(tenantId).checkOption.deleteMany({
 		where: {
-			id: formId,
-			tenantUserId: tenantUser.id
-		},
-		data: {
-			name: newName
+			id: {
+				notIn: idsToSkip
+			},
+			fieldId: cardId
 		}
 	});
-};
 
 export const updateCustomField = async ({
 	cardId,
@@ -167,16 +276,42 @@ export const updateCustomField = async ({
 	userId: number;
 }) => {
 	const tenantUser = await selectTenantUser(userId);
+	// update checkboxes
+	if (cardType === 'checkboxes') {
+		const checkBoxesToUpdate: CheckOption[] | undefined = checkboxes?.filter(
+			(el) => typeof el !== 'string'
+		) as CheckOption[];
 
-	if (!tenantUser) return;
+		for (const checkbox of checkBoxesToUpdate) {
+			await tenantPrisma(tenantId).checkOption.update({
+				where: {
+					id: checkbox.id
+				},
+				data: {
+					name: checkbox.name
+				}
+			});
+		}
+	}
 
-	await bypassPrisma.customField.update({
+	// update card
+	const checkBoxesToCreate = checkboxes?.filter(
+		(el) => typeof el === 'string' && el != ''
+	) as string[];
+
+	await tenantPrisma(tenantId).customField.update({
 		where: {
 			id: cardId
 		},
 		data: {
 			type: getFieldType(cardType),
-			name: newName
+			name: newName,
+			checkOptions: {
+				create: checkBoxesToCreate?.map((name) => ({ name }))
+			}
+		},
+		include: {
+			checkOptions: true
 		}
 	});
 };

@@ -67,11 +67,11 @@
 			<input type="hidden" name="id" bind:value={$form.id} />
 			<div class="flex flex-col flex-wrap items-center w-full h-[10em] max-w-[25em] justify-evenly">
 				<input type="hidden" name="image" bind:value={$form.image} />
-				<NameInputComponent placeholder="Type your name" {form} {errors} {constraints}/>
+				<NameInputComponent placeholder="Type your name" {form} {errors} {constraints} />
 				<EmailInputComponent placeholder="Type your email" {form} {errors} {constraints} />
 			</div>
 		</div>
-		<SubmitButtonComponent placeholder="Update" styles="max-w-1/10"/>
+		<SubmitButtonComponent placeholder="Update" styles="max-w-1/10" />
 	</form>
 </Modal>
 
