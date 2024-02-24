@@ -21,7 +21,7 @@
 
 	async function handleSelectTenant(tenant) {
 		const currentUserTenant = data.session.user.tenantUsers.find(
-			(tenantUser) => tenantUser.tenantId === tenant.id
+			(tenantUser) => tenantUser.tenantId == tenant.id
 		);
 
 		// Set X-User-Tenant cookie on browser level.

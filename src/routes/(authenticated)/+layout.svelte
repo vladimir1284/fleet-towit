@@ -20,9 +20,7 @@
 		currentTenant = state.context.currentTenant;
 	});
 
-	$: console.log(currentTenant)
-
-	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id)) {
+	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId == currentTenant.id)) {
 		goto('/select-tenant');
 	}
 

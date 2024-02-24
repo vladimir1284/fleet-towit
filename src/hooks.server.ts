@@ -126,7 +126,7 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 		}
 		const adminTenant = await getAdminTenant();
 		const currentPrismaClient =
-			currentUserData.tenant.id === adminTenant?.id // currentUserData.TenantId is also correct.
+			currentUserData.tenant.id == adminTenant?.id // currentUserData.TenantId is also correct.
 				? bypassPrisma
 				: tenantPrisma(currentUserData.tenant.id);
 
