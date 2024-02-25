@@ -51,14 +51,15 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid()) /// @zod.custom.omit([model, input])
+  id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
-  email         String?   @unique
+  email         String?      @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  tenantUsers  TenantUser[]
+  tenantUsers   TenantUser[]
+  Cost          Cost[]
 }
 
 model VerificationToken {
@@ -70,14 +71,13 @@ model VerificationToken {
 }
 
 model TenantUser {
-
-  id       String @id @default(cuid()) @db.VarChar(30)
-  role     Role   @default(STAFF)
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  is_default  Boolean @default(false)
+  id         String  @id @default(cuid()) @db.VarChar(30)
+  role       Role    @default(STAFF)
+  tenantId   String
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  is_default Boolean @default(false)
 
   createdParts Part[] @relation("creationAuthor")
   updatedParts Part[] @relation("updateAuthor")
@@ -152,22 +152,23 @@ model Vehicle {
   make            String
   model           String
   trim            String
-  plate           String
-  vin             String
+  plate           String           @unique
+  vin             String           @unique
   odometer        Int
   nickname        String
   spare_tires     Int
   extraFields     Json?
-  vehiclePictures VehiclePicture[] 
-  documents       Document[]       
+  vehiclePictures VehiclePicture[]
+  documents       Document[]
+  Cost            Cost[]
 }
 
 model VehiclePicture {
-  id         Int     @id @default(autoincrement())
-  image      String
-  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
-  vehicleId      Int
-  pinned     Boolean @default(false)
+  id        Int     @id @default(autoincrement())
+  image     String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicleId Int
+  pinned    Boolean @default(false)
 }
 
 model Document {
@@ -181,15 +182,15 @@ model Document {
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
   vehicle         Vehicle       @relation(fields: [vehicleId], references: [id])
-  vehicleId      Int
-  tags            DocumentTag[] 
+  vehicleId       Int
+  tags            DocumentTag[]
   extraFields     Json?
 }
 
 model DocumentTag {
-  id        Int        @id @default(autoincrement())
-  name      String
-  document Document @relation(fields: [documentId], references: [id])
+  id         Int      @id @default(autoincrement())
+  name       String
+  document   Document @relation(fields: [documentId], references: [id])
   documentId Int
 }
 
@@ -271,7 +272,7 @@ model Inspection {
 model InspectionResponse {
   id Int @id @default(autoincrement())
 
-  inspection   Inspection @relation(fields: [inspectionId], references: [id] , onDelete: Cascade)
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
   inspectionId Int
 
   tenantUserId String
@@ -398,3 +399,51 @@ model VendorOnParts {
 
   @@id([partId, vendorId])
 }
+
+// ************************ //
+//          COSTS           //
+// ************************ //
+
+enum CostCategory {
+  // Fixed Costs
+  PURCHASE
+  DEPRECIATION
+  FINANCING
+  INSURANCE
+  TAXES
+  PREVENTIVE_MAINTENANCE
+  STORAGE
+  PERMITS_AND_LICENSES
+
+  // Variable costs 
+  FUEL
+  REPAIRS
+  CLEANING
+  TOLLS_AND_HIGHWAYS
+  ROADSIDE_ASSISTANCE
+  MARKETING_AND_ADVERTISING
+  ADMINISTRATIVE_EXPENSES
+  COMMISSIONS
+
+  // Additional costs
+  ADDITIONAL_EQUIPMENT
+  RENTAL_INSURANCE
+  DEDUCTIBLE
+  CLEANING_FEE
+  ADDITIONAL_MILEAGE
+}
+
+model Cost {
+  id        Int            @id @default(autoincrement())
+  concept   String
+  category  CostCategory[]
+  date      DateTime
+  user      User           @relation(fields: [userId], references: [id])
+  userId    String
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id])
+  vehicleId Int
+}
+
+// ************************ //
+//        END:COSTS         //
+// ************************ //

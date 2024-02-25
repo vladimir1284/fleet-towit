@@ -74,11 +74,11 @@ const seedVehicles = async (prisma) => {
           }
         ]
       }
-    }    
+    }
   })
 
   await prisma.vehicle.create({
-    data:{
+    data: {
       "type": "SUV",
       "year": 2022,
       "make": "Mazda",
@@ -114,7 +114,7 @@ const seedVehicles = async (prisma) => {
         ]
       }
     }
-    
+
   })
 
   await prisma.vehicle.create({
@@ -152,10 +152,8 @@ const seedVehicles = async (prisma) => {
           }
         ]
       }
-    }    
+    }
   })
-
-  console.log('Seeding complete!');
 }
 
 export default seedVehicles

@@ -5,16 +5,19 @@
 	import { tenantActor } from '$lib/store/context-store';
 
 	import bcrypt from 'bcryptjs';
-	import { USER_TENANT_HEADER } from '$lib/shared/helpers';
+	//import { USER_TENANT_HEADER } from '$lib/shared/helpers';
 
 	import type { PageData } from './$types';
 	export let data: PageData;
 	import { onMount } from 'svelte';
-	
+
 	onMount(() => {
-		if (data.session?.user.defaultTenantUser){
+		if (data.session?.user.defaultTenantUser) {
 			const currentUserTenant = data.session.user.defaultTenantUser;
-			tenantActor.send({ type: 'tenant.update', value: { ...currentUserTenant.tenant, currentUserTenant } });
+			tenantActor.send({
+				type: 'tenant.update',
+				value: { ...currentUserTenant.tenant, currentUserTenant }
+			});
 			goto('/dashboard');
 		}
 	});

@@ -4,22 +4,23 @@ import { Role } from "@prisma/client";
 import seedVehicles from "./seeders/vehicle.seed";
 const prisma = bypassPrisma
 
-async function main() {  
-	const usersData = [
+async function main() {
+    const usersData = [
         { email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, is_default: true },
         { email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, is_default: true },
         { email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
         { email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
+        { email: 'nelson.ochagavia@gmail.com', userRole: Role.ADMIN, is_default: true },
         // Add more users as needed
     ];
-	const tenantsData = {
+    const tenantsData = {
         admin: { name: 'admin', email: 'gissell111284@gmail.com', isAdmin: true },
-        test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false  },
+        test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false },
         // Add more tenants as needed
     };
 
     // Admin tenant
-	const existingAdminTenant = await prisma.tenant.findFirst({
+    const existingAdminTenant = await prisma.tenant.findFirst({
         where: {
             isAdmin: true
         }
@@ -36,7 +37,7 @@ async function main() {
     }
 
     // Regular tenant
-	const existingTenant = await prisma.tenant.findFirst({
+    const existingTenant = await prisma.tenant.findFirst({
         where: {
             isAdmin: false
         }
@@ -55,20 +56,20 @@ async function main() {
     for (const userData of usersData) {
         const array = [tenantId, testTenantId];
         for (let index = 0; index < array.length; index++) {
-            
-		const existingUser = await prisma.tenantUser.findFirst({
-			where: { 
-                tenantId: array[index],
-                user: {email: userData.email}
+
+            const existingUser = await prisma.tenantUser.findFirst({
+                where: {
+                    tenantId: array[index],
+                    user: { email: userData.email }
+                }
+            });
+
+            if (!existingUser) {
+                await createTenantUser({ ...userData, tenantId: array[index] });
             }
-		});
-	
-		if (!existingUser) {
-		    await createTenantUser({ ...userData, tenantId: array[index]});
-		}
-            
+
         }
-	}
+    }
 
     // Vehicles
     await seedVehicles(prisma);
@@ -76,11 +77,11 @@ async function main() {
 }
 
 main()
-	.then(async () => {
-		await prisma.$disconnect();
-	})
-	.catch(async (e) => {
-		console.error(e);
-		await prisma.$disconnect();
-		process.exit(1);
-	});
+    .then(async () => {
+        await prisma.$disconnect();
+    })
+    .catch(async (e) => {
+        console.error(e);
+        await prisma.$disconnect();
+        process.exit(1);
+    });
