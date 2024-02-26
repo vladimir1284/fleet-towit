@@ -9,10 +9,10 @@
 	$: if (currentTenant === 'initial') {
 		tenantActor.send({ type: 'tenant.init', value: 'currentTenant' });
 	}
-
+	
 	$: currentTenant = tenantActor.getSnapshot().context.currentTenant;
 
-	$: if (currentTenant === undefined) {
+	$: if(currentTenant === undefined){
 		goto('/select-tenant');
 	}
 
@@ -20,15 +20,11 @@
 		currentTenant = state.context.currentTenant;
 	});
 
-	$: console.log(currentTenant);
-
-	$: if (
-		!data.session.user?.tenantUsers.some(
-			(tenantUser: { tenantId: any }) => tenantUser.tenantId === currentTenant.id
-		)
-	) {
+	$: if (!data.session.user?.tenantUsers.some((tenantUser: { tenantId: any }) => tenantUser.tenantId == currentTenant.id)) {
 		goto('/select-tenant');
 	}
+
+
 </script>
 
 <svelte:head>

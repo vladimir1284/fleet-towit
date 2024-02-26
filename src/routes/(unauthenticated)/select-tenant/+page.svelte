@@ -5,7 +5,7 @@
 	import { tenantActor } from '$lib/store/context-store';
 
 	import bcrypt from 'bcryptjs';
-	import { USER_TENANT_HEADER } from '$lib/shared/helpers';
+	import { USER_TENANT_HEADER } from '$lib/shared';
 
 	import type { PageData } from './$types';
 	export let data: PageData;
@@ -24,7 +24,7 @@
 
 	async function handleSelectTenant(tenant) {
 		const currentUserTenant = data.session.user.tenantUsers.find(
-			(tenantUser) => tenantUser.tenantId === tenant.id
+			(tenantUser) => tenantUser.tenantId == tenant.id
 		);
 
 		// Set X-User-Tenant cookie on browser level.

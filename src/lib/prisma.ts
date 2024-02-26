@@ -18,7 +18,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export const bypassPrisma = prisma.$extends(bypassRLS());
-export function tenantPrisma(tenant: string) {
+export function tenantPrisma(tenant: number) {
 	const extended = prisma.$extends(forTenant(tenant));
 	return extended;
 }

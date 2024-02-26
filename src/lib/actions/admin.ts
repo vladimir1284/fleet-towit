@@ -2,9 +2,9 @@ import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
 
 type createTenantType = { name: string; email?: string | null };
-type createUserType = { email: string; tenantId: string; userRole?: Role; is_default?: boolean };
-type editTenantType = createTenantType & { tenantId: string };
-type editUserType = createUserType & { tenantUserId: string };
+type createUserType = { email: string; tenantId: number; userRole?: Role, is_default?: boolean };
+type editTenantType = createTenantType & { tenantId: number };
+type editUserType = createUserType & { tenantUserId: number };
 
 export const createTenant = async ({ name, email = null }: createTenantType) => {
 	const obj = await bypassPrisma.tenant.create({
@@ -31,7 +31,7 @@ export const createTenantUser = async ({
 			userId: user.id,
 			tenantId: tenantId,
 			role: userRole,
-			is_default: is_default
+			is_default: is_default,
 		}
 	});
 
@@ -63,12 +63,12 @@ export const updateTenantUser = async ({
 	return tenantUser;
 };
 
-export const deleteTenant = async ({ tenantId }: { tenantId: string }) => {
+export const deleteTenant = async ({ tenantId }: { tenantId: number }) => {
 	await bypassPrisma.tenant.delete({ where: { id: tenantId } });
 	return true;
 };
 
-export const deleteUser = async ({ tenantUserId }: { tenantUserId: string }) => {
+export const deleteUser = async ({ tenantUserId }: { tenantUserId: number }) => {
 	const tenantUser = await bypassPrisma.tenantUser.findUnique({ where: { id: tenantUserId } });
 	await bypassPrisma.tenantUser.delete({ where: { id: tenantUser?.id } });
 	const restTenantUsers = await bypassPrisma.tenantUser.findMany({
@@ -80,7 +80,10 @@ export const deleteUser = async ({ tenantUserId }: { tenantUserId: string }) => 
 	return true;
 };
 
-export const getTenantUser = async ({ tenantUserId }: { tenantUserId: string }) => {
+export const getTenantUser = async ({ tenantUserId }: { tenantUserId: number | undefined }) => {
+	if (!tenantUserId) {
+		throw new Error('TenantUser ID is required');
+	}
 	const tenantUser = await bypassPrisma.tenantUser.findUnique({
 		where: { id: tenantUserId },
 		select: {
@@ -88,12 +91,24 @@ export const getTenantUser = async ({ tenantUserId }: { tenantUserId: string }) 
 			role: true,
 			tenantId: true,
 			userId: true,
-			user: true
+			user: true,
 		}
 	});
 
 	return tenantUser;
 };
+
+export const getTenantOwner = async ({ tenantId }: { tenantId: number | undefined }) => {
+	if (!tenantId) {
+		throw new Error('Tenant ID is required');
+	}
+	const ownerTenant = await bypassPrisma.tenantUser.findFirst({
+		where: { tenantId: tenantId, role: Role.OWNER },
+		include: {user: true}
+	});
+
+	return ownerTenant;
+}
 
 export const listTenants = async () => {
 	const tenants = await bypassPrisma.tenant.findMany();
@@ -115,12 +130,12 @@ export const listTenants = async () => {
 	return augmentedTenants;
 };
 
-export const getTenant = async ({ tenantId }: { tenantId: string }) => {
+export const getTenant = async ({ tenantId }: { tenantId: number }) => {
 	const tenant = await bypassPrisma.tenant.findUnique({ where: { id: tenantId } });
 	return tenant;
 };
 
-export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: string }) => {
+export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: number }) => {
 	const users = await bypassPrisma.tenantUser.findMany({
 		where: { tenantId: tenantId },
 		select: {
@@ -129,7 +144,7 @@ export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: string }
 			userId: true,
 			tenantId: true,
 			is_default: true,
-			user: true
+			user: true,
 		}
 	});
 	return users;
@@ -144,10 +159,10 @@ export const listAllTenantUsers = async () => {
 			tenantId: true,
 			is_default: true,
 			user: true,
-			tenant: true
+			tenant: true,
 		}
 	});
-	console.log('listAllTenantUsers', users);
+	console.log('listAllTenantUsers', users)
 	return users;
 };
 

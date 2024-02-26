@@ -25,15 +25,20 @@
 	});
 	$: $form.email = $form.email.trim();
 	if (selectedTenant) {
+		console.log(selectedTenant);
+
 		$form.name = selectedTenant.name;
 		$form.email = selectedTenant.email;
+		$form.ownerId = selectedTenant.owner?.id;
 		$form.email = $form.email.trim();
+		$form.ownerId = selectedTenant.owner?.id;
 		//@ts-expect-error
-		tenantUsersList = usersList.filter((user) => user.tenant.id === selectedTenant.id);
+		tenantUsersList = usersList.filter(user => user.tenant.id == selectedTenant.id);
 		tenantUsersList?.forEach((element) => {
-			//@ts-expect-error
 			tenantUsersSelector.push({
+				//@ts-expect-error Eslint throws does not exist on type 'never'
 				value: element.id,
+				//@ts-expect-error Eslint throws does not exist on type 'never'
 				name: element.user.name ?? element.user.email
 			});
 		});
@@ -66,7 +71,7 @@
 		{/if}
 		<div class="flex sm:col-span-2 justify-center items-center">
 			<SubmitButtonComponent
-				placeholder={!$form.id ? 'Create tenant' : 'Update tenant'}
+				placeholder={!selectedTenant ? 'Create tenant' : 'Update tenant'}
 				styles="w-40"
 			/>
 		</div>
