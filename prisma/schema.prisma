@@ -59,7 +59,6 @@ model User {
   accounts      Account[]
   sessions      Session[]
   tenantUsers   TenantUser[]
-  Cost          Cost[]
 }
 
 model VerificationToken {
@@ -160,7 +159,7 @@ model Vehicle {
   extraFields     Json?
   vehiclePictures VehiclePicture[]
   documents       Document[]
-  Cost            Cost[]
+  costs           Cost[]
 }
 
 model VehiclePicture {
@@ -406,41 +405,40 @@ model VendorOnParts {
 
 enum CostCategory {
   // Fixed Costs
-  PURCHASE
-  DEPRECIATION
-  FINANCING
-  INSURANCE
-  TAXES
-  PREVENTIVE_MAINTENANCE
-  STORAGE
-  PERMITS_AND_LICENSES
+  Purchase
+  Depreciation
+  Financing
+  Insurance
+  Taxes
+  PreventativeMaintenance
+  Storage
+  PermitsAndLicenses
 
-  // Variable costs 
-  FUEL
-  REPAIRS
-  CLEANING
-  TOLLS_AND_HIGHWAYS
-  ROADSIDE_ASSISTANCE
-  MARKETING_AND_ADVERTISING
-  ADMINISTRATIVE_EXPENSES
-  COMMISSIONS
+  // Variable costs
+  Fuel
+  Repairs
+  Cleaning
+  TollsAndHighways
+  RoadsideAssistance
+  MarketingAndAdvertising
+  AdministrativeExpenses
+  Commissions
 
   // Additional costs
-  ADDITIONAL_EQUIPMENT
-  RENTAL_INSURANCE
-  DEDUCTIBLE
-  CLEANING_FEE
-  ADDITIONAL_MILEAGE
+  AdditionalEquipment
+  RentalInsurance
+  Deductible
+  CleaningFee
+  AdditionalMileage
 }
 
 model Cost {
   id        Int            @id @default(autoincrement())
+  value     Float
   concept   String
   category  CostCategory[]
   date      DateTime
-  user      User           @relation(fields: [userId], references: [id])
-  userId    String
-  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   vehicleId Int
 }
 

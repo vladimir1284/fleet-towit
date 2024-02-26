@@ -1,6 +1,11 @@
-<script>
+<script lang="ts">
 	import Table from '$lib/components/data-visualization/Table.svelte';
-	import mockData from '$lib/mocks/costs.json';
+	import { Heading } from 'flowbite-svelte';
+
+	export let data;
+
+	//console.log('DATA:\n', JSON.stringify(data));
 </script>
 
-<Table title="Costs" data={mockData} />
+<Heading>Costs</Heading>
+<Table data={data.costs} rules={['capitalize', 'wordify']} />

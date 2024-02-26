@@ -5,50 +5,32 @@ const prisma = new PrismaClient()
 
 export const load: PageServerLoad = async () => {
   try {
-    const results = await prisma.cost.findMany()
-    let costs = []
-
-    if (results) {
-      if (results.length) {
-        costs = results.map(async entry => {
-          const cost = {
-            concept: entry.concept,
-            category: entry.category,
-            date: entry.date,
-            user: "",
-            vehicleType: "",
-            mileage: 0,
-            licence_plate: ""
+    const results = await prisma.cost.findMany({
+      include: {
+        vehicle: {
+          select: {
+            plate: true,
+            type: true,
+            odometer: true
           }
-
-          const user = await prisma.user.findUnique({
-            where: {
-              id: entry.userId
-            }
-          })
-
-          if (user) {
-            cost.user = user.name
-          }
-
-          const vehicle = await prisma.vehicle.findUnique({
-            where: {
-              id: entry.vehicleId
-            }
-          })
-
-          if (vehicle) {
-            cost.vehicleType = vehicle.type,
-              cost.mileage = vehicle.odometer,
-              cost.licence_plate = vehicle.plate
-          }
-        })
+        }
       }
-    }
+    })
+
+    const costs = results.map(entry => ({
+      value: "$" + entry.value.toFixed(2),
+      concept: entry.concept,
+      category: entry.category,
+      date: entry.date,
+      plate: entry.vehicle.plate,
+      type: entry.vehicle.type,
+      odometer: entry.vehicle.odometer + " mi."
+    }))
 
     return { costs }
 
   } catch (error) {
+    //@ts-expect-error This expects any error
     console.log(error.message)
   }
 }

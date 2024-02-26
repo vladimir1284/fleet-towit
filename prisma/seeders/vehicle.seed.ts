@@ -1,3 +1,5 @@
+import { CostCategory } from "@prisma/client";
+
 const seedVehicles = async (prisma) => {
   console.log('Seeding vehicles data...')
   await prisma.vehicle.create({
@@ -7,8 +9,8 @@ const seedVehicles = async (prisma) => {
       make: 'Toyota',
       model: 'Camry',
       trim: 'LE',
-      plate: 'ABC123',
-      vin: '12345678901234567',
+      plate: 'ABC122D3',
+      vin: '1234567890123434567',
       odometer: 10000,
       nickname: 'My Camry',
       spare_tires: 1,
@@ -36,6 +38,16 @@ const seedVehicles = async (prisma) => {
           },
         ],
       },
+      costs: {
+        create: [
+          {
+            value: 99,
+            concept: "Trailer cleaning fee (excessive dirt)",
+            category: [CostCategory.CleaningFee],
+            date: new Date("2023-11-24")
+          }
+        ]
+      }
     },
   });
 
@@ -46,8 +58,8 @@ const seedVehicles = async (prisma) => {
       "make": "Hyundai",
       "model": "Elantra",
       "trim": "SE",
-      "plate": "DEF456",
-      "vin": "98765432109876543",
+      "plate": "D3EF4e56",
+      "vin": "9876542332109876543",
       "odometer": 5000,
       "nickname": "El Ahorrador",
       "spare_tires": 1,
@@ -73,6 +85,16 @@ const seedVehicles = async (prisma) => {
             }
           }
         ]
+      },
+      costs: {
+        create: [
+          {
+            value: 588,
+            concept: "Oil change",
+            category: [CostCategory.AdditionalEquipment],
+            date: new Date("2023-11-25"),
+          }
+        ]
       }
     }
   })
@@ -84,8 +106,8 @@ const seedVehicles = async (prisma) => {
       "make": "Mazda",
       "model": "CX-5",
       "trim": "Turbo AWD",
-      "plate": "GHI789",
-      "vin": "01234567890123456",
+      "plate": "GHIs73489",
+      "vin": "012345678901234356",
       "odometer": 20000,
       "nickname": "El Aventurero",
       "spare_tires": 1,
@@ -112,6 +134,22 @@ const seedVehicles = async (prisma) => {
             }
           }
         ]
+      },
+      costs: {
+        create: [
+          {
+            value: 781,
+            concept: "Tire rotation",
+            category: [CostCategory.Insurance],
+            date: new Date("2023-11-25"),
+          },
+          {
+            value: 245,
+            concept: "Trailer insurance renewal",
+            category: [CostCategory.Depreciation],
+            date: new Date("2023-11-20"),
+          },
+        ]
       }
     }
 
@@ -124,8 +162,8 @@ const seedVehicles = async (prisma) => {
       "make": "Yamaha",
       "model": "YZF-R6",
       "trim": "",
-      "plate": "MNO345",
-      "vin": "23456789012345678",
+      "plate": "M1NOdd345",
+      "vin": "234567389012345678",
       "odometer": 1000,
       "nickname": "La Bala",
       "spare_tires": 0,
@@ -150,6 +188,16 @@ const seedVehicles = async (prisma) => {
               ]
             }
           }
+        ]
+      },
+      costs: {
+        create: [
+          {
+            value: 239,
+            concept: "Trailer repair (brake pads)",
+            category: [CostCategory.AdditionalMileage],
+            date: new Date("2023-11-23"),
+          },
         ]
       }
     }
