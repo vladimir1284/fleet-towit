@@ -3,13 +3,11 @@
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
 </script>
 
-<NavLi class="cursor-pointer">
-	Dashboard<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
-</NavLi>
-<Dropdown class="w-44 z-20">
-	<DropdownItem href="/dashboard">Dashboard</DropdownItem>
-	<DropdownItem href="/custom-dashboard">Custom dashboard</DropdownItem>
-</Dropdown>
+<NavLi class="cursor-pointer" href="/dashboard">Dashboard</NavLi>
+
+<NavLi class="cursor-pointer" href="/dashboard/plans">Rental Plans</NavLi>
+<NavLi class="cursor-pointer" href="/dashboard/clients">Clients</NavLi>
+<NavLi class="cursor-pointer" href="/dashboard/contracts">Contracts</NavLi>
 <NavLi class="cursor-pointer">
 	Inspections<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>
@@ -22,7 +20,6 @@
 		>Exception report</DropdownItem
 	>
 </Dropdown>
-
 <NavLi class="cursor-pointer">
 	Maintence<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>
@@ -42,9 +39,3 @@
 	>
 	<DropdownItem label="Inventory" href="/dashboard/maintenance/inventory">Inventory</DropdownItem>
 </Dropdown>
-<NavLi class="cursor-pointer" href="/dashboard/assets">
-	Assets<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
-</NavLi>
-<NavLi class="cursor-pointer" href="/dashboard/reports">
-	Reports<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
-</NavLi>

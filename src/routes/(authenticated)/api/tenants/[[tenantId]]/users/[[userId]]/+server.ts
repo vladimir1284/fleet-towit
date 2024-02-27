@@ -31,9 +31,7 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 	if (currentUserData.tenant.id == adminTenant?.id) {
 		currentPrisma = bypassPrisma;
 		users = await currentPrisma.tenantUser.findMany({
-			select: {
-				role: true,
-				id: true,
+			include: {
 				tenant: true,
 				user: true
 			}
@@ -42,9 +40,7 @@ export const GET: RequestHandler = async ({ params, locals, request }) => {
 		currentPrisma = tenantPrisma(currentUserData.tenant.id);
 		users = await currentPrisma.tenantUser.findMany({
 			where: { tenantId: parseInt(params.tenantId || '0', 10) },
-			select: {
-				role: true,
-				id: true,
+			include: {
 				tenant: true,
 				user: true
 			}

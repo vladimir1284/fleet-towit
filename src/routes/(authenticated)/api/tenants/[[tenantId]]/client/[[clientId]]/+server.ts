@@ -47,7 +47,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
         await createClient({
             name: form.data.name,
             email: form.data.email,
-            tenantId: form.data.tenantId,
+            tenantId: parseInt(params.tenantId || '0', 10),
             phoneNumber: form.data.phoneNumber
         })
     }
@@ -61,7 +61,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
         return new Response('Forbidden', { status: 403 });
     }
     try {
-        await deleteClient({ id: parseInt(params.rentalPlanId || '0', 10) });
+        await deleteClient({ id: parseInt(params.clientId || '0', 10) });
         return new Response(null, { status: 204 });
     } catch (error) {
         console.error(error);

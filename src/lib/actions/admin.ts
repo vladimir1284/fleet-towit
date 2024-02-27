@@ -86,12 +86,9 @@ export const getTenantUser = async ({ tenantUserId }: { tenantUserId: number | u
 	}
 	const tenantUser = await bypassPrisma.tenantUser.findUnique({
 		where: { id: tenantUserId },
-		select: {
-			id: true,
-			role: true,
-			tenantId: true,
-			userId: true,
+		include: {
 			user: true,
+			tenant: true
 		}
 	});
 
@@ -104,7 +101,7 @@ export const getTenantOwner = async ({ tenantId }: { tenantId: number | undefine
 	}
 	const ownerTenant = await bypassPrisma.tenantUser.findFirst({
 		where: { tenantId: tenantId, role: Role.OWNER },
-		include: {user: true}
+		include: { user: true }
 	});
 
 	return ownerTenant;
@@ -138,13 +135,9 @@ export const getTenant = async ({ tenantId }: { tenantId: number }) => {
 export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: number }) => {
 	const users = await bypassPrisma.tenantUser.findMany({
 		where: { tenantId: tenantId },
-		select: {
-			id: true,
-			role: true,
-			userId: true,
-			tenantId: true,
-			is_default: true,
+		include: {
 			user: true,
+			tenant: true
 		}
 	});
 	return users;
@@ -152,12 +145,7 @@ export const listTenantUsersOnTenant = async ({ tenantId }: { tenantId: number }
 
 export const listAllTenantUsers = async () => {
 	const users = await bypassPrisma.tenantUser.findMany({
-		select: {
-			id: true,
-			role: true,
-			userId: true,
-			tenantId: true,
-			is_default: true,
+		include: {
 			user: true,
 			tenant: true,
 		}

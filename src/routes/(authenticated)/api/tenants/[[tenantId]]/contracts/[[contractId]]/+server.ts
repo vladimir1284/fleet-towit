@@ -59,30 +59,6 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 };
 
 
-export const PATCH: RequestHandler = async ({ request, params, locals }) => {
-    const session = await locals.getSession();
-    if (!session?.user) {
-        return new Response('Forbidden', { status: 403 });
-    }
-
-    const form = await superValidate(request, stageSchema);
-    if (!form.valid) {
-        console.log('validation fail');
-        return actionResult('failure', { form }, { status: 400 });
-    }
-    if (params.contractId) {
-        await updateContractStage({
-            id: parseInt(params.contractId || '0', 10),
-            date: form.data.date,
-            reason: form.data.reason,
-            comments: form.data.comments,
-            stage: form.data.stage
-        })
-    }
-    return actionResult('success', { form }, { status: 200 });
-}
-
-
 export const DELETE: RequestHandler = async ({ params, locals }) => {
     const session = await locals.getSession();
     if (!session?.user) {

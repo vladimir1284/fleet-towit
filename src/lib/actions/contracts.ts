@@ -7,7 +7,14 @@ type updateContractType = createContracType & { id: number }
 type updateContractStageType = { id: number, date: Date, reason?: string, comments?: string, stage: Stage }
 
 export const getAllContracts = async () => {
-    const contracts = await bypassPrisma.contract.findMany();
+    const contracts = await bypassPrisma.contract.findMany({
+        include: {
+            client: true,
+            rentalPlan: true,
+            vehicle: true,
+            stage: true
+        }
+    });
     return contracts
 }
 
@@ -17,6 +24,7 @@ export const createContract = async ({ clientId, rentalPlanId, vehicleId }: crea
         data: {
             date: new Date(Date.now()),
             stage: Stage.PENDING,
+
         }
     })
 

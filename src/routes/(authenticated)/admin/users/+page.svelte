@@ -45,10 +45,14 @@
 		}, 4000);
 	}
 
-	function handleCloseModal(event) {
+	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('User created succesfully!');
-		location.reload();
+
+		const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+		users = await response.json();
+		const tenantsResponse = await fetch('/api/tenants', { headers });
+		tenants = await tenantsResponse.json();
 	}
 
 	async function handleEdit(event) {
@@ -59,7 +63,11 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('User edited succesfully!');
-		location.reload();
+
+		const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+		users = await response.json();
+		const tenantsResponse = await fetch('/api/tenants', { headers });
+		tenants = await tenantsResponse.json();
 	}
 
 	async function handleDelete(event) {
@@ -70,7 +78,11 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('User deleted succesfully!');
-		location.reload();
+
+		const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+		users = await response.json();
+		const tenantsResponse = await fetch('/api/tenants', { headers });
+		tenants = await tenantsResponse.json();
 	}
 </script>
 

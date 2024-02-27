@@ -1,6 +1,6 @@
 <script lang="ts">
 	//@ts-nocheck
-	import { NavUl, NavLi, MegaMenu, Badge, Dropdown, DropdownItem } from 'flowbite-svelte';
+	import { NavUl, NavLi } from 'flowbite-svelte';
 	import UserNavLink from './role-navlinks/User-navLink.svelte';
 	export let currentTenant;
 </script>
