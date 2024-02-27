@@ -51,14 +51,14 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid()) /// @zod.custom.omit([model, input])
+  id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
-  email         String?   @unique
+  email         String?      @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  tenantUsers  TenantUser[]
+  tenantUsers   TenantUser[]
 }
 
 model VerificationToken {
@@ -152,8 +152,8 @@ model Vehicle {
   make            String
   model           String
   trim            String
-  plate           String
-  vin             String
+  plate           String           @unique
+  vin             String           @unique
   odometer        Int
   nickname        String
   spare_tires     Int
@@ -273,7 +273,7 @@ model Inspection {
 model InspectionResponse {
   id Int @id @default(autoincrement())
 
-  inspection   Inspection @relation(fields: [inspectionId], references: [id] , onDelete: Cascade)
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
   inspectionId Int
 
   tenantUserId String
@@ -400,6 +400,54 @@ model VendorOnParts {
 
   @@id([partId, vendorId])
 }
+
+// ************************ //
+//          COSTS           //
+// ************************ //
+
+enum CostCategory {
+  // Fixed Costs
+  Purchase
+  Depreciation
+  Financing
+  Insurance
+  Taxes
+  PreventativeMaintenance
+  Storage
+  PermitsAndLicenses
+
+  // Variable costs
+  Fuel
+  Repairs
+  Cleaning
+  TollsAndHighways
+  RoadsideAssistance
+  MarketingAndAdvertising
+  AdministrativeExpenses
+  Commissions
+
+  // Additional costs
+  AdditionalEquipment
+  RentalInsurance
+  Deductible
+  CleaningFee
+  AdditionalMileage
+}
+
+model Cost {
+  id        Int            @id @default(autoincrement())
+  value     Float
+  concept   String
+  category  CostCategory[]
+  date      DateTime
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vehicleId Int
+}
+
+// ************************ //
+//        END:COSTS         //
+// ************************ //
+
 
 model RentalPlan {
   id          Int         @id @default(autoincrement())
