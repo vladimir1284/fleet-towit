@@ -5,7 +5,7 @@
 	import { tenantActor } from '$lib/store/context-store';
 
 	import bcrypt from 'bcryptjs';
-	import { USER_TENANT_HEADER } from '$lib/shared';
+	//import { USER_TENANT_HEADER } from '$lib/shared/helpers';
 
 	import type { PageData } from './$types';
 	export let data: PageData;

@@ -152,8 +152,8 @@ model Vehicle {
   make            String
   model           String
   trim            String
-  plate           String
-  vin             String
+  plate           String           @unique
+  vin             String           @unique
   odometer        Int
   nickname        String
   spare_tires     Int
@@ -396,6 +396,54 @@ model VendorOnParts {
   @@id([partId, vendorId])
 }
 
+// ************************ //
+//          COSTS           //
+// ************************ //
+
+enum CostCategory {
+  // Fixed Costs
+  Purchase
+  Depreciation
+  Financing
+  Insurance
+  Taxes
+  PreventativeMaintenance
+  Storage
+  PermitsAndLicenses
+
+  // Variable costs
+  Fuel
+  Repairs
+  Cleaning
+  TollsAndHighways
+  RoadsideAssistance
+  MarketingAndAdvertising
+  AdministrativeExpenses
+  Commissions
+
+  // Additional costs
+  AdditionalEquipment
+  RentalInsurance
+  Deductible
+  CleaningFee
+  AdditionalMileage
+}
+
+model Cost {
+  id        Int            @id @default(autoincrement())
+  value     Float
+  concept   String
+  category  CostCategory[]
+  date      DateTime
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vehicleId Int
+}
+
+// ************************ //
+//        END:COSTS         //
+// ************************ //
+
+
 model RentalPlan {
   id          Int         @id @default(autoincrement())
   amount      Int
@@ -435,7 +483,7 @@ model StageUpdate {
   previousStage   StageUpdate? @relation(name: "previousStage", fields: [previousStageId], references: [id])
   previousStageId Int          @unique
   stage           Stage
-
+  
   //keeps for back ref
   stageRef  StageUpdate? @relation(name: "previousStage")
   contracts Contract[]
