@@ -72,7 +72,7 @@ async function main() {
 	// Vehicles
 	await seedVehicles(prisma);
 	// Inspection
-	await seedInspection(prisma, testTenantId);
+	await seedInspection(prisma, [testTenantId, tenantId]);
 }
 
 main()

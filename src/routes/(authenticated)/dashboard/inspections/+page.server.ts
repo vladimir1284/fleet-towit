@@ -23,7 +23,7 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, request }) => {
 	const session = await verifySession(locals);
 
 	const form = await superValidate(createInspectionSchema);

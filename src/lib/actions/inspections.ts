@@ -4,7 +4,7 @@ import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
 /*
  *	Get all inspections
  */
-export const fetchInspections = async ({ tenantId }: { tenantId: string }) => {
+export const fetchInspections = async ({ tenantId }: { tenantId: number }) => {
 	const inspections = await tenantPrisma(tenantId).inspection.findMany({
 		where: {
 			tenantId: tenantId
@@ -24,7 +24,7 @@ export const fetchInspections = async ({ tenantId }: { tenantId: string }) => {
 /*
  *  Helper
  */
-export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: string }) => {
+export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: number }) => {
 	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantId });
 	const listCustomForm = customForms.map((el) => ({ value: el.id, name: el.name }));
 
@@ -43,7 +43,7 @@ export const createInspection = async ({
 	formId,
 	vehicleId
 }: {
-	tenantId: string;
+	tenantId: number;
 	userId: string;
 	formId: number;
 	vehicleId: number;
@@ -75,7 +75,7 @@ export const retrieveInspectionById = async ({
 	tenantId,
 	id
 }: {
-	tenantId: string;
+	tenantId: number;
 	id: number;
 }) => {
 	const inspection = await tenantPrisma(tenantId).inspection.findFirst({
@@ -116,7 +116,7 @@ export const createResponseToInspection = async ({
 }: {
 	form_data: object;
 	userId: string;
-	tenantId: string;
+	tenantId: number;
 	inspectionId: number;
 }) => {
 	const tenantUser = await tenantPrisma(tenantId).tenantUser.findFirst({
