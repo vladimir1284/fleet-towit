@@ -6,7 +6,7 @@ import { z } from 'zod';
 const fixSchema = z.object({
 	name: z.string(),
 	email: z.string().email(),
-	id: z.string().optional()
+	id: z.number().optional()
 });
 
 export const load = (async () => {

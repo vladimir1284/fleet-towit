@@ -11,7 +11,7 @@ type fieldType = 'number' | 'text' | 'checkboxes' | 'single_check';
 /*
  * Create new custom form
  */
-export const createCustomForm = async ({ tenantId, name }: { tenantId: string; name: string }) => {
+export const createCustomForm = async ({ tenantId, name }: { tenantId: number; name: string }) => {
 	const newForm = await tenantPrisma(tenantId).customForm.create({
 		data: {
 			name: name,
@@ -30,7 +30,7 @@ export const deleteCustomForm = async ({
 	formId
 }: {
 	formId: number;
-	tenantId: string;
+	tenantId: number;
 }) => {
 	await tenantPrisma(tenantId).customForm.update({
 		where: {
@@ -45,7 +45,7 @@ export const deleteCustomForm = async ({
 /*
  *  Return all custom forms
  */
-export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: string }) => {
+export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: number }) => {
 	const tenant = await tenantPrisma(tenantId).tenant.findFirst({
 		where: {
 			id: tenantId
@@ -74,7 +74,7 @@ export const retrieveCustomFormById = async ({
 	tenantId,
 	formId
 }: {
-	tenantId: string;
+	tenantId: number;
 	formId: number;
 }) => {
 	const customForm = await tenantPrisma(tenantId).customForm.findUnique({
@@ -104,7 +104,7 @@ export const renameCustomForm = async ({
 }: {
 	formId: number;
 	newName: string;
-	tenantId: string;
+	tenantId: number;
 }) => {
 	await tenantPrisma(tenantId).customForm.update({
 		where: {
@@ -144,7 +144,7 @@ export const addFieldToCustomForm = async ({
 	name: string;
 	formId: number;
 	cardType: fieldType;
-	tenantId: string;
+	tenantId: number;
 	checkboxes?: string[];
 }) => {
 	await tenantPrisma(tenantId).customField.create({
@@ -169,7 +169,7 @@ export const deleteCustomField = async ({
 }: {
 	fieldId: number;
 	formId: number;
-	tenantId: string;
+	tenantId: number;
 }) => {
 	// this step is for security , checking the tenant is the owner
 	// of this custom form
@@ -203,7 +203,7 @@ export const updateCustomField = async ({
 	cardId: number;
 	cardType: fieldType;
 	newName: string;
-	tenantId: string;
+	tenantId: number;
 	checkboxes: (CheckOption | string)[] | undefined;
 }) => {
 	let idsToSkip: number[] | undefined = checkboxes

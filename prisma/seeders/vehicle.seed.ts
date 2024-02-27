@@ -13,6 +13,7 @@ const seedVehicles = async (prisma) => {
 			nickname: 'My Camry',
 			spare_tires: 1,
 			extraFields: { color: 'blue' },
+			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
 					{ image: 'https://example.com/car1.jpg' },
@@ -49,6 +50,7 @@ const seedVehicles = async (prisma) => {
 			nickname: 'El Ahorrador',
 			spare_tires: 1,
 			extraFields: { color: 'gris perla' },
+			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
 					{ image: 'https://example.com/elantra1.jpg' },
@@ -81,9 +83,10 @@ const seedVehicles = async (prisma) => {
 			plate: 'GHI789',
 			vin: '01234567890123456',
 			odometer: 20000,
-			nickname: 'El Aventurero',
+			nickname: 'Mcarro',
 			spare_tires: 1,
 			extraFields: { color: 'rojo metalizado', asientos_cuero: true },
+			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
 					{ image: 'https://example.com/cx51.jpg' },
@@ -120,6 +123,7 @@ const seedVehicles = async (prisma) => {
 			nickname: 'La Bala',
 			spare_tires: 0,
 			extraFields: { cilindrada: 600 },
+			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
 					{ image: 'https://example.com/yzf1.jpg' },

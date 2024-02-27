@@ -70,9 +70,9 @@ model VerificationToken {
 }
 
 model TenantUser {
-  id         String  @id @default(cuid()) @db.VarChar(30)
+  id         Int     @id @default(autoincrement())
   role       Role    @default(STAFF)
-  tenantId   String
+  tenantId   Int
   tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userId     String
   user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -87,28 +87,29 @@ model TenantUser {
 }
 
 model Client {
-  id          String  @id @default(cuid())
+  id          Int     @id @default(autoincrement())
   name        String
   email       String
   phoneNumber String  @unique /// @zod.string.regex(new RegExp(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/), { message:"Invalid Number!"})
   avatar      String?
 
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  tenantId  Int
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  contracts Contract[]
 }
 
 model Tenant {
-  id          String       @id @default(cuid()) @db.VarChar(30)
+  id          Int          @id @default(autoincrement())
   name        String
   email       String?
   isAdmin     Boolean      @default(false)
   clients     Client[]
   tenantUsers TenantUser[]
-  customForms CustomForm[]
   Part        Part[]
   Category    Category[]
   Location    Location[]
   Vendor      Vendor[]
+  customForms CustomForm[]
   inspections Inspection[]
 }
 
@@ -157,9 +158,18 @@ model Vehicle {
   nickname        String
   spare_tires     Int
   extraFields     Json?
+  status          VehicleStatus
   vehiclePictures VehiclePicture[]
   documents       Document[]
-  inspections      Inspection[]
+
+  contracts  Contract[]
+  tolls      TollDue[]
+  inspections Inspection[]
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  UNAVAILABLE
 }
 
 model VehiclePicture {
@@ -196,7 +206,7 @@ model DocumentTag {
 model CustomForm {
   id          Int           @id @default(autoincrement())
   name        String
-  tenantId    String
+  tenantId    Int
   tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now())
   // Only show form if is active
@@ -236,46 +246,35 @@ model CustomField {
 }
 
 model CustomFieldResponse {
-  id      Int      @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   // if is text , number etc
-  content String?
+  content       String?
   // if is checkbox ,radio
-  checked Boolean?
-
-  note String?
-
-  createdAt    DateTime    @default(now())
-
-  tenantUserId String
-  user         TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-
-  fieldId      Int
-  field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-
+  checked       Boolean?
+  note          String?
+  createdAt     DateTime     @default(now())
+  tenantUserId  Int
+  user          TenantUser   @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  fieldId       Int
+  field         CustomField  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   checkOptionId Int?
-  checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id] , onDelete: Cascade )
-
-  inspectionId Int?
-  inspection   Inspection? @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id], onDelete: Cascade)
+  inspectionId  Int?
+  inspection    Inspection?  @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
 }
 
 model Inspection {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-
+  id           Int                   @id @default(autoincrement())
+  createdAt    DateTime              @default(now())
   customFormId Int
-  customForm   CustomForm @relation(fields: [customFormId], references: [id], onDelete: Cascade)
-
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  vehicleId Int
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-
-  tenantUserId String
-  user         TenantUser @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-
-  responses CustomFieldResponse[]
+  customForm   CustomForm            @relation(fields: [customFormId], references: [id], onDelete: Cascade)
+  tenantId     Int
+  tenant       Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicleId    Int
+  vehicle      Vehicle               @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  tenantUserId Int
+  user         TenantUser            @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  responses    CustomFieldResponse[]
 }
 
 // Inventory-related models.
@@ -301,9 +300,9 @@ model Part {
   locations  LocationsOnParts[]
   vendors    VendorOnParts[]
 
-  createdBy String? @db.VarChar(30)
-  updatedBy String? @db.VarChar(30)
-  deletedBy String? @db.VarChar(30)
+  createdBy Int?
+  updatedBy Int?
+  deletedBy Int?
 
   // Relations.
   creationAuthor TenantUser? @relation("creationAuthor", fields: [createdBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -311,7 +310,7 @@ model Part {
   deletionAuthor TenantUser? @relation("deletionAuthor", fields: [deletedBy], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   // Multi-tenant identification.
-  tenantId String @db.VarChar(30)
+  tenantId Int
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
@@ -328,7 +327,7 @@ model Category {
 
   // Multi-tenant identification.
   tenant   Tenant @relation(fields: [tenantId], references: [id])
-  tenantId String
+  tenantId Int
 }
 
 model Location {
@@ -343,7 +342,7 @@ model Location {
   parts LocationsOnParts[]
 
   // Multi-tenant identification.
-  tenantId String @db.VarChar(30)
+  tenantId Int
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
@@ -359,7 +358,7 @@ model Vendor {
   parts VendorOnParts[]
 
   // Multi-tenant identification.
-  tenantId String @db.VarChar(30)
+  tenantId Int
   tenant   Tenant @relation(fields: [tenantId], references: [id])
 }
 
@@ -395,4 +394,75 @@ model VendorOnParts {
   cost Float
 
   @@id([partId, vendorId])
+}
+
+model RentalPlan {
+  id          Int         @id @default(autoincrement())
+  amount      Int
+  name        String
+  periodicity Periodicity
+
+  contracts Contract[]
+
+  @@unique([name, periodicity, amount])
+}
+
+enum Periodicity {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+model Contract {
+  id           Int         @id @default(autoincrement())
+  client       Client      @relation(fields: [clientId], references: [id])
+  clientId     Int
+  rentalPlan   RentalPlan  @relation(fields: [rentalPlanId], references: [id])
+  rentalPlanId Int
+  vehicle      Vehicle     @relation(fields: [vehicleId], references: [id])
+  vehicleId    Int
+  stage        StageUpdate @relation(fields: [stageId], references: [id])
+  stageId      Int
+  //inspections    Inspection[]  --- doesn't exists yet
+  tolls        TollDue[]
+}
+
+model StageUpdate {
+  id              Int          @id @default(autoincrement())
+  date            DateTime
+  reason          String?
+  comments        String?
+  previousStage   StageUpdate? @relation(name: "previousStage", fields: [previousStageId], references: [id])
+  previousStageId Int          @unique
+  stage           Stage
+
+  //keeps for back ref
+  stageRef  StageUpdate? @relation(name: "previousStage")
+  contracts Contract[]
+}
+
+enum Stage {
+  PENDING
+  ACTIVE
+  ENDED
+  DISMISS
+}
+
+model TollDue {
+  id            Int          @id @default(autoincrement())
+  amount        Int
+  vehicle       Vehicle      @relation(fields: [vehicleId], references: [id])
+  vehicleId     Int
+  contract      Contract     @relation(fields: [contractId], references: [id])
+  contractId    Int
+  stage         TollDueStage
+  invoice       String?
+  invoiceNumber String?
+  createDate    DateTime
+  note          String?
+}
+
+enum TollDueStage {
+  PAID
+  UNPAID
 }
