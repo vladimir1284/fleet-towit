@@ -4,7 +4,7 @@ import { bypassRLS, forTenant, forUser } from './rls_prisma';
 export const prisma = new PrismaClient();
 
 export const bypassPrisma = prisma.$extends(bypassRLS());
-export function tenantPrisma(tenant: string) {
+export function tenantPrisma(tenant: number) {
 	const extended = prisma.$extends(forTenant(tenant));
 	return extended;
 }

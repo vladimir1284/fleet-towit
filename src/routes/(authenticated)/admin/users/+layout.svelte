@@ -10,7 +10,7 @@
 		tenantActor.send({ type: 'tenant.init', value: 'currentTenant' });
 	}
 
-	//@ts-expect-error it throws that currentUserTenant is a string due to the initial data of currentTenant which is a string
+	//@ts-expect-error it throws that currentUserTenant is a number due to the initial data of currentTenant which is a number
 	if (currentTenant.currentUserTenant.role === 'STAFF') {
 		goto('/dashboard');
 	}

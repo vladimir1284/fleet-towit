@@ -2,6 +2,12 @@ import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
 import type { CheckOption } from '@prisma/client';
 
+const selectTenantUser = async (userId: number) => {
+	const tenantUser = await bypassPrisma.tenantUser.findFirst({
+		where: {
+			userId: userId
+    }
+  });
 /*
  *  The following function are related to CustomForm
  */
@@ -37,6 +43,21 @@ export const deleteCustomForm = async ({
 	});
 };
 
+export const fetchCustomFormsByTenantUser = async ({ userId }: { userId: number }) => {
+	const tenantUser = await bypassPrisma.tenantUser.findFirst({
+    		where: {
+			id: tenantId
+		},
+
+		include: {
+			customForms: {
+				include: {
+					fields: true
+				}
+			}
+		}
+	});
+
 /*
  *  Return all custom forms
  */
@@ -58,6 +79,18 @@ export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: string 
 	return tenant?.customForms || [];
 };
 
+export const createNewCustomForm = async ({ userId, name }: { userId: number; name: string }) => {
+	const tenantUser = await selectTenantUser(userId);
+
+	if (tenantUser) {
+		const newForm = await bypassPrisma.customForm.create({
+			data: {
+				name: name,
+				tenantUserId: tenantUser.id        
+			}
+		}
+	});
+    
 /*
  *  Retrieve 1 custom form by id
  */
@@ -85,6 +118,13 @@ export const retrieveCustomFormById = async ({
 	return customForm;
 };
 
+export const fetchOneFormById = async (userId: number, formId: number) => {
+	const tenantUser = await selectTenantUser(userId);
+		data: {
+			name: newName
+		}
+	});
+};
 /*
  *  Rename custom form
  */
@@ -101,7 +141,6 @@ export const renameCustomForm = async ({
 		where: {
 			id: formId
 		},
-
 		data: {
 			name: newName
 		}
@@ -148,6 +187,19 @@ export const addFieldToCustomFrom = async ({
 	});
 };
 
+export const deleteCustomForm = async (formId: number, userId: number) => {
+	const tenantUser = await selectTenantUser(userId);
+
+	if (tenantUser) {
+		await bypassPrisma.customForm.delete({
+			where: {
+				id: formId,
+				tenantUserId: tenantUser.id
+			}
+		});
+	}
+};
+
 /*
  * 	delete custom field
  */
@@ -158,7 +210,7 @@ export const deleteCustomField = async ({
 }: {
 	fieldId: number;
 	formId: number;
-	tenantId: string;
+	userId: number;
 }) => {
 	// this step is for security , checking the tenant is the owner
 	// of this custom form
@@ -192,6 +244,7 @@ export const updateCustomField = async ({
 	cardId: number;
 	cardType: 'text' | 'number' | 'checkboxes';
 	newName: string;
+	userId: number;
 	tenantId: string;
 	checkboxes: (CheckOption | string)[] | undefined;
 }) => {
@@ -211,6 +264,18 @@ export const updateCustomField = async ({
 		}
 	});
 
+export const updateCustomField = async ({
+	cardId,
+	cardType,
+	newName,
+	userId
+}: {
+	cardId: number;
+	cardType: 'text' | 'number';
+	newName: string;
+	userId: number;
+}) => {
+	const tenantUser = await selectTenantUser(userId);
 	// update checkboxes
 	if (cardType === 'checkboxes') {
 		const checkBoxesToUpdate: CheckOption[] | undefined = checkboxes?.filter(
