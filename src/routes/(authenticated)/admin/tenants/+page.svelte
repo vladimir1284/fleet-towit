@@ -63,7 +63,7 @@
 		showUsers = true;
 	}
 
-	function handleCloseModal(event) {
+	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Tenant created succesfully!');
 
@@ -82,7 +82,7 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Tenant edited succesfully!');
-	
+
 		const response = await fetch('/api/tenants');
 		const usersResponse = await fetch('/api/tenants/users', { headers });
 		tenants = [...(await response.json())];

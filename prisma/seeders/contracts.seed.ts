@@ -1,8 +1,7 @@
-import type { PrismaClient } from '@prisma/client'
 import { Stage } from '@prisma/client'
 import { Periodicity } from '@prisma/client'
 
-export const seedContracts = async (prisma: PrismaClient) => {
+export const seedContracts = async (prisma) => {
     const tenant = await prisma.tenant.create({
         data: {
             name: 'seedExample',
