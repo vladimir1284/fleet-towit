@@ -33,7 +33,7 @@
 		$form.email = $form.email.trim();
 		$form.ownerId = selectedTenant.owner?.id;
 		//@ts-expect-error
-		tenantUsersList = usersList.filter(user => user.tenant.id == selectedTenant.id);
+		tenantUsersList = usersList.filter((user) => user.tenant.id == selectedTenant.id);
 		tenantUsersList?.forEach((element) => {
 			tenantUsersSelector.push({
 				//@ts-expect-error Eslint throws does not exist on type 'never'

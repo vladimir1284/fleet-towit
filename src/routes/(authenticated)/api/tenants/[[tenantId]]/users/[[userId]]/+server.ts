@@ -67,7 +67,7 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
-		(_user: { id: number | null; }) => _user.id == request.headers.get('X-User-Tenant')
+		(_user: { id: number | null }) => _user.id == request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
 	if (currentUserData.tenant.id == adminTenant?.id) {
@@ -111,7 +111,7 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
 	}
 	//@ts-expect-error Error on tenantUser wich exists but is not detected
 	const currentUserData = session.user.tenantUsers.find(
-		(_user: { id: number | null; }) => _user.id == request.headers.get('X-User-Tenant')
+		(_user: { id: number | null }) => _user.id == request.headers.get('X-User-Tenant')
 	);
 	const adminTenant = await getAdminTenant();
 	if (currentUserData.tenant.id == adminTenant?.id) {

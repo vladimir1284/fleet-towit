@@ -25,7 +25,9 @@ export function forTenant(tenantId: number) {
 				$allModels: {
 					async $allOperations({ args, query }) {
 						const [, result] = await prisma.$transaction([
-							prisma.$executeRaw`SELECT set_config('app.current_tenant_id',  ${"" + tenantId + ""}, 'TRUE')`,
+							prisma.$executeRaw`SELECT set_config('app.current_tenant_id',  ${
+								'' + tenantId + ''
+							}, 'TRUE')`,
 							query(args)
 						]);
 						return result;

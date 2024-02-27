@@ -1,31 +1,24 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
 import nodemailer from 'nodemailer';
-import {
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASSWORD,
-    EMAIL_FROM
-} from '$env/static/private'
+import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL_FROM } from '$env/static/private';
 
 const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: false,
-    auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASSWORD
-    }
-})
-
+	host: SMTP_HOST,
+	port: SMTP_PORT,
+	secure: false,
+	auth: {
+		user: SMTP_USER,
+		pass: SMTP_PASSWORD
+	}
+});
 
 export async function sendWelcomeEmail(email: string, tenantName: string, role: string) {
-    const mailOptions = {
-        from: EMAIL_FROM,
-        to: email,
-        subject: `You have been invited to join to ${tenantName} as ${role}`, // Subject line
-        html: `
+	const mailOptions = {
+		from: EMAIL_FROM,
+		to: email,
+		subject: `You have been invited to join to ${tenantName} as ${role}`, // Subject line
+		html: `
         <html>
             <head>
                 <style>
@@ -75,12 +68,12 @@ export async function sendWelcomeEmail(email: string, tenantName: string, role: 
         </html>
         
         `
-    };
+	};
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Email sended`);
-    } catch (error) {
-        console.error(`Error sending email:`, error);
-    }
+	try {
+		await transporter.sendMail(mailOptions);
+		console.log(`Email sended`);
+	} catch (error) {
+		console.error(`Error sending email:`, error);
+	}
 }

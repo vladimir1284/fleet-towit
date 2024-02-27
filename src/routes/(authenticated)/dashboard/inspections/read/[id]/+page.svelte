@@ -1,0 +1,85 @@
+<script lang="ts">
+	import type { PageData } from './$types';
+	import { FormFieldType } from '@prisma/client';
+	import { Checkbox } from 'flowbite-svelte';
+	export let data: PageData;
+</script>
+
+<section class="bg-white p-4 flex flex-col gap-4 w-2/3">
+	<div class="flex flex-wrap lg:flex-nowrap gap-4">
+		<h2 class="font-semibold">
+			Model: <span class="font-normal">{data.inspection.vehicle.model}</span>
+		</h2>
+		<h2 class="font-semibold">
+			VIN: <span class="font-normal">{data.inspection.vehicle.vin}</span>
+		</h2>
+		<h2 class="font-semibold">
+			Plate: <span class="font-normal">{data.inspection.vehicle.plate}</span>
+		</h2>
+		<h2 class="font-semibold">
+			Date: <span class="font-normal">
+				{data.inspection.createdAt.getDate() + 1}/{data.inspection.createdAt.getMonth() +
+					1}/{data.inspection.createdAt.getFullYear() + 1}
+			</span>
+		</h2>
+	</div>
+	<div class="flex flex-wrap justify-between">
+		<h2 class="font-semibold">Inspector:</h2>
+		<h2 class="font-semibold">Signature:</h2>
+		<h2 class="font-semibold">Rentador:</h2>
+		<h2 class="font-semibold mr-16">Signature:</h2>
+	</div>
+	<div class="grid grid-cols-2 gap-4">
+		{#each data.inspection.customForm.fields as field}
+			<h2 class="font-semibold">{field.name}:</h2>
+			<!-- checboxes -->
+			{#if field.type === FormFieldType.CHECKBOXES}
+				<div class="flex gap-4">
+					{#each field.checkOptions as option, index}
+						{#each field.responses as response}
+							{#if response.checkOptionId == option.id}
+								<div class="flex gap-2">
+									{option.name}
+									{#if response.checked}
+										<Checkbox disabled checked />
+									{:else}
+										<Checkbox disabled />
+									{/if}
+								</div>
+							{/if}
+						{/each}
+					{/each}
+				</div>
+			{/if}
+			<!-- single check -->
+			{#if field.type === FormFieldType.SINGLE_CHECK}
+				<div class="flex gap-4">
+					{#each field.checkOptions as option, index}
+						{#each field.responses as response}
+							<div class="flex gap-2">
+								{#if option.id === response.checkOptionId}
+									{option.name} <Checkbox disabled checked />
+								{:else}
+									{option.name} <Checkbox disabled />
+								{/if}
+							</div>
+						{/each}
+					{/each}
+					{#each field.responses as response}
+						{#if response.note}
+							<p class="font-semibold">Note: <span class="font-normal">{response.note}</span></p>
+						{/if}
+					{/each}
+				</div>
+			{/if}
+			<!-- number , text -->
+			{#if field.type === FormFieldType.NUMBER || field.type === FormFieldType.TEXT}
+				<div>
+					{#each field.responses as response}
+						{response.content}
+					{/each}
+				</div>
+			{/if}
+		{/each}
+	</div>
+</section>

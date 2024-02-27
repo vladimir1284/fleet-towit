@@ -35,7 +35,9 @@ export const GET: RequestHandler = async ({ locals }) => {
 export const POST: RequestHandler = async ({ locals, request, params }) => {
 	const session = await locals.getSession();
 	const adminTenant = await getAdminTenant();
-	const allAdminTenantUsers = adminTenant ? await listTenantUsersOnTenant({ tenantId: adminTenant.id }) : [];
+	const allAdminTenantUsers = adminTenant
+		? await listTenantUsersOnTenant({ tenantId: adminTenant.id })
+		: [];
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
@@ -46,20 +48,36 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 	}
 
 	if (params.tenantId) {
-		await updateTenant({ tenantId: parseInt(params.tenantId), name: form.data.name, email: form.data.email });
-		const oldOwner = await getTenantOwner({ tenantId: parseInt(params.tenantId) })
+		await updateTenant({
+			tenantId: parseInt(params.tenantId),
+			name: form.data.name,
+			email: form.data.email
+		});
+		const oldOwner = await getTenantOwner({ tenantId: parseInt(params.tenantId) });
 		const tenantUserToBeOwner = await getTenantUser({ tenantUserId: form.data.ownerId });
 		if (oldOwner?.id !== tenantUserToBeOwner?.id) {
 			//@ts-expect-error It's detecting it as undefined
-			await updateTenantUser({ tenantUserId: oldOwner?.id, email: oldOwner?.user.email, userRole: Role.ADMIN })
+			await updateTenantUser({
+				tenantUserId: oldOwner?.id,
+				email: oldOwner?.user.email,
+				userRole: Role.ADMIN
+			});
 		}
 		//@ts-expect-error It's detecting it as undefined
-		await updateTenantUser({ tenantUserId: tenantUserToBeOwner?.id, email: tenantUserToBeOwner?.user.email, userRole: Role.OWNER })
+		await updateTenantUser({
+			tenantUserId: tenantUserToBeOwner?.id,
+			email: tenantUserToBeOwner?.user.email,
+			userRole: Role.OWNER
+		});
 	} else {
 		const newTenant = await createTenant({ name: form.data.name, email: form.data.email });
 		for (const user of allAdminTenantUsers) {
 			if (user.user.email !== null) {
-				await createTenantUser({ tenantId: newTenant.id, email: user.user.email, userRole: Role.ADMIN });
+				await createTenantUser({
+					tenantId: newTenant.id,
+					email: user.user.email,
+					userRole: Role.ADMIN
+				});
 			}
 		}
 	}
