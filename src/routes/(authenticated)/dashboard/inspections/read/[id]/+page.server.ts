@@ -6,6 +6,7 @@ import {
 	MISSING_SECURITY_HEADER_STATUS,
 	PERMANENT_REDIRECT_STATUS
 } from '$lib/shared';
+import { FormFieldType } from '@prisma/client';
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
@@ -37,7 +38,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// if inspection not have responses
 			if (!inspection?.responses.length) redirect_to_back();
 
-			return { inspection };
+			return { inspection , FormFieldType };
 		} catch (err) {
 			redirect_to_back();
 		}
