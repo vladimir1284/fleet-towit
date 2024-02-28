@@ -6,5 +6,5 @@
 	export let data: PageData;
 </script>
 
-<Heading>Costs</Heading>
+<Heading tag="h1" class="text-center">Vehicles</Heading>
 <Table data={data.vehicles} rules={['capitalize', 'wordify']} />

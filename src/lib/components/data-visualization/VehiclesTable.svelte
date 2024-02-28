@@ -15,19 +15,40 @@
 	import { transform } from './transformation/transform';
 	import type { TransformRule } from './transformation/types';
 	import * as Icon from 'flowbite-svelte-icons';
+	import CreateVehicle from '../modals/CreateVehicle.svelte';
 
 	export let title: string = '';
 	export let data: Object[] = [];
 	export let rules: TransformRule[] = [];
 
 	let headers = data.length ? Object.keys(data[0]) : [];
+
+	/*
+	 * STATES
+	 */
+	let showCreateVehicle = false;
+
+	/*
+	 * EVENT HANDLERS
+	 */
+
+	const createVehicle = (data) => {};
 </script>
 
 <div>
-	<Heading tag="h2" class="mb-4">{title}</Heading>
-	<hr />
+	{#if showCreateVehicle}
+		<CreateVehicle {createVehicle} show={showCreateVehicle} />
+	{/if}
+	{#if title}
+		<Heading tag="h2" class="mb-4">{title}</Heading>
+		<hr />
+	{/if}
 	<div class="flex justify-end my-4">
-		<Button>
+		<Button
+			on:click={() => {
+				showCreateVehicle = true;
+			}}
+		>
 			<strong class="mx-1">+</strong> New vehicle
 		</Button>
 	</div>

@@ -23,8 +23,10 @@
 </script>
 
 <div>
-	<Heading tag="h2" class="mb-4">{title}</Heading>
-	<hr />
+	{#if title}
+		<Heading tag="h2" class="mb-4">{title}</Heading>
+		<hr />
+	{/if}
 	<div class="flex justify-end my-4">
 		<Button>
 			<strong class="mx-1">+</strong> New cost

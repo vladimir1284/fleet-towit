@@ -13,6 +13,11 @@ export const load: PageServerLoad = async () => {
             type: true,
             odometer: true
           }
+        },
+        category: {
+          select: {
+            name: true
+          }
         }
       }
     })
@@ -20,7 +25,7 @@ export const load: PageServerLoad = async () => {
     const costs = results.map(entry => ({
       value: "$" + entry.value.toFixed(2),
       concept: entry.concept,
-      category: entry.category,
+      category: entry.category.name,
       date: entry.date,
       plate: entry.vehicle.plate,
       type: entry.vehicle.type,
