@@ -10,7 +10,8 @@ async function main() {
 		{ email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
-		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true }
+		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'nelson.ochagavia@gmail.com', userRole: Role.ADMIN, is_default: true }
 		// Add more users as needed
 	];
 	const tenantsData = {

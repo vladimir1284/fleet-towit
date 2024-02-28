@@ -1,5 +1,3 @@
-import { CostCategory } from "@prisma/client";
-
 const seedVehicles = async (prisma) => {
 	console.log('Seeding vehicles data...');
 	await prisma.vehicle.create({
@@ -71,6 +69,30 @@ const seedVehicles = async (prisma) => {
 						}
 					}
 				]
+			},
+			"costs": {
+				create: [
+					{
+						"value": 50.0,
+						"concept": "Monthly groceries",
+						"category": {
+							create: {
+								"name": "Groceries"
+							}
+						},
+						"date": "2022-02-15T08:00:00Z",
+					},
+					{
+						"value": 40.0,
+						"concept": "Gas refill",
+						"category": {
+							create: {
+								"name": "Fuel"
+							}
+						},
+						"date": "2022-02-10T12:45:00Z",
+					},
+				]
 			}
 		}
 	});
@@ -108,6 +130,30 @@ const seedVehicles = async (prisma) => {
 						}
 					}
 				]
+			},
+			"costs": {
+				"create": [
+					{
+						"value": 120.0,
+						"concept": "Oil change",
+						"category": {
+							"create": {
+								"name": "Maintenance"
+							}
+						},
+						"date": "2022-02-20T10:30:00Z",
+					},
+					{
+						"value": 25.0,
+						"concept": "Car wash",
+						"category": {
+							"create": {
+								"name": "Maintenance"
+							}
+						},
+						"date": "2022-02-28T15:15:00Z",
+					},
+				]
 			}
 		}
 	});
@@ -143,6 +189,30 @@ const seedVehicles = async (prisma) => {
 							create: [{ name: 'Garantía' }, { name: 'Seguridad' }]
 						}
 					}
+				]
+			},
+			"costs": {
+				"create": [
+					{
+						"value": 8.0,
+						"concept": "Toll road",
+						"category": {
+							"create": {
+								"name": "Tolls and Parking"
+							}
+						},
+						"date": "2022-02-18T14:45:00Z",
+					},
+					{
+						"value": 10.0,
+						"concept": "Parking fee",
+						"category": {
+							"create": {
+								"name": "Tolls and Parking"
+							}
+						},
+						"date": "2022-02-22T12:00:00Z",
+					},
 				]
 			}
 		}
