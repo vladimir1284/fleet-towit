@@ -158,13 +158,14 @@ model Vehicle {
   nickname        String
   spare_tires     Int
   extraFields     Json?
+
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
   documents       Document[]
-
-  contracts  Contract[]
-  tolls      TollDue[]
-  inspections Inspection[]
+  costs           Cost[]
+  contracts       Contract[]
+  tolls           TollDue[]
+  inspections     Inspection[]
 }
 
 enum VehicleStatus {
