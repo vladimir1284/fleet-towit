@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Table from '$lib/components/data-visualization/Table.svelte';
+	import Table from '$lib/components/data-visualization/CostsTable.svelte';
 	import { Heading } from 'flowbite-svelte';
 
 	export let data;
