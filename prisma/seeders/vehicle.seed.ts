@@ -1,4 +1,4 @@
-import { CostCategory } from "@prisma/client";
+import { CostCategory } from '@prisma/client';
 
 const seedVehicles = async (prisma) => {
 	console.log('Seeding vehicles data...');

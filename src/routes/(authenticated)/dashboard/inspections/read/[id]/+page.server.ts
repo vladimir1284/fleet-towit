@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// if inspection not have responses
 			if (!inspection?.responses.length) redirect_to_back();
 
-			return { inspection , FormFieldType };
+			return { inspection, FormFieldType };
 		} catch (err) {
 			redirect_to_back();
 		}

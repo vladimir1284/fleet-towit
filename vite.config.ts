@@ -15,7 +15,7 @@ export default defineConfig({
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}']
 	},
-  preview: {
-    port: 5173,
-  }
+	preview: {
+		port: 5173
+	}
 });
