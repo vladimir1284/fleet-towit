@@ -34,7 +34,7 @@
 			<!-- checboxes -->
 			{#if field.type === data.FormFieldType.CHECKBOXES}
 				<div class="flex gap-4">
-					{#each field.checkOptions as option, index}
+					{#each field.checkOptions as option}
 						{#each field.responses as response}
 							{#if response.checkOptionId == option.id}
 								<div class="flex gap-2">
@@ -53,7 +53,7 @@
 			<!-- single check -->
 			{#if field.type === data.FormFieldType.SINGLE_CHECK}
 				<div class="flex gap-4">
-					{#each field.checkOptions as option, index}
+					{#each field.checkOptions as option}
 						{#each field.responses as response}
 							<div class="flex gap-2">
 								{#if option.id === response.checkOptionId}

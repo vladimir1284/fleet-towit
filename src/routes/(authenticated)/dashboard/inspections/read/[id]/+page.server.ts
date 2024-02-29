@@ -1,11 +1,7 @@
-import type { Actions, PageServerLoad } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
 import { retrieveInspectionById } from '$lib/actions/inspections';
-import {
-	TEMPORARY_REDIRECT_STATUS,
-	MISSING_SECURITY_HEADER_STATUS,
-	PERMANENT_REDIRECT_STATUS
-} from '$lib/shared';
+import { TEMPORARY_REDIRECT_STATUS, PERMANENT_REDIRECT_STATUS } from '$lib/shared';
 import { FormFieldType } from '@prisma/client';
 
 const verifySession = async (locals: any) => {

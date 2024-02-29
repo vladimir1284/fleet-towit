@@ -1,6 +1,7 @@
 import {
 	addFieldToCustomForm,
 	deleteCustomForm,
+	cloneCustomForm,
 	retrieveCustomFormById,
 	deleteCustomField,
 	renameCustomForm,
@@ -74,9 +75,23 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				formId: formId
 			});
 
+			const form = await superValidate(addCardSchema);
+
 			if (!customForm) redirect_to_back();
 
-			const form = await superValidate(addCardSchema);
+			// if the form has inspections then the form will be cloned
+			// and the user will be redirected to its path
+
+			if (customForm?.inspections.length) {
+				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenant.id });
+
+				return {
+					redirect_to: cloneForm.id,
+					customForm: cloneForm,
+					form,
+					FormFieldType
+				};
+			}
 
 			return { customForm, form, FormFieldType };
 		} catch {
