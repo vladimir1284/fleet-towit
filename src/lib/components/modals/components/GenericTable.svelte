@@ -16,69 +16,42 @@
 	import type { TransformRule } from './transformation/types';
 	import * as Icon from 'flowbite-svelte-icons';
 	import CreateVehicle from '../modals/CreateVehicle.svelte';
-	import type { SvelteComponent } from 'svelte';
-	import type { Event } from '@sentry/sveltekit';
-	import type { Attribute } from 'svelte/types/compiler/interfaces';
-
-	interface CustomAttribute {
-		key: Attribute;
-		value: any;
-	}
-
-	interface CustomComponent {
-		component: SvelteComponent;
-		attributes: CustomAttribute[] | null;
-		events: Event | null;
-	}
-
-	class CustomComponent {
-		constructor(component, attributes, events) {
-			this.component = component;
-			this.attributes = attributes;
-			this.events = events;
-		}
-	}
-
-	interface CustomButton {
-		text: string | undefined;
-		icon: string | undefined;
-		onClick: Function;
-		style: Object | string | undefined;
-	}
 
 	export let title: string = '';
 	export let data: Object[] = [];
 	export let rules: TransformRule[] = [];
-	export let createButton: CustomButton | null = null;
-	//export let deleteButton: CustomButton | null = null;
 
 	let headers = data.length ? Object.keys(data[0]) : [];
 
 	/*
 	 * STATES
 	 */
+	let showCreateVehicle = false;
+	let showMoreDetails = true;
 
 	/*
 	 * EVENT HANDLERS
 	 */
+
+	const createVehicle = (data) => {};
 </script>
 
 <div>
+	{#if showCreateVehicle}
+		<CreateVehicle {createVehicle} show={showCreateVehicle} />
+	{/if}
 	{#if title}
 		<Heading tag="h2" class="mb-4">{title}</Heading>
 		<hr />
 	{/if}
 	<div class="flex my-4">
-		{#if createButton}
-			<Button on:click={createButton.onClick} style={createButton.style && createButton.style}>
-				{#if createButton.icon}
-					{Icon[createButton.icon]}
-				{/if}
-				{#if createButton.text}
-					{createButton.text}
-				{/if}
-			</Button>
-		{/if}
+		<Button
+			on:click={() => {
+				showCreateVehicle = true;
+			}}
+		>
+			<strong class="mx-1">+</strong> New vehicle
+		</Button>
 	</div>
 	<Table>
 		<TableHead>
@@ -96,9 +69,23 @@
 							<TableBodyCell><p>{transform(String(record[key].value), rules)}</p></TableBodyCell>
 						{:else}
 							<TableBodyCell>
-								<Button on:click={() => {}}>
+								<Button
+									on:click={() => {
+										showMoreDetails = true;
+									}}
+								>
 									<div class="flex gap-2">
-										<svelte:component this={Icon[record[key].button.icon]} />
+										{#if record[key].button.icon === 'TableSolid'}
+											<Icon.TableSolid class="pointer-events-none" />
+										{:else if record[key].button.icon === 'ImageSolid'}
+											<Icon.ImageSolid class="pointer-events-none" />
+										{:else if record[key].button.icon === 'BookSolid'}
+											<Icon.BookSolid class="pointer-events-none" />
+										{:else if record[key].button.icon === 'ChartSolid'}
+											<Icon.ChartSolid class="pointer-events-none" />
+										{:else if record[key].button.icon === 'EyeSolid'}
+											<Icon.EyeSolid class="pointer-events-none" />
+										{/if}
 									</div>
 								</Button>
 							</TableBodyCell>
