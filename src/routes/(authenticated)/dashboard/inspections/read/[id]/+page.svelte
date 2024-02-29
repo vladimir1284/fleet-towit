@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { FormFieldType } from '@prisma/client';
 	import { Checkbox } from 'flowbite-svelte';
 	export let data: PageData;
 </script>
@@ -33,7 +32,7 @@
 		{#each data.inspection.customForm.fields as field}
 			<h2 class="font-semibold">{field.name}:</h2>
 			<!-- checboxes -->
-			{#if field.type === FormFieldType.CHECKBOXES}
+			{#if field.type === data.FormFieldType.CHECKBOXES}
 				<div class="flex gap-4">
 					{#each field.checkOptions as option, index}
 						{#each field.responses as response}
@@ -52,7 +51,7 @@
 				</div>
 			{/if}
 			<!-- single check -->
-			{#if field.type === FormFieldType.SINGLE_CHECK}
+			{#if field.type === data.FormFieldType.SINGLE_CHECK}
 				<div class="flex gap-4">
 					{#each field.checkOptions as option, index}
 						{#each field.responses as response}
@@ -73,7 +72,7 @@
 				</div>
 			{/if}
 			<!-- number , text -->
-			{#if field.type === FormFieldType.NUMBER || field.type === FormFieldType.TEXT}
+			{#if field.type === data.FormFieldType.NUMBER || field.type === data.FormFieldType.TEXT}
 				<div>
 					{#each field.responses as response}
 						{response.content}

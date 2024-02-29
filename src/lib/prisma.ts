@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { bypassRLS, forTenant, forUser } from './rls_prisma';
 
-let prisma: PrismaClient;
+export let prisma: PrismaClient;
 
 declare global {
 	const prisma: undefined | PrismaClient;

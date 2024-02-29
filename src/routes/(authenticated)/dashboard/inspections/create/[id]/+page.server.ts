@@ -8,6 +8,7 @@ import {
 	MISSING_SECURITY_HEADER_STATUS,
 	PERMANENT_REDIRECT_STATUS
 } from '$lib/shared';
+import { FormFieldType } from '@prisma/client';
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
@@ -42,7 +43,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 			const form = await superValidate(schema);
 
-			return { inspection, form };
+			return { inspection, form  , FormFieldType};
 		} catch {
 			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
 		}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { FormFieldType, CheckOption } from '@prisma/client';
+	import { CheckOption } from '@prisma/client';
 	import { Button, Input, Label, Select, Helper } from 'flowbite-svelte';
 	import {
 		TrashBinOutline,
@@ -38,14 +38,14 @@
 
 	let newCardName: string;
 
-	const setCardTypeToEdit = (fieldType: FormFieldType) => {
-		if (fieldType === FormFieldType.TEXT) cardTypeSelect = 'text';
+	const setCardTypeToEdit = (fieldType: data.FormFieldType) => {
+		if (fieldType === data.FormFieldType.TEXT) cardTypeSelect = 'text';
 
-		if (fieldType === FormFieldType.NUMBER) cardTypeSelect = 'number';
+		if (fieldType === data.FormFieldType.NUMBER) cardTypeSelect = 'number';
 
-		if (fieldType === FormFieldType.CHECKBOXES) cardTypeSelect = 'checkboxes';
+		if (fieldType === data.FormFieldType.CHECKBOXES) cardTypeSelect = 'checkboxes';
 
-		if (fieldType === FormFieldType.SINGLE_CHECK) cardTypeSelect = 'single_check';
+		if (fieldType === data.FormFieldType.SINGLE_CHECK) cardTypeSelect = 'single_check';
 	};
 
 	// checkboxes input (can have multiple inputs)
@@ -387,11 +387,11 @@
 							{field.name}
 						</h5>
 
-						{#if field.type === FormFieldType.NUMBER}
+						{#if field.type === data.FormFieldType.NUMBER}
 							<p class="text-blue-500">{cardTypes[0].name}</p>
-						{:else if field.type === FormFieldType.TEXT}
+						{:else if field.type === data.FormFieldType.TEXT}
 							<p class="text-blue-500">{cardTypes[1].name}</p>
-						{:else if field.type === FormFieldType.CHECKBOXES || field.type === FormFieldType.SINGLE_CHECK}
+						{:else if field.type === data.FormFieldType.CHECKBOXES || field.type === data.FormFieldType.SINGLE_CHECK}
 							<!-- list options -->
 							{#if field.checkOptions}
 								<ul class="list-disc list-inside">

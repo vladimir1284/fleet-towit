@@ -15,6 +15,7 @@ import {
 	TEMPORARY_REDIRECT_STATUS,
 	MISSING_SECURITY_HEADER_STATUS
 } from '$lib/shared';
+import { FormFieldType } from '@prisma/client';
 import type { CheckOption } from '@prisma/client';
 
 const cardTypeSchema = z.enum(['text', 'number', 'checkboxes', 'single_check']);
@@ -74,7 +75,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 			const form = await superValidate(addCardSchema);
 
-			return { customForm, form };
+			return { customForm, form , FormFieldType };
 		} catch {
 			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
 		}
