@@ -2,6 +2,7 @@
 	// @ts-nocheck
 
 	import {
+		Button,
 		Heading,
 		Hr,
 		Table,
@@ -18,14 +19,17 @@
 	export let data: Object[] = [];
 	export let rules: TransformRule[] = [];
 
-	console.log('DATA\n', JSON.stringify(data));
-
 	let headers = data.length ? Object.keys(data[0]) : [];
 </script>
 
 <div>
-	<Heading tag="h2">{title}</Heading>
+	<Heading tag="h2" class="mb-4">{title}</Heading>
 	<hr />
+	<div class="flex justify-end my-4">
+		<Button>
+			<strong class="mx-1">+</strong> New cost
+		</Button>
+	</div>
 	<Table>
 		<TableHead>
 			{#each headers as header}
