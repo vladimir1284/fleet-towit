@@ -89,9 +89,7 @@
 					{data.session.user?.name}
 				</h5>
 			{:else}
-				<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-500 dark:text-white">
-					-
-				</h5>
+				<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-500 dark:text-white">-</h5>
 			{/if}
 			<p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
 				{data.session.user?.email}

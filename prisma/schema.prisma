@@ -52,12 +52,15 @@ model Session {
 
 model User {
   id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
+  id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
+  email         String?      @unique
   email         String?      @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
+  tenantUsers   TenantUser[]
   tenantUsers   TenantUser[]
 }
 
@@ -83,8 +86,7 @@ model TenantUser {
   deletedParts Part[] @relation("deletionAuthor")
 
   customFieldResponses CustomFieldResponse[]
-  inspectionResponse   InspectionResponse[]
-  CustomForm           CustomForm[]
+  inspections           Inspection[]
 }
 
 model Client {
@@ -106,12 +108,12 @@ model Tenant {
   isAdmin     Boolean      @default(false)
   clients     Client[]
   tenantUsers TenantUser[]
-  customForms CustomForm[]
   Part        Part[]
   Category    Category[]
   Location    Location[]
   Vendor      Vendor[]
-  Inspection  Inspection[]
+  customForms CustomForm[]
+  inspections Inspection[]
 }
 
 enum Role {
@@ -153,18 +155,20 @@ model Vehicle {
   make            String
   model           String
   trim            String
-  plate           String
-  vin             String
+  plate           String           @unique
+  vin             String           @unique
   odometer        Int
   nickname        String
   spare_tires     Int
   extraFields     Json?
+
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
   documents       Document[]
-
-  contracts Contract[]
-  tolls     TollDue[]
+  costs           Cost[]
+  contracts       Contract[]
+  tolls           TollDue[]
+  inspections     Inspection[]
 }
 
 enum VehicleStatus {
@@ -204,15 +208,15 @@ model DocumentTag {
 }
 
 model CustomForm {
-  id           Int           @id @default(autoincrement())
-  name         String
-  tenantUserId Int
-  user         TenantUser    @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-  createdAt    DateTime      @default(now())
-  fields       CustomField[]
-  Tenant       Tenant?       @relation(fields: [tenantId], references: [id])
-  tenantId     Int?
-  Inspection   Inspection[]
+  id          Int           @id @default(autoincrement())
+  name        String
+  tenantId    Int
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  // Only show form if is active
+  isActive    Boolean       @default(true)
+  fields      CustomField[]
+  inspections Inspection[]
 }
 
 enum FormFieldType {
@@ -246,44 +250,35 @@ model CustomField {
 }
 
 model CustomFieldResponse {
-  id           Int         @id @default(autoincrement())
-  content      String
-  tenantUserId Int
-  user         TenantUser  @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-  // custom field relation
-  fieldId      Int
-  field        CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-
+  id            Int          @id @default(autoincrement())
+  // if is text , number etc
+  content       String?
+  // if is checkbox ,radio
+  checked       Boolean?
+  note          String?
+  createdAt     DateTime     @default(now())
+  tenantUserId  Int
+  user          TenantUser   @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  fieldId       Int
+  field         CustomField  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   checkOptionId Int?
-  checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id])
-
-  inspectionResponse   InspectionResponse? @relation(fields: [inspectionResponseId], references: [id])
-  inspectionResponseId Int?
+  checkOption   CheckOption? @relation(fields: [checkOptionId], references: [id], onDelete: Cascade)
+  inspectionId  Int?
+  inspection    Inspection?  @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
 }
 
 model Inspection {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-
+  id           Int                   @id @default(autoincrement())
+  createdAt    DateTime              @default(now())
   customFormId Int
-  customForm   CustomForm @relation(fields: [customFormId], references: [id], onDelete: Cascade)
-
-  tenantId Int
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  responses InspectionResponse[]
-}
-
-model InspectionResponse {
-  id Int @id @default(autoincrement())
-
-  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
-  inspectionId Int
-
+  customForm   CustomForm            @relation(fields: [customFormId], references: [id], onDelete: Cascade)
+  tenantId     Int
+  tenant       Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicleId    Int
+  vehicle      Vehicle               @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   tenantUserId Int
-  user         TenantUser @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
-
-  responses CustomFieldResponse[]
+  user         TenantUser            @relation(fields: [tenantUserId], references: [id], onDelete: Cascade)
+  responses    CustomFieldResponse[]
 }
 
 // Inventory-related models.
@@ -404,6 +399,54 @@ model VendorOnParts {
 
   @@id([partId, vendorId])
 }
+
+// ************************ //
+//          COSTS           //
+// ************************ //
+
+enum CostCategory {
+  // Fixed Costs
+  Purchase
+  Depreciation
+  Financing
+  Insurance
+  Taxes
+  PreventativeMaintenance
+  Storage
+  PermitsAndLicenses
+
+  // Variable costs
+  Fuel
+  Repairs
+  Cleaning
+  TollsAndHighways
+  RoadsideAssistance
+  MarketingAndAdvertising
+  AdministrativeExpenses
+  Commissions
+
+  // Additional costs
+  AdditionalEquipment
+  RentalInsurance
+  Deductible
+  CleaningFee
+  AdditionalMileage
+}
+
+model Cost {
+  id        Int            @id @default(autoincrement())
+  value     Float
+  concept   String
+  category  CostCategory[]
+  date      DateTime
+  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vehicleId Int
+}
+
+// ************************ //
+//        END:COSTS         //
+// ************************ //
+
 
 model RentalPlan {
   id          Int         @id @default(autoincrement())

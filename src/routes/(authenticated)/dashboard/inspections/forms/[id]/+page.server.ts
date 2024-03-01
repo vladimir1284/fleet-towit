@@ -1,5 +1,5 @@
 import {
-	addFieldToCustomFrom,
+	addFieldToCustomForm,
 	deleteCustomForm,
 	retrieveCustomFormById,
 	deleteCustomField,
@@ -15,9 +15,10 @@ import {
 	TEMPORARY_REDIRECT_STATUS,
 	MISSING_SECURITY_HEADER_STATUS
 } from '$lib/shared';
+import { FormFieldType } from '@prisma/client';
 import type { CheckOption } from '@prisma/client';
 
-const cardTypeSchema = z.enum(['text', 'number', 'checkboxes']);
+const cardTypeSchema = z.enum(['text', 'number', 'checkboxes', 'single_check']);
 
 const addCardSchema = z.object({
 	card_name: z.string(),
@@ -74,7 +75,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 			const form = await superValidate(addCardSchema);
 
-			return { customForm, form };
+			return { customForm, form , FormFieldType };
 		} catch {
 			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
 		}
@@ -147,7 +148,7 @@ export const actions = {
 		let checkboxes: string[] | undefined = undefined;
 		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
 
-		await addFieldToCustomFrom({
+		await addFieldToCustomForm({
 			tenantId: tenant.id,
 			cardType: form.data.card_type,
 			name: form.data.card_name,

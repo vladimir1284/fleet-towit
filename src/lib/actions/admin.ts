@@ -2,7 +2,7 @@ import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
 
 type createTenantType = { name: string; email?: string | null };
-type createUserType = { email: string; tenantId: number; userRole?: Role, is_default?: boolean };
+type createUserType = { email: string; tenantId: number; userRole?: Role; is_default?: boolean };
 type editTenantType = createTenantType & { tenantId: number };
 type editUserType = createUserType & { tenantUserId: number };
 
@@ -31,7 +31,7 @@ export const createTenantUser = async ({
 			userId: user.id,
 			tenantId: tenantId,
 			role: userRole,
-			is_default: is_default,
+			is_default: is_default
 		}
 	});
 
@@ -105,7 +105,7 @@ export const getTenantOwner = async ({ tenantId }: { tenantId: number | undefine
 	});
 
 	return ownerTenant;
-}
+};
 
 export const listTenants = async () => {
 	const tenants = await bypassPrisma.tenant.findMany();
@@ -147,10 +147,10 @@ export const listAllTenantUsers = async () => {
 	const users = await bypassPrisma.tenantUser.findMany({
 		include: {
 			user: true,
-			tenant: true,
+			tenant: true
 		}
 	});
-	console.log('listAllTenantUsers', users)
+	console.log('listAllTenantUsers', users);
 	return users;
 };
 

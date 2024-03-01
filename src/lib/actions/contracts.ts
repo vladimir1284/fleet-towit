@@ -1,10 +1,16 @@
-import { bypassPrisma } from "$lib/prisma";
-import { Stage } from "@prisma/client";
+import { bypassPrisma } from '$lib/prisma';
+import { Stage } from '@prisma/client';
 
-type createContracType = { clientId: number, rentalPlanId: number, vehicleId: number }
-type updateContractType = createContracType & { id: number }
+type createContracType = { clientId: number; rentalPlanId: number; vehicleId: number };
+type updateContractType = createContracType & { id: number };
 
-type updateContractStageType = { id: number, date: Date, reason?: string, comments?: string, stage: Stage }
+type updateContractStageType = {
+    id: number;
+    date: Date;
+    reason?: string;
+    comments?: string;
+    stage: Stage;
+};
 
 export const getAllContracts = async () => {
     const contracts = await bypassPrisma.contract.findMany({
@@ -78,10 +84,9 @@ export const createContract = async ({ clientId, rentalPlanId, vehicleId }: crea
     const initial = await bypassPrisma.stageUpdate.create({
         data: {
             date: new Date(Date.now()),
-            stage: Stage.PENDING,
-
+            stage: Stage.PENDING
         }
-    })
+    });
 
     const contract = await bypassPrisma.contract.create({
         data: {
@@ -90,32 +95,49 @@ export const createContract = async ({ clientId, rentalPlanId, vehicleId }: crea
             vehicleId,
             stageId: initial.id
         }
-    })
-    return contract
-}
+    });
+    return contract;
+};
 
-export const updateContract = async ({ id, clientId, rentalPlanId, vehicleId }: updateContractType) => {
+export const updateContract = async ({
+    id,
+    clientId,
+    rentalPlanId,
+    vehicleId
+}: updateContractType) => {
     const contract = await bypassPrisma.contract.update({
         where: { id },
         data: { clientId, rentalPlanId, vehicleId }
-    })
-    return contract
-}
+    });
+    return contract;
+};
 
-export const updateContractStage = async ({ id, date, reason, comments, stage }: updateContractStageType) => {
-    const contract = await bypassPrisma.contract.findUnique({ where: { id }, select: { stage: true } });
+export const updateContractStage = async ({
+    id,
+    date,
+    reason,
+    comments,
+    stage
+}: updateContractStageType) => {
+    const contract = await bypassPrisma.contract.findUnique({
+        where: { id },
+        select: { stage: true }
+    });
     const newStage = await bypassPrisma.stageUpdate.create({
         data: {
-            date, reason, comments, stage,
+            date,
+            reason,
+            comments,
+            stage,
             previousStageId: contract?.stage.id
         }
-    })
+    });
     await bypassPrisma.contract.update({
         where: { id },
         data: { stageId: newStage.id }
-    })
-}
+    });
+};
 
 export const deleteContract = async ({ id }: { id: number }) => {
-    await bypassPrisma.contract.delete({ where: { id } })
-}
+    await bypassPrisma.contract.delete({ where: { id } });
+};

@@ -1,18 +1,19 @@
 import type { Actions, PageServerLoad } from './$types';
-import {
-	PERMANENT_REDIRECT_STATUS,
-	TEMPORARY_REDIRECT_STATUS,
-	MISSING_SECURITY_HEADER_STATUS
-} from '$lib/shared';
-import { superValidate } from 'sveltekit-superforms/server';
 import { fail, redirect } from '@sveltejs/kit';
-import { retrieveInspectionById, createInspectionResponse } from '$lib/actions/inspections';
+import { superValidate } from 'sveltekit-superforms/server';
 import { generateValidationSchema } from '$lib/validations';
+import { retrieveInspectionById, createResponseToInspection } from '$lib/actions/inspections';
+import {
+	TEMPORARY_REDIRECT_STATUS,
+	MISSING_SECURITY_HEADER_STATUS,
+	PERMANENT_REDIRECT_STATUS
+} from '$lib/shared';
+import { FormFieldType } from '@prisma/client';
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 
-	if (!session?.user) redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
+	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
 
 	return session;
 };
@@ -32,26 +33,27 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				id: inspectionId
 			});
 
-			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/register/`);
-
-			console.log(inspection.responses);
+			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+			// if inspection have responses redirect
+			if (inspection.responses.length > 0)
+				redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
 
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.fields);
 
 			const form = await superValidate(schema);
 
-			return { inspection, form };
+			return { inspection, form  , FormFieldType};
 		} catch {
-			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/register/`);
+			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
 		}
 	}
 
-	redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/register/`);
+	redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
 };
 
 export const actions = {
-	default: async ({ locals, request, params }) => {
+	createResponse: async ({ locals, request, params }) => {
 		const session = await verifySession(locals);
 
 		const inspectionId = Number(params.id);
@@ -76,12 +78,14 @@ export const actions = {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 			}
 
-			await createInspectionResponse({
+			const response = await createResponseToInspection({
 				form_data: form.data,
 				userId: session.user.id,
 				tenantId: tenant.id,
 				inspectionId: inspectionId
 			});
+
+			if (response) redirect(PERMANENT_REDIRECT_STATUS, '/dashboard/inspections/');
 		}
 	}
 } satisfies Actions;

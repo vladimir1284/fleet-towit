@@ -1,0 +1,92 @@
+[
+  {
+    "amount": 100,
+    "concept": "Cambio de aceite",
+    "maintenance_type": "Mantenimiento preventivo",
+    "date": "2023-11-14",
+    "user": "Juan Pérez",
+    "vehicle_type": "Coche",
+    "mileage": 100000,
+    "license_plate": "1234 ABC"
+  },
+  {
+    "amount": 50,
+    "concept": "Reparación de neumático",
+    "maintenance_type": "Mantenimiento correctivo",
+    "date": "2023-11-15",
+    "user": "María López",
+    "vehicle_type": "Motocicleta",
+    "mileage": 20000,
+    "license_plate": "4567 DEF"
+  },
+  {
+    "amount": 200,
+    "concept": "Revisión de frenos",
+    "maintenance_type": "Mantenimiento preventivo",
+    "date": "2023-11-16",
+    "user": "Pedro García",
+    "vehicle_type": "Camión",
+    "mileage": 500000,
+    "license_plate": "8901 GHI"
+  },
+  {
+    "amount": 150,
+    "concept": "Rotación de neumáticos",
+    "maintenance_type": "Mantenimiento preventivo",
+    "date": "2023-11-17",
+    "user": "Ana Martínez",
+    "vehicle_type": "Coche",
+    "mileage": 80000,
+    "license_plate": "2345 XYZ"
+  },
+  {
+    "amount": 75,
+    "concept": "Calibración de la batería",
+    "maintenance_type": "Mantenimiento preventivo",
+    "date": "2023-11-18",
+    "user": "David González",
+    "vehicle_type": "Motocicleta",
+    "mileage": 15000,
+    "license_plate": "5678 JKL"
+  },
+  {
+    "amount": 225,
+    "concept": "Revisión de la suspensión",
+    "maintenance_type": "Mantenimiento preventivo",
+    "date": "2023-11-19",
+    "user": "Laura Fernández",
+    "vehicle_type": "Camión",
+    "mileage": 300000,
+    "license_plate": "0987 MNO"
+  },
+  {
+    "amount": 125,
+    "concept": "Cambio de filtro de aire",
+    "maintenance_type": "Mantenimiento preventivo",
+    "date": "2023-11-20",
+    "user": "Miguel Rodríguez",
+    "vehicle_type": "Coche",
+    "mileage": 95000,
+    "license_plate": "3456 QWE"
+  },
+  {
+    "amount": 60,
+    "concept": "Reparación de luz trasera",
+    "maintenance_type": "Mantenimiento correctivo",
+    "date": "2023-11-21",
+    "user": "Sandra López",
+    "vehicle_type": "Motocicleta",
+    "mileage": 25000,
+    "license_plate": "6789 ASD"
+  },
+  {
+    "amount": 180,
+    "concept": "Revisión del sistema de escape",
+    "maintenance_type": "Mantenimiento preventivo",
+    "date": "2023-11-22",
+    "user": "Antonio García",
+    "vehicle_type": "Camión",
+    "mileage": 400000,
+    "license_plate": "1011 ZXC"
+  }
+]
