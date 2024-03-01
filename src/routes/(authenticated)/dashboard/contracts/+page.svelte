@@ -16,10 +16,11 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from '../$types';
 	import { tenantActor } from '$lib/store/context-store';
-	import { TrashBinSolid, FileEditSolid, RotateOutline } from 'flowbite-svelte-icons';
+	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
+	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 
 	export let data: PageData;
 	let message = '';
@@ -34,7 +35,10 @@
 	let createModal = false;
 	let deleteModal = false;
 	let updateModal = false;
+	let detailModal = false;
 	let selectedContract = undefined;
+
+	let contractStagesList = [];
 
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
@@ -71,8 +75,6 @@
 		}, 4000);
 	}
 
-	$: console.log(contracts);
-
 	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
@@ -80,7 +82,7 @@
 		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 			headers
 		});
-		contracts = [await contractsResponse.json()];
+		contracts = [...(await contractsResponse.json())];
 	}
 
 	async function handleEdit(contract) {
@@ -113,8 +115,8 @@
 		contracts = [...(await contractsResponse.json())];
 	}
 
-	async function handleDelete(clientId) {
-		selectedId = clientId;
+	async function handleDelete(contractId) {
+		selectedId = contractId;
 		deleteModal = true;
 	}
 
@@ -126,7 +128,25 @@
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
-		console.log(contracts);
+	}
+
+	async function handleDetail(contract) {
+		const request = await fetch(`/api/tenants/${currentTenant.id}/contracts/${contract.id}/stage`);
+		contractStagesList = await request.json();
+		selectedContract = contract;
+		detailModal = true;
+	}
+	$: if (!detailModal) {
+		handleCloseDetailModal();
+	}
+
+	async function handleCloseDetailModal() {
+		contractStagesList = [];
+
+		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
+			headers
+		});
+		contracts = [...(await contractsResponse.json())];
 	}
 </script>
 
@@ -156,7 +176,16 @@
 		<UpdateStage {data} {selectedContract} on:formvalid={handleCloseUpdateModal} />
 	</Modal>
 
-	<Card size="xl" padding="md" class="fixed w-full md:w-auto h-auto z-0">
+	<Modal title={'Contract #' + selectedContract?.id} size="xl" padding="md" bind:open={detailModal}>
+		<DetailContract
+			{data}
+			{selectedContract}
+			{contractStagesList}
+			on:formvalid={handleCloseDetailModal}
+		/>
+	</Modal>
+
+	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
@@ -177,7 +206,7 @@
 				{#each contracts as contract}
 					<TableBodyRow>
 						<TableBodyCell class="text-center">
-							{contract.vehicle.make + '-' + contract.vehicle.make + '-' + contract.vehicle.model}
+							{contract.vehicle.type + '-' + contract.vehicle.make + '-' + contract.vehicle.model}
 						</TableBodyCell>
 						<TableBodyCell class="text-center">
 							{contract.client.name ?? contract.client.email}
@@ -186,7 +215,8 @@
 						<TableBodyCell class="text-center">
 							<Badge color="blue" rounded class="px-2.5 py-0.5">{contract.stage.stage}</Badge>
 						</TableBodyCell>
-						<TableBodyCell class="flex w-32 justify-between">
+						<TableBodyCell class="flex w-40 justify-between">
+							<EyeOutline class="text-gray-400" on:click={() => handleDetail(contract)} />
 							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(contract)} />
 							<RotateOutline class="text-gray-400" on:click={() => handleUpdateStage(contract)} />
 							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(contract.id)} />

@@ -6,13 +6,13 @@
 </script>
 
 <NavUl>
-	<NavLi class="cursor-pointer" href="/dashboard">Home</NavLi>
+	<NavLi class="cursor-pointer text-lg" href="/dashboard">Home</NavLi>
 	{#if currentTenant.currentUserTenant.role === 'ADMIN' || currentTenant.currentUserTenant.role === 'OWNER'}
-		<NavLi class="cursor-pointer" href="/admin/users/">Users</NavLi>
+		<NavLi class="cursor-pointer text-lg" href="/admin/users/">Users</NavLi>
 	{/if}
 	{#if currentTenant.isAdmin}
-		<NavLi class="cursor-pointer" href="/admin/tenants">Tenants</NavLi>
+		<NavLi class="cursor-pointer text-lg" href="/admin/tenants">Tenants</NavLi>
 	{:else}
-		<UserNavLink />
+		<UserNavLink navStyle="cursor-pointer text-lg" />
 	{/if}
 </NavUl>

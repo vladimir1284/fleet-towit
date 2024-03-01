@@ -7,7 +7,6 @@
 
 	const dispatch = createEventDispatcher();
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	console.log('DATA: ', data);
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 		const response = await fetch(`/api/tenants/${currentTenant.id}/contracts/${data}`, {

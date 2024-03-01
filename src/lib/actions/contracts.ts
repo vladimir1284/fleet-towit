@@ -12,10 +12,65 @@ export const getAllContracts = async () => {
             client: true,
             rentalPlan: true,
             vehicle: true,
-            stage: true
+            stage: {
+                include: {
+                    previousStage: true
+                }
+            }
         }
     });
     return contracts
+}
+
+
+export const getContract = async ({ contractId }: { contractId: number }) => {
+    const contract = await bypassPrisma.contract.findUnique({
+        where: { id: contractId },
+        include: {
+            client: true,
+            rentalPlan: true,
+            vehicle: true,
+            stage: {
+                include: {
+                    previousStage: true
+                }
+            }
+        }
+    });
+    return contract
+}
+
+export const getPreviousStage = async ({ contractId }: { contractId: number }) => {
+    // Find the stage by its ID
+    const contract = await bypassPrisma.contract.findUnique({
+        where: { id: contractId },
+        include: {
+            stage: {
+                include: {
+                    previousStage: true
+                }
+            }
+        },
+    });
+
+    const stage = contract?.stage
+
+    if (stage) {
+        const stagesFound: typeof stage.previousStage[] = [];
+        stagesFound.push(stage)
+        let lastStageId = stage.previousStageId ? stage.previousStageId : null
+        while (lastStageId) {
+            console.log('stage id:', lastStageId)
+            const previousStage = await bypassPrisma.stageUpdate.findUnique({
+                where: { id: lastStageId },
+            });
+            stagesFound.push(previousStage)
+            lastStageId = previousStage?.previousStageId ? previousStage.previousStageId : null
+        }
+        return stagesFound;
+    } else {
+        return []
+    }
 }
 
 

@@ -28,8 +28,8 @@ export const seedContracts = async (prisma) => {
             rentalPlan: {
                 create: {
                     name: 'NewRentalPlan',
-                    amount: 100,
                     periodicity: Periodicity.MONTHLY,
+                    amount: 100,
                 }
             },
             vehicle: {

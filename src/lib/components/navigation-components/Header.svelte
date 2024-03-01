@@ -9,13 +9,8 @@
 	export let currentTenant: any;
 </script>
 
-<Navbar
-	class="flex flex-wrap justify-between items-center px-2 sm:px-4 py-2.5 fixed w-full z-20 top-0 start-0 border-b"
->
+<Navbar class="flex flex-wrap justify-between items-center px-2 sm:px-4 py-2.5 w-full border-b">
 	<div class="flex justify-between items-center w-full">
-		<div class="order-1">
-			<Breadcumb />
-		</div>
 		<div class="order-3 sm:order-3">
 			<Notifications />
 		</div>
@@ -28,5 +23,8 @@
 		<div class="sm:hidden order-5">
 			<NavHamburger class="mr-2" />
 		</div>
+	</div>
+	<div class="order-1">
+		<Breadcumb />
 	</div>
 </Navbar>

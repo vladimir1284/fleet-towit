@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { RequestHandler } from "@sveltejs/kit";
 import { actionResult, superValidate } from "sveltekit-superforms/server";
-import { updateContractStage } from "$lib/actions/contracts";
+import { updateContractStage, getPreviousStage } from "$lib/actions/contracts";
 
 const stageSchema = z.object({
     date: z.date().optional(),
@@ -11,6 +11,18 @@ const stageSchema = z.object({
     id: z.number().optional()
 });
 
+export const GET: RequestHandler = async ({ locals, params }) => {
+    const session = await locals.getSession();
+    if (!session?.user) {
+        return new Response('Forbidden', { status: 403 });
+    }
+    if (params.contractId) {
+        const stages = await getPreviousStage({ contractId: parseInt(params.contractId) })
+        return new Response(JSON.stringify(stages))
+    } else {
+        return new Response('Invalid contractId', { status: 400 })
+    }
+}
 
 export const POST: RequestHandler = async ({ request, params, locals }) => {
     const session = await locals.getSession();

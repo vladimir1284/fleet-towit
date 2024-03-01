@@ -101,7 +101,7 @@
 		<DeleteUserForm data={selectedId} on:formvalid={handleCloseDeleteModal} />
 	</Modal>
 
-	<Card size="xl" padding="lg" class="fixed w-full md:w-auto h-auto z-0">
+	<Card size="xl" padding="lg" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"

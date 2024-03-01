@@ -17,9 +17,18 @@ const stageSchema = z.object({
     id: z.number().optional()
 });
 
+const clientSchema = z.object({
+    name: z.string(),
+    email: z.string().email(),
+    phoneNumber: z.string(),
+    tenantId: z.number(),
+    id: z.number().optional()
+});
+
 export const load = (async () => {
     const form = await superValidate(fixSchema);
     const stageForm = await superValidate(stageSchema);
+    const clientform = await superValidate(clientSchema);
 
-    return { form: form, stageForm: stageForm };
+    return { form: form, stageForm: stageForm, clientForm: clientform };
 }) satisfies PageServerLoad;

@@ -38,6 +38,16 @@
 	<div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
 		<input hidden name="id" bind:value={$form.id} />
 		<div class="sm:col-span-2">
+			<Select
+				class="mt-2"
+				items={stageSelector}
+				id="stage"
+				name="stage"
+				placeholder="Select a stage..."
+				bind:value={$form.stage}
+			/>
+		</div>
+		<div class="sm:col-span-2">
 			<TextInputComponent
 				formPointer="comments"
 				form={$form.comments}
@@ -53,16 +63,6 @@
 				errors={$errors.reason}
 				constraints={$constraints.reason}
 				placeholder="Type a reason..."
-			/>
-		</div>
-		<div class="sm:col-span-2">
-			<Select
-				class="mt-2"
-				items={stageSelector}
-				id="stage"
-				name="stage"
-				placeholder="Select a stage..."
-				bind:value={$form.stage}
 			/>
 		</div>
 		<div class="sm:col-span-2"></div>

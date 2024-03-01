@@ -25,7 +25,7 @@
 		id: z.number().optional()
 	});
 
-	const { form, errors, constraints, enhance } = superForm(data.form, {
+	const { form, errors, constraints, enhance } = superForm(data, {
 		SPA: true,
 		validators: fixSchema,
 		onUpdated: async ({ form }) => {
