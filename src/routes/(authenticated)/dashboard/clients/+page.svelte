@@ -90,11 +90,11 @@
 	<p>Loading...</p>
 {:else}
 	<Modal bind:open={createModal} size="xs">
-		<ClientForm {data} on:formvalid={handleCloseModal} />
+		<ClientForm data={data.form} on:formvalid={handleCloseModal} />
 	</Modal>
 
 	<Modal bind:open={editModal} size="xs">
-		<ClientForm {data} {selectedClient} on:formvalid={handleCloseEditModal} />
+		<ClientForm data={data.form} {selectedClient} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
