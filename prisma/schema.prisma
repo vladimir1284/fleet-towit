@@ -52,15 +52,12 @@ model Session {
 
 model User {
   id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
-  id            String       @id @default(cuid()) /// @zod.custom.omit([model, input])
   name          String?
-  email         String?      @unique
   email         String?      @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  tenantUsers   TenantUser[]
   tenantUsers   TenantUser[]
 }
 
