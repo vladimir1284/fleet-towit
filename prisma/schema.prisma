@@ -83,7 +83,7 @@ model TenantUser {
   deletedParts Part[] @relation("deletionAuthor")
 
   customFieldResponses CustomFieldResponse[]
-  inspections           Inspection[]
+  inspections          Inspection[]
 }
 
 model Client {
@@ -146,18 +146,18 @@ enum Type {
 }
 
 model Vehicle {
-  id              Int              @id @default(autoincrement())
-  type            Type
-  year            Int
-  make            String
-  model           String
-  trim            String
-  plate           String           @unique
-  vin             String           @unique
-  odometer        Int
-  nickname        String
-  spare_tires     Int
-  extraFields     Json?
+  id          Int    @id @default(autoincrement())
+  type        Type
+  year        Int
+  make        String
+  model       String
+  trim        String
+  plate       String @unique
+  vin         String @unique
+  odometer    Int
+  nickname    String
+  spare_tires Int
+  extraFields Json?
 
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
@@ -444,7 +444,6 @@ model Cost {
 //        END:COSTS         //
 // ************************ //
 
-
 model RentalPlan {
   id          Int         @id @default(autoincrement())
   amount      Int
@@ -484,7 +483,7 @@ model StageUpdate {
   previousStage   StageUpdate? @relation(name: "previousStage", fields: [previousStageId], references: [id])
   previousStageId Int          @unique
   stage           Stage
-  
+
   //keeps for back ref
   stageRef  StageUpdate? @relation(name: "previousStage")
   contracts Contract[]

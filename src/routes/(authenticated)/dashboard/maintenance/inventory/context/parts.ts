@@ -5,5 +5,5 @@ import type { CustomInventoryPart } from '../@types/types';
 
 export const setPartListContext = (PartList: CustomInventoryPart[]): void => {
 	const parts = writable(PartList);
-	setContext('ProductList', parts);
+	setContext('PartList', parts);
 };

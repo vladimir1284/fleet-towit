@@ -14,10 +14,7 @@ export const // SuperForm-zod related constants.
 		// Action-control properties.
 		createdBy: true,
 		updatedBy: true,
-		deletedBy: true,
-
-		// Temporal.
-		extendedPartData: true
+		deletedBy: true
 	} as const,
 	//  Part-related custom messages.
 	FAILED_PART_RECORD_CREATION = 'PART_REGISTER_FAILED',

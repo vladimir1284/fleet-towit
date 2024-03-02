@@ -1,4 +1,6 @@
-const seedInspection = async (prisma, tenantsId: number[]) => {
+import type { ExtendedBypassPrismaClient } from '../../src/lib/prisma';
+
+const seedInspection = async (prisma: ExtendedBypassPrismaClient, tenantsId: number[]) => {
 	console.log('Seeding inspections data...');
 
 	for (const tenantId of tenantsId) {

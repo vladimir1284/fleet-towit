@@ -1,29 +1,60 @@
 <script lang="ts">
-	import { Input, Label, Button, Textarea } from 'flowbite-svelte';
+	import { Search, Dropdown, DropdownItem, Button } from 'flowbite-svelte';
+	import { ChevronDownSolid, PlusOutline, CirclePlusOutline } from 'flowbite-svelte-icons';
+
+	import {
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Checkbox
+	} from 'flowbite-svelte';
+
+	import { getContext } from 'svelte';
+
+	import type { Writable } from 'svelte/store';
+	import type { Part } from '@prisma/client';
+
+	// Retrieve part list context.
+	const writablePartStore: Writable<Part[]> = getContext('PartList');
+	const partTableHeaders = Object.keys($writablePartStore[0]);
 </script>
 
-<form method="POST" action="?/create">
-	<div class="flex flex-col gap-2 mx-4">
-		<div>
-			<Label for="part-name" class="mb-2">Name:</Label>
-			<Input type="text" id="part-name" name="name" required />
-		</div>
-		<div>
-			<Label for="part-number" class="mb-2">Number:</Label>
-			<Input type="number" id="part-number" name="number" required />
-		</div>
-		<div>
-			<Label for="part-critical-qty" class="mb-2">Critical QTY:</Label>
-			<Input type="text" id="part-critical-qty" name="criticalQty" required />
-		</div>
-		<div>
-			<Label for="part-upc" class="mb-2">UPC:</Label>
-			<Input type="text" id="part-upc" name="upc" required />
-		</div>
-		<div>
-			<Label for="part-description" class="mb-2">Part description:</Label>
-			<Textarea id="part-description" rows="3" name="description" />
-		</div>
-		<Button type="submit" class="bg-smooth-green">Create part</Button>
+<div class="flex justify-end mb-5">
+	<div class="flex flex-column gap-2">
+		<Search size="md" />
+		<Button>Actions<ChevronDownSolid class="w-3 h-3 ms-2 text-white dark:text-white" /></Button>
+		<Dropdown>
+			<DropdownItem>Export All</DropdownItem>
+			<DropdownItem>Edit Categories</DropdownItem>
+			<DropdownItem>Edit locations</DropdownItem>
+			<DropdownItem>Delete</DropdownItem>
+		</Dropdown>
+		<Button><CirclePlusOutline class="w-4 h-4 me-2 text-white dark:text-white" />Part</Button>
 	</div>
-</form>
+</div>
+
+<Table hoverable={true}>
+	<TableHead>
+		<TableHeadCell class="!p-4">
+			<Checkbox />
+		</TableHeadCell>
+		{#each partTableHeaders as header}
+			<TableHeadCell>{header}</TableHeadCell>
+		{/each}
+	</TableHead>
+	<TableBody tableBodyClass="divide-y">
+		{#each $writablePartStore as part}
+			<TableBodyRow>
+				<TableBodyCell class="!p-4">
+					<Checkbox />
+				</TableBodyCell>
+				{#each Object.values(part) as value}
+					<TableBodyCell>{value}</TableBodyCell>
+				{/each}
+			</TableBodyRow>
+		{/each}
+	</TableBody>
+</Table>

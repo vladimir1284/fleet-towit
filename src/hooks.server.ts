@@ -142,7 +142,7 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 
 // If you have custom handlers, make sure to place them after `sentryHandle()` in the `sequence` function.
 // export const handle = sequence(sentryHandle(), handleAuth, handleGenericActionRequest);
-export const handle = sequence(handleAuth, handleGenericActionRequest);
+export const handle = sequence(handleAuth);
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`
 export const handleError = handleErrorWithSentry();

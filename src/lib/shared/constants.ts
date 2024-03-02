@@ -1,7 +1,10 @@
+import type { Part } from '@prisma/client';
+
 export const // HTTP request constants.
 
 	USER_TENANT_HEADER = 'X-User-Tenant',
 	// Status.
+	INTERNAL_ERROR_STATUS = 500,
 	FORBIDDEN_ACCESS_STATUS = 403,
 	INVALID_FORM_DATA_STATUS = 400,
 	SUCCESSFUL_REQUEST_STATUS = 200,
@@ -21,4 +24,13 @@ export const // HTTP request constants.
 export const // Prisma constants.
 
 	SKIP_PAGINATION_PARAMETER = 0,
-	TAKE_PAGINATION_PARAMETER = 10;
+	TAKE_PAGINATION_PARAMETER = 10,
+	// API-related constants.
+	PART_EXCLUDED_PROPERTIES: (keyof Part)[] = [
+		'createdAt',
+		'updatedAt',
+		'deletedAt',
+		'updatedBy',
+		'createdBy',
+		'deletedBy'
+	] as const;
