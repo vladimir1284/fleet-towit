@@ -1,6 +1,7 @@
 import {
 	addFieldToCustomForm,
 	deleteCustomForm,
+	cloneCustomForm,
 	retrieveCustomFormById,
 	deleteCustomField,
 	renameCustomForm,
@@ -48,6 +49,7 @@ const updateCardSchema = z.object({
 	checkboxes: z.string().optional()
 });
 
+// utils
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 
@@ -55,6 +57,8 @@ const verifySession = async (locals: any) => {
 
 	return session;
 };
+
+const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = await verifySession(locals);
@@ -71,17 +75,31 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				formId: formId
 			});
 
-			if (!customForm) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
-
 			const form = await superValidate(addCardSchema);
 
-			return { customForm, form , FormFieldType };
+			if (!customForm) redirect_to_back();
+
+			// if the form has inspections then the form will be cloned
+			// and the user will be redirected to its path
+
+			if (customForm?.inspections.length) {
+				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenant.id });
+
+				return {
+					redirect_to: cloneForm.id,
+					customForm: cloneForm,
+					form,
+					FormFieldType
+				};
+			}
+
+			return { customForm, form, FormFieldType };
 		} catch {
-			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
+			redirect_to_back();
 		}
 	}
 
-	redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
+	redirect_to_back();
 };
 
 export const actions = {
@@ -105,7 +123,7 @@ export const actions = {
 			formId: form.data.form_id
 		});
 
-		redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
+		redirect_to_back();
 	},
 
 	/*

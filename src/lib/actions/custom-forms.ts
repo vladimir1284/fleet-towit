@@ -1,6 +1,6 @@
 import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
-import type { CheckOption } from '@prisma/client';
+import type { CheckOption, CustomForm } from '@prisma/client';
 
 type fieldType = 'number' | 'text' | 'checkboxes' | 'single_check';
 
@@ -87,11 +87,63 @@ export const retrieveCustomFormById = async ({
 				include: {
 					checkOptions: true
 				}
-			}
+			},
+			inspections: true
 		}
 	});
 
 	return customForm;
+};
+
+export const cloneCustomForm = async ({
+	form,
+	tenantId
+}: {
+	form: CustomForm;
+	tenantId: number;
+}) => {
+	// deactivate old form
+	await tenantPrisma(tenantId).customForm.update({
+		where: {
+			id: form.id
+		},
+		data: {
+			isActive: false
+		}
+	});
+
+	// copy data
+	const cloneCustomForm = JSON.parse(JSON.stringify(form));
+
+	const cloneFields = cloneCustomForm.fields.map((field) => {
+		return {
+			name: field.name,
+			type: field.type,
+			checkOptions: {
+				create: field.checkOptions?.map((opt) => ({ name: opt.name }))
+			}
+		};
+	});
+
+	// create new form
+	const newForm = await tenantPrisma(tenantId).customForm.create({
+		data: {
+			name: cloneCustomForm.name,
+			tenantId: cloneCustomForm.tenantId,
+			fields: {
+				create: cloneFields
+			}
+		},
+		include: {
+			fields: {
+				include: {
+					checkOptions: true
+				}
+			},
+			inspections: true
+		}
+	});
+	return newForm;
 };
 
 /*

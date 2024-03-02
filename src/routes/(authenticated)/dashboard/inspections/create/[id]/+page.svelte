@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button, Input, Label, Select, Checkbox, Radio, Textarea } from 'flowbite-svelte';
+	import { Button, Input, Label, Checkbox, Radio, Textarea } from 'flowbite-svelte';
 	export let data: PageData;
 
 	const { form, constraints, errors } = superForm(data.form);
