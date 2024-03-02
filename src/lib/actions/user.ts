@@ -6,15 +6,10 @@ export const getTenantUsers = async ({ userId }: { userId: string }) => {
 	const userContext = userPrisma(userId);
 	const tenantUsers = await userContext.tenantUser.findMany({
 		where: { userId: userId },
-		select: {
-			id: true,
-			userId: true,
-			tenantId: true,
-			role: true,
-			is_default: true,
+		include: {
 			tenant: true
 		}
-	});
+	})
 	return tenantUsers;
 };
 

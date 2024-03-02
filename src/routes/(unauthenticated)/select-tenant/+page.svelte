@@ -28,9 +28,11 @@
 		);
 
 		// Set X-User-Tenant cookie on browser level.
+		/*
 		const salt = bcrypt.genSaltSync(10);
 		const currentUserTenantHash = await bcrypt.hash(currentUserTenant.id, salt);
 		document.cookie = `${USER_TENANT_HEADER}=${currentUserTenantHash};`;
+		*/
 
 		tenantActor.send({ type: 'tenant.update', value: { ...tenant, currentUserTenant } });
 		await goto('/dashboard');

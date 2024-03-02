@@ -1,16 +1,16 @@
-<script>
+<script lang="ts">
 	import { NavLi, DropdownItem, Dropdown } from 'flowbite-svelte';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
+
+	export let navStyle: string;
 </script>
 
-<NavLi class="cursor-pointer">
-	Dashboard<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
-</NavLi>
-<Dropdown class="w-44 z-20">
-	<DropdownItem href="/dashboard">Dashboard</DropdownItem>
-	<DropdownItem href="/custom-dashboard">Custom dashboard</DropdownItem>
-</Dropdown>
-<NavLi class="cursor-pointer">
+<NavLi class={navStyle} href="/dashboard">Dashboard</NavLi>
+
+<NavLi class={navStyle} href="/dashboard/plans">Rental Plans</NavLi>
+<NavLi class={navStyle} href="/dashboard/clients">Clients</NavLi>
+<NavLi class={navStyle} href="/dashboard/contracts">Contracts</NavLi>
+<NavLi class={navStyle}>
 	Inspections<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>
 <Dropdown>
@@ -22,8 +22,7 @@
 		>Exception report</DropdownItem
 	>
 </Dropdown>
-
-<NavLi class="cursor-pointer">
+<NavLi class={navStyle}>
 	Maintence<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>
 <Dropdown>
@@ -42,9 +41,3 @@
 	>
 	<DropdownItem label="Inventory" href="/dashboard/maintenance/inventory">Inventory</DropdownItem>
 </Dropdown>
-<NavLi class="cursor-pointer" href="/dashboard/assets">
-	Assets<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
-</NavLi>
-<NavLi class="cursor-pointer" href="/dashboard/reports">
-	Reports<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
-</NavLi>
