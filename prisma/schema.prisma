@@ -482,9 +482,9 @@ model StageUpdate {
   reason          String?
   comments        String?
   previousStage   StageUpdate? @relation(name: "previousStage", fields: [previousStageId], references: [id])
-  previousStageId Int          @unique
+  previousStageId Int?          @unique
   stage           Stage
-  
+
   //keeps for back ref
   stageRef  StageUpdate? @relation(name: "previousStage")
   contracts Contract[]

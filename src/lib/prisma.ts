@@ -26,3 +26,4 @@ export function userPrisma(user: string) {
 	const extended = prisma.$extends(forUser(user));
 	return extended;
 }
+
