@@ -70,15 +70,28 @@ export const load: PageServerLoad = async () => {
 
       for (let key of keys) {
         if (MORE_DETAILS_FIELDS.includes(key)) {
-
-
           let moreDetails = {}
 
           if (Object.keys(vehicle).includes('moreDetails')) {
             moreDetails = { ...vehicle['moreDetails'].value }
           }
 
-          moreDetails[key] = entry[key]
+          if (COMPOUND_FIELDS.includes(key)) {
+            moreDetails[key] = {
+              value: entry[key],
+              type: 'compound',
+              button: {
+                icon: ICONS[key],
+                text: key
+              },
+              uri: path.join(BASEURL, entry['vin'], key)
+            }
+          } else {
+            moreDetails[key] = {
+              value: entry[key],
+              type: 'simple'
+            }
+          }
 
           vehicle['moreDetails'] = {
             value: moreDetails,
@@ -89,8 +102,6 @@ export const load: PageServerLoad = async () => {
             },
             uri: path.join(BASEURL, entry['vin'], key)
           }
-
-          console.log('MORE DETAILS:', JSON.stringify(vehicle['moreDetails'], null, 2))
         } else if (COMPOUND_FIELDS.includes(key)) {
           vehicle[key] = {
             value: entry[key],
