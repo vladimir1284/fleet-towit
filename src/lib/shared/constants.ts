@@ -27,6 +27,7 @@ export const // Prisma constants.
 	TAKE_PAGINATION_PARAMETER = 10,
 	// API-related constants.
 	PART_EXCLUDED_PROPERTIES: (keyof Part)[] = [
+		// Properties to exclude to.
 		'createdAt',
 		'updatedAt',
 		'deletedAt',
