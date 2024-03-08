@@ -1,9 +1,30 @@
+//@ts-nocheck
+
 import path from "path"
 import type { PageServerLoad } from "../../$types"
 import { PrismaClient } from '@prisma/client'
 //import { TableSolid, ImageSolid, BookSolid, ChartSolid, EyeSolid } from 'flowbite-svelte-icons'
 
 const prisma = new PrismaClient()
+
+const toSimpleValue = (entry, key) => {
+  let value = {}
+
+  if (Array.isArray(entry[key])) {
+    entry[key].forEach(el => {
+      value[key] = { value: el[key], type: 'simple' }
+    })
+  } else if (typeof entry === 'object') {
+    const ks = Object.keys(entry[key])
+    ks.forEach(k => {
+      value[k] = { value: entry[key][k], type: 'simple' }
+    })
+  } else {
+    value = entry[key]
+  }
+
+  return value
+}
 
 export const load: PageServerLoad = async () => {
   try {
@@ -54,6 +75,9 @@ export const load: PageServerLoad = async () => {
 
     const COMPOUND_FIELDS = [
       "vehiclePictures",
+      "documents",
+      "costs",
+      "extraFields",
     ]
 
     const ICONS = {
@@ -68,7 +92,7 @@ export const load: PageServerLoad = async () => {
       const keys = Object.keys(entry)
       let vehicle = {}
 
-      for (let key of keys) {
+      for (const key of keys) {
         if (MORE_DETAILS_FIELDS.includes(key)) {
           let moreDetails = {}
 
@@ -76,9 +100,13 @@ export const load: PageServerLoad = async () => {
             moreDetails = { ...vehicle['moreDetails'].value }
           }
 
+
           if (COMPOUND_FIELDS.includes(key)) {
+
+            const value = toSimpleValue(entry, key)
+
             moreDetails[key] = {
-              value: entry[key],
+              value,
               type: 'compound',
               button: {
                 icon: ICONS[key],
@@ -104,7 +132,7 @@ export const load: PageServerLoad = async () => {
           }
         } else if (COMPOUND_FIELDS.includes(key)) {
           vehicle[key] = {
-            value: entry[key],
+            value: toSimpleValue(entry, key),
             type: 'compound',
             button: {
               icon: ICONS[key],
@@ -134,6 +162,8 @@ export const load: PageServerLoad = async () => {
 
       return vehicle
     })
+
+    // console.log('MORE DETAILS\n' + JSON.stringify(vehicles.map(vehicle => vehicle['moreDetails']), null, 4))
 
     // console.log('VEHICLES:', JSON.stringify(vehicles, null, 4))
 

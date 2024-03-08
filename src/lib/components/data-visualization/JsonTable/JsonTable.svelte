@@ -18,6 +18,7 @@
 	import type { CustomButton } from './types';
 	import ModalJsonTable from './components/ModalJsonTable.svelte';
 	import { stringify } from 'querystring';
+	import CompoundItemButton from './components/CompoundItemButton.svelte';
 
 	export let title: string = '';
 	export let data: Object[] = [];
@@ -29,7 +30,12 @@
 
 	console.log('HEADERS:', headers);
 
+	/*
+	 * STATES
+	 */
+
 	let showCompoundItem = false;
+
 	const compoundItem = {
 		title: '',
 		data: [],
@@ -37,12 +43,20 @@
 	};
 
 	/*
-	 * STATES
-	 */
-
-	/*
 	 * EVENT HANDLERS
 	 */
+
+	const compoundItemClick = (data, key) => {
+		showCompoundItem = true;
+
+		compoundItem.title = key;
+		compoundItem.rules = rules;
+
+		const value = data[key].value;
+		compoundItem.data = value;
+
+		console.log('***DATA RECEIVED IN JSON TABLE***\n' + JSON.stringify(data, null, 4));
+	};
 </script>
 
 <div>
@@ -51,6 +65,9 @@
 		data={compoundItem.data}
 		rules={compoundItem.rules}
 		showModal={showCompoundItem}
+		onClose={() => {
+			showCompoundItem = false;
+		}}
 	/>
 
 	{#if title}
@@ -86,22 +103,12 @@
 								<TableBodyCell><p>{transform(String(record[key].value), rules)}</p></TableBodyCell>
 							{:else}
 								<TableBodyCell>
-									<Button
-										on:click={() => {
-											showCompoundItem = true;
-											compoundItem.title = key;
-											const value = record[key].value;
-											compoundItem.data = value;
-											compoundItem.rules = rules;
+									<CompoundItemButton
+										icon={record[key].button && Icon[record[key].button.icon]}
+										onClick={() => {
+											compoundItemClick(record, key);
 										}}
-									>
-										<div class="flex gap-2">
-											<svelte:component
-												this={Icon[record[key].button.icon]}
-												class="pointer-events-none"
-											/>
-										</div>
-									</Button>
+									/>
 								</TableBodyCell>
 							{/if}
 						{/each}
@@ -109,7 +116,18 @@
 				{/each}
 			{:else}
 				{#each Object.keys(data) as key}
-					<TableBodyCell><p>{transform(String(data[key].value), rules)}</p></TableBodyCell>
+					{#if data[key].type === 'simple'}
+						<TableBodyCell><p>{transform(String(data[key].value), rules)}</p></TableBodyCell>
+					{:else}
+						<TableBodyCell>
+							<CompoundItemButton
+								icon={data[key].button && Icon[data[key].button.icon]}
+								onClick={() => {
+									compoundItemClick(data, key);
+								}}
+							/>
+						</TableBodyCell>
+					{/if}
 				{/each}
 			{/if}
 		</TableBody>
