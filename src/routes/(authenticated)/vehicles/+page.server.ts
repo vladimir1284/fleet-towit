@@ -7,28 +7,9 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-const toSimpleValue = (entry, key) => {
-  let value = {}
-
-  if (Array.isArray(entry[key])) {
-    entry[key].forEach(el => {
-      value[key] = { value: el[key], type: 'simple' }
-    })
-  } else if (typeof entry === 'object') {
-    const ks = Object.keys(entry[key])
-    ks.forEach(k => {
-      value[k] = { value: entry[key][k], type: 'simple' }
-    })
-  } else {
-    value = entry[key]
-  }
-
-  return value
-}
-
 export const load: PageServerLoad = async () => {
   try {
-    const results = await prisma.vehicle.findMany({
+    const vehiclesData = await prisma.vehicle.findMany({
       include: {
         vehiclePictures: {
           select: {
@@ -88,89 +69,13 @@ export const load: PageServerLoad = async () => {
       moreDetails: 'EyeSolid'
     }
 
-    const vehicles = results.map(entry => {
-      const keys = Object.keys(entry)
-      let vehicle = {}
 
-      for (const key of keys) {
-        if (MORE_DETAILS_FIELDS.includes(key)) {
-          let moreDetails = {}
-
-          if (Object.keys(vehicle).includes('moreDetails')) {
-            moreDetails = { ...vehicle['moreDetails'].value }
-          }
-
-
-          if (COMPOUND_FIELDS.includes(key)) {
-
-            const value = toSimpleValue(entry, key)
-
-            moreDetails[key] = {
-              value,
-              type: 'compound',
-              button: {
-                icon: ICONS[key],
-                text: key
-              },
-              uri: path.join(BASEURL, entry['vin'], key)
-            }
-          } else {
-            moreDetails[key] = {
-              value: entry[key],
-              type: 'simple'
-            }
-          }
-
-          vehicle['moreDetails'] = {
-            value: moreDetails,
-            type: 'moreDetails',
-            button: {
-              icon: ICONS['moreDetails'],
-              text: 'More details'
-            },
-            uri: path.join(BASEURL, entry['vin'], key)
-          }
-        } else if (COMPOUND_FIELDS.includes(key)) {
-          vehicle[key] = {
-            value: toSimpleValue(entry, key),
-            type: 'compound',
-            button: {
-              icon: ICONS[key],
-              text: key
-            },
-            uri: path.join(BASEURL, entry['vin'], key)
-          }
-        } else {
-          vehicle[key] = {
-            value: entry[key],
-            type: 'simple'
-          }
-        }
-      }
-
-      vehicle = {
-        nickname: vehicle.nickname,
-        type: vehicle.type,
-        make: vehicle.make,
-        year: vehicle.year,
-        odometer: vehicle.odometer,
-        status: vehicle.status,
-        plate: vehicle.plate,
-        vehiclePictures: vehicle.vehiclePictures,
-        moreDetails: vehicle.moreDetails,
-      }
-
-      return vehicle
-    })
-
-    // console.log('MORE DETAILS\n' + JSON.stringify(vehicles.map(vehicle => vehicle['moreDetails']), null, 4))
-
-    // console.log('VEHICLES:', JSON.stringify(vehicles, null, 4))
-
-    return { vehicles }
+    return {
+      vehiclesData
+    }
 
   } catch (error) {
     //@ts-expect-error This expects any error
-    console.log(error.message)
+    console.log(error)
   }
 }

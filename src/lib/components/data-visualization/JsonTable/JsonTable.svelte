@@ -16,9 +16,10 @@
 	import type { TransformRule } from '../transformation/types';
 	import * as Icon from 'flowbite-svelte-icons';
 	import type { CustomButton } from './types';
-	import ModalJsonTable from './components/ModalJsonTable.svelte';
-	import { stringify } from 'querystring';
-	import CompoundItemButton from './components/CompoundItemButton.svelte';
+	import ModalJsonTable from './lib/components/ModalJsonTable.svelte';
+	import FileSaver from 'file-saver';
+	import { formatData, iconifyData } from './utils';
+	import CompoundItemButton from './lib/components/CompoundItemButton.svelte';
 
 	export let title: string = '';
 	export let data: Object[] = [];
@@ -26,13 +27,16 @@
 	export let createButton: CustomButton | null = null;
 	//export let deleteButton: CustomButton | null = null;
 
-	let headers = Array.isArray(data) ? (data.length ? Object.keys(data[0]) : []) : Object.keys(data);
+	let formatedData = formatData(data);
+	let iconifiedData = iconifyData(formatedData);
+	const headers = formatedData.length ? formatedData[0].map((entry) => entry.key) : [];
 
-	console.log('HEADERS:', headers);
-
-	/*
-	 * STATES
-	 */
+	if (data) {
+		((data) => {
+			const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'text/plain;charset=utf-8' });
+			FileSaver.saveAs(blob, 'vehicle-data-' + new Date().toTimeString());
+		})(iconifiedData);
+	}
 
 	let showCompoundItem = false;
 
@@ -46,16 +50,12 @@
 	 * EVENT HANDLERS
 	 */
 
-	const compoundItemClick = (data, key) => {
+	const compoundItemClick = (item) => {
 		showCompoundItem = true;
 
-		compoundItem.title = key;
+		compoundItem.title = item.key;
 		compoundItem.rules = rules;
-
-		const value = data[key].value;
-		compoundItem.data = value;
-
-		console.log('***DATA RECEIVED IN JSON TABLE***\n' + JSON.stringify(data, null, 4));
+		compoundItem.data = item.value;
 	};
 </script>
 
@@ -95,41 +95,40 @@
 			{/each}
 		</TableHead>
 		<TableBody>
-			{#if Array.isArray(data)}
-				{#each data as record}
-					<TableBodyRow>
-						{#each Object.keys(record) as key}
-							{#if record[key].type === 'simple'}
-								<TableBodyCell><p>{transform(String(record[key].value), rules)}</p></TableBodyCell>
-							{:else}
-								<TableBodyCell>
-									<CompoundItemButton
-										icon={record[key].button && Icon[record[key].button.icon]}
-										onClick={() => {
-											compoundItemClick(record, key);
-										}}
-									/>
-								</TableBodyCell>
+			{#each formatedData as elements}
+				<TableBodyRow>
+					{#each elements as entry}
+						<TableBodyCell>
+							{#if entry.type === 'literal'}
+								{entry.value}
+							{:else if ['entity', 'collection'].includes(entry.type)}
+								<CompoundItemButton
+									icon={entry.icon}
+									onClick={() => {
+										compoundItemClick(entry);
+									}}
+								/>
 							{/if}
-						{/each}
-					</TableBodyRow>
-				{/each}
-			{:else}
-				{#each Object.keys(data) as key}
-					{#if data[key].type === 'simple'}
-						<TableBodyCell><p>{transform(String(data[key].value), rules)}</p></TableBodyCell>
+						</TableBodyCell>
+					{/each}
+				</TableBodyRow>
+			{/each}
+			<!--<TableBodyRow>
+					{#if entry.type === 'literal'}
+						<TableBodyCell><p>{transform(String(entry.value), rules)}</p></TableBodyCell>
 					{:else}
 						<TableBodyCell>
-							<CompoundItemButton
-								icon={data[key].button && Icon[data[key].button.icon]}
-								onClick={() => {
-									compoundItemClick(data, key);
-								}}
-							/>
+							-<CompoundItemButton
+									icon={entry[key].button && Icon[entry[key].button.icon]}
+									onClick={() => {
+										compoundItemClick(entry, key);
+									}}
+								/>
+							<TableBodyCell><p>{transform(String(entry[key]), rules)}</p></TableBodyCell>
 						</TableBodyCell>
 					{/if}
-				{/each}
-			{/if}
+					<p>{JSON.stringify(entry.value)}</p>
+				</TableBodyRow>-->
 		</TableBody>
 	</Table>
 </div>

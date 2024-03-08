@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Modal } from 'flowbite-svelte';
-	import JsonTable from '../JsonTable.svelte';
-	import type { TransformRule } from '../../transformation/types';
-	import type { CustomButton } from '../types';
+	import JsonTable from '../../JsonTable.svelte';
+	import type { TransformRule } from '../../../transformation/types';
+	import type { CustomButton } from '../../types';
 
 	export let showModal: boolean;
 	export let onClose: (e: Event) => {};
