@@ -46,6 +46,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
     const formData = await request.formData();
     const form = await superValidate(formData, tollSchema);
     const file = formData.get('fileData');
+    console.log('FORM ON SERVER: ', form)
     if (form.valid) {
         let toll
         if (!params.tollId) {

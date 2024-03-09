@@ -23,14 +23,13 @@
 			headers
 		});
 		vehicles = [...(await vehiclesResponse.json())];
-		console.log(vehicles);
 	});
 
 	let stageSelectorList = [
 		{ value: 'PAID', name: 'PAID' },
 		{ value: 'UNPAID', name: 'UNPAID' }
 	];
-	console.log(data.form);
+
 	let actionURL = `/api/tenants/${$currentTenant.id}/contracts/tolls`;
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
@@ -51,7 +50,8 @@
 
 	async function handleSubmit(event) {
 		event.preventDefault();
-		$form.email = $form.email.trim();
+		$form.vehicleId = findVehicleID($form.vehicleId);
+		console.log('NOW IN FORM', $form.vehicleId);
 		const formData = new FormData(event.target);
 		const headers = {
 			'X-User-Tenant': $currentTenant.currentUserTenant.id
@@ -68,7 +68,10 @@
 		}
 	}
 
-	$: console.log('TOLL FORM VALUES: ', $form);
+	function findVehicleID(plate) {
+		let selectedVehicle = vehicles.filter((vehicle) => vehicle['plate'].includes(plate.toUpperCase()));
+		return selectedVehicle[0].id;
+	}
 </script>
 
 <form
