@@ -1,7 +1,8 @@
 <script async lang="ts">
+	//@ts-nocheck
 	import { Select } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 	import { superForm } from 'sveltekit-superforms/client';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
@@ -10,9 +11,8 @@
 	export let selectedContract: any = undefined;
 
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	//@ts-expect-error Fix error on type string
-	let actionURL = `/api/tenants/${currentTenant?.id}/contracts/${selectedContract.id}/stage`;
+	const currentTenant = getContext('currentTenant');
+	let actionURL = `/api/tenants/${$currentTenant?.id}/contracts/${selectedContract.id}/stage`;
 
 	const { form, errors, constraints, enhance } = superForm(data.stageForm, {
 		onUpdated: async ({ form }) => {
@@ -50,18 +50,18 @@
 		<div class="sm:col-span-2">
 			<TextInputComponent
 				formPointer="comments"
-				form={$form.comments}
-				errors={$errors.comments}
-				constraints={$constraints.comments}
+				form={form}
+				errors={errors}
+				constraints={constraints}
 				placeholder="Type a comment..."
 			/>
 		</div>
 		<div class="sm:col-span-2">
 			<TextInputComponent
 				formPointer="reason"
-				form={$form.reason}
-				errors={$errors.reason}
-				constraints={$constraints.reason}
+				form={form}
+				errors={errors}
+				constraints={constraints}
 				placeholder="Type a reason..."
 			/>
 		</div>

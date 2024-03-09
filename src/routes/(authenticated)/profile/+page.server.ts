@@ -7,7 +7,7 @@ import { prisma } from '$lib/prisma';
 import { editUser } from '$lib/actions/user';
 
 const editUserSchema = z.object({
-	id: z.number().optional(),
+	id: z.string().optional(),
 	name: z.string().optional().nullable(),
 	email: z.string().email(),
 	image: z.string().optional().nullable(),

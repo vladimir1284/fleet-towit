@@ -1,20 +1,20 @@
 <script>
 	// @ts-nocheck
 	import { createEventDispatcher } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	export let data;
 
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
+	const currentTenant = getContext('currentTenant');
 	console.log('DATA: ', data);
 	const handleSubmit = async (event) => {
 		event.preventDefault();
-		const response = await fetch(`/api/tenants/${currentTenant.id}/rentalPlan/${data}`, {
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan/${data}`, {
 			method: 'DELETE'
 		});
 		if (!response.ok) {
-			console.error('Failed to delete user');
+			console.error('Failed to delete');
 			return;
 		}
 		console.log('Deleted successfully');

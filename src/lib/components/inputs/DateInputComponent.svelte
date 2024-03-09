@@ -5,11 +5,13 @@
 	export let constraints: any | undefined;
 	export let errors: any | undefined;
 	export let form: any | undefined;
+
+    $: console.log('DATE: ', $form[formPointer])
 </script>
 
 <FloatingLabelInput
 	style="outlined"
-	type="text"
+	type="date"
 	id={formPointer}
 	name={formPointer}
 	aria-invalid={$errors ? 'true' : undefined}

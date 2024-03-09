@@ -2,7 +2,7 @@
 	// @ts-nocheck
 	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 	import { Select } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { z } from 'zod';
@@ -11,8 +11,8 @@
 	export let selectedUser;
 	export let tenantsList = [];
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	let actionURL = `/api/tenants/${currentTenant.currentUserTenant.tenantId}/users`;
+	const currentTenant = getContext('currentTenant');
+	let actionURL = `/api/tenants/${$currentTenant.currentUserTenant.tenantId}/users`;
 
 	const fixSchema = z.object({
 		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
@@ -48,8 +48,8 @@
 		actionURL = actionURL + `/${selectedUser.id}`;
 	}
 
-	$: if (!currentTenant.isAdmin) {
-		$form.tenantId = currentTenant.id;
+	$: if (!$currentTenant.isAdmin) {
+		$form.tenantId = $currentTenant.id;
 	}
 
 	async function handleSubmit(event) {
@@ -57,7 +57,7 @@
 		$form.email = $form.email.trim();
 		const formData = new FormData(event.target);
 		const headers = {
-			'X-User-Tenant': currentTenant.currentUserTenant.id
+			'X-User-Tenant': $currentTenant.currentUserTenant.id
 		};
 		const response = await fetch(actionURL, {
 			method: 'POST',
@@ -90,7 +90,7 @@
 		placeholder="Select a role..."
 		bind:value={$form.role}
 	/>
-	{#if currentTenant.isAdmin}
+	{#if $currentTenant.isAdmin}
 		<Select
 			class="mt-2"
 			items={tenantsSelector}

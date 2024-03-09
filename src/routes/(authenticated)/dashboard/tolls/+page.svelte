@@ -12,30 +12,34 @@
 		Modal,
 		Alert
 	} from 'flowbite-svelte';
-	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
-	import RentalPlanForm from '$lib/components/forms-components/plans/RentalPlanForm.svelte';
-	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
-	import DeletePlanForm from '$lib/components/forms-components/plans/DeletePlanForm.svelte';
+	import type { PageData } from '../$types';
+	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
+	import TollForm from '$lib/components/forms-components/tolls/TollForm.svelte';
+	import DeleteTollForm from '$lib/components/forms-components/tolls/DeleteTollForm.svelte';
 
 	export let data: PageData;
-	let plans = [];
+	let tolls = [];
 	let showAlert = false;
 	let createModal = false;
 	let editModal = false;
 	let deleteModal = false;
 	let loading = false;
 	let selectedId = '';
-	let selectedPlan = undefined;
+	let selectedToll = undefined;
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
 	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, { headers });
-			plans = [...(await response.json())];
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
+				headers
+			});
+			tolls = [...(await response.json())];
+			console.log(tolls);
 			loading = false;
 		} catch (error) {
 			console.error('Error:', error);
@@ -53,29 +57,29 @@
 
 	function handleCloseModal(event) {
 		createModal = event.detail;
-		handleAlert('Plan created succesfully!');
+		handleAlert('Toll created succesfully!');
 		location.reload();
 	}
 
-	async function handleEdit(rentalPlan) {
-		selectedPlan = rentalPlan;
+	async function handleEdit(toll) {
+		selectedToll = toll;
 		editModal = true;
 	}
 
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
-		handleAlert('Plan edited succesfully!');
+		handleAlert('Toll edited succesfully!');
 		location.reload();
 	}
 
-	async function handleDelete(rentalPlanId) {
-		selectedId = rentalPlanId;
+	async function handleDelete(tollId) {
+		selectedId = tollId;
 		deleteModal = true;
 	}
 
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
-		handleAlert('Plan deleted succesfully!');
+		handleAlert('Toll deleted succesfully!');
 		location.reload();
 	}
 </script>
@@ -84,15 +88,15 @@
 	<p>Loading...</p>
 {:else}
 	<Modal bind:open={createModal} size="xs">
-		<RentalPlanForm {data} on:formvalid={handleCloseModal} />
+		<TollForm {data} on:formvalid={handleCloseModal} />
 	</Modal>
 
 	<Modal bind:open={editModal} size="xs">
-		<RentalPlanForm {data} {selectedPlan} on:formvalid={handleCloseEditModal} />
+		<TollForm {data} {selectedToll} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
-		<DeletePlanForm data={selectedId} on:formvalid={handleCloseDeleteModal} />
+		<DeleteTollForm data={selectedId} on:formvalid={handleCloseDeleteModal} />
 	</Modal>
 
 	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
@@ -101,25 +105,27 @@
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
 			>
 				<GradientButton shadow color="blue" on:click={() => (createModal = true)}>
-					Create Plan
+					Create Toll
 				</GradientButton>
 			</caption>
 
 			<TableHead>
-				<TableHeadCell class="text-center">PLAN NAME</TableHeadCell>
-				<TableHeadCell class="text-center">PLAN AMOUNT</TableHeadCell>
-				<TableHeadCell class="text-center">PLAN PERIODICITY</TableHeadCell>
+				<TableHeadCell class="text-center">VEHICLE PLATE</TableHeadCell>
+				<TableHeadCell class="text-center">CONTRACT ID</TableHeadCell>
+				<TableHeadCell class="text-center">INVOICE NUMBER</TableHeadCell>
+				<TableHeadCell class="text-center">CREATED DATE</TableHeadCell>
+				<TableHeadCell class="text-center">STAGE</TableHeadCell>
 				<TableHeadCell class="text-center"></TableHeadCell>
 			</TableHead>
 			<TableBody class="divide-y">
-				{#each plans as plan}
+				{#each tolls as toll}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">{plan.name}</TableBodyCell>
-						<TableBodyCell class="text-center">{plan.amount}</TableBodyCell>
-						<TableBodyCell class="text-center">{plan.periodicity}</TableBodyCell>
+						<TableBodyCell class="text-center">{toll.name}</TableBodyCell>
+						<TableBodyCell class="text-center">{toll.amount}</TableBodyCell>
+						<TableBodyCell class="text-center">{toll.periodicity}</TableBodyCell>
 						<TableBodyCell class="flex w-32 justify-between">
-							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(plan)} />
-							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(plan.id)} />
+							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(toll)} />
+							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(toll.id)} />
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}

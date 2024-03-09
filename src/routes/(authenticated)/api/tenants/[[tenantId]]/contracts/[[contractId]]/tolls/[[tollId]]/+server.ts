@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { RequestHandler } from "@sveltejs/kit";
 import { actionResult, superValidate } from "sveltekit-superforms/server";
-import { createToll, deleteToll, listTollsByContractId, updateToll } from "$lib/actions/tolls";
+import { createToll, deleteToll, listTollsByContractId, updateToll, listTolls } from "$lib/actions/tolls";
+import { minioClient } from "$lib/minio";
 
 const tollSchema = z.object({
     amount: z.number().gte(0),
@@ -22,13 +23,19 @@ export const GET: RequestHandler = async ({ locals, params }) => {
     }
     let contractId
 
-    try {
-        contractId = parseInt(params?.contractId || '')
-    } catch {
-        return new Response('invalid contractId', { status: 400 })
+    if (!params.contractId) {
+        const tolls = await listTolls();
+        return new Response(JSON.stringify(tolls), { status: 200 })
+    } else {
+        try {
+            contractId = parseInt(params?.contractId || '')
+        } catch {
+            return new Response('invalid contractId', { status: 400 })
+        }
+        const tolls = await listTollsByContractId({ contractId })
+        return new Response(JSON.stringify(tolls), { status: 200 })
+
     }
-    const tolls = await listTollsByContractId({ contractId })
-    return new Response(JSON.stringify(tolls), { status: 200 })
 }
 
 export const POST: RequestHandler = async ({ locals, request, params }) => {
@@ -38,9 +45,11 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
     }
     const formData = await request.formData();
     const form = await superValidate(formData, tollSchema);
+    const file = formData.get('fileData');
     if (form.valid) {
+        let toll
         if (!params.tollId) {
-            await createToll({
+            toll = await createToll({
                 amount: form.data.amount,
                 vehicleId: form.data.vehicleId,
                 contractId: form.data.contractId,
@@ -50,9 +59,9 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
                 invoiceNumber: form.data.invoiceNumber,
                 note: form.data.note
             })
-            return actionResult('success', { form }, { status: 200 })
+
         } else {
-            await updateToll({
+            toll = await updateToll({
                 id: parseInt(params.tollId),
                 amount: form.data.amount,
                 vehicleId: form.data.vehicleId,
@@ -63,8 +72,22 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
                 invoiceNumber: form.data.invoiceNumber,
                 note: form.data.note,
             })
-            return actionResult('success', { form }, { status: 200 })
         }
+        if (file instanceof File) {
+            const buff = Buffer.from(await file.arrayBuffer());
+            if (file.size) {
+                console.log('start upload');
+                await minioClient
+                    .putObject('develop', `/contracts/${form.data.contractId}/tolls/${toll.id}/${file.name}`, buff)
+                    .catch((e) => {
+                        console.log('error re loco', e);
+                    })
+                    .finally(async () => {
+                        console.log('finished');
+                    });
+            }
+        }
+        return actionResult('success', { form }, { status: 200 })
     } else {
         return actionResult('failure', { form }, { status: 400 })
     }

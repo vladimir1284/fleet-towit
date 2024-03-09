@@ -2,7 +2,6 @@
 	// @ts-nocheck
 	import { z } from 'zod';
 	import { createEventDispatcher } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
@@ -11,9 +10,10 @@
 	import { UserSolid } from 'flowbite-svelte-icons';
 	export let data;
 	export let selectedClient;
+	import { getContext } from 'svelte';
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	let actionURL = `/api/tenants/${currentTenant.id}/client`;
+	const currentTenant = getContext('currentTenant');
+	let actionURL = `/api/tenants/${$currentTenant.id}/client`;
 
 	const fixSchema = z.object({
 		name: z.string(),
@@ -48,7 +48,7 @@
 		$form.email = $form.email.trim();
 		const formData = new FormData(event.target);
 		const headers = {
-			'X-User-Tenant': currentTenant.currentUserTenant.id
+			'X-User-Tenant': $currentTenant.currentUserTenant.id
 		};
 		const response = await fetch(actionURL, {
 			method: 'POST',

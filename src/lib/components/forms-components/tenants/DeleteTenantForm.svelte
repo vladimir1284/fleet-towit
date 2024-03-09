@@ -11,7 +11,7 @@
 			method: 'DELETE'
 		});
 		if (!response.ok) {
-			console.error('Failed to delete user');
+			console.error('Failed to delete');
 			return;
 		}
 		console.log('Deleted successfully');

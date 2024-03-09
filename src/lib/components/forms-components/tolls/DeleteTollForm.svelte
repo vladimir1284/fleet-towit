@@ -1,28 +1,33 @@
 <script>
 	// @ts-nocheck
-	import { Button } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { getContext } from 'svelte';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
-	export let data;
-	const dispatch = createEventDispatcher();
+	export let tollId;
+	export let contractId;
 
+	const dispatch = createEventDispatcher();
+	const currentTenant = getContext('currentTenant');
 	const handleSubmit = async (event) => {
 		event.preventDefault();
-		const response = await fetch(`/api/tenants/users/${data}`, {
-			method: 'DELETE'
-		});
+		const response = await fetch(
+			`/api/tenants/${$currentTenant.id}/contracts/${contractId}/tolls/${tollId}`,
+			{
+				method: 'DELETE'
+			}
+		);
 		if (!response.ok) {
 			console.error('Failed to delete');
 			return;
 		}
-		console.log('User deleted successfully');
+		console.log('Deleted successfully');
 		dispatch('formvalid', false);
 	};
 </script>
 
 <div class="flex flex-col justify-center align-center space-y-6">
 	<div class="sm:col-span-2">
-		<h1>Delete user?</h1>
+		<h1>Delete?</h1>
 	</div>
 	<SubmitButtonComponent
 		placeholder="Delete"

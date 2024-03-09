@@ -6,6 +6,10 @@
 	export let constraints: any;
 	export let errors: any;
 	export let form: any;
+
+	$: if ($form.amount == 0) {
+		$form.amount = undefined;
+	}
 </script>
 
 <FloatingLabelInput

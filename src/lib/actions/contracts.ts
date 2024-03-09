@@ -121,7 +121,7 @@ export const updateContractStage = async ({
 }: updateContractStageType) => {
     const contract = await bypassPrisma.contract.findUnique({
         where: { id },
-        select: { stage: true }
+        include: { stage: true }
     });
     const newStage = await bypassPrisma.stageUpdate.create({
         data: {
@@ -132,9 +132,16 @@ export const updateContractStage = async ({
             previousStageId: contract?.stage.id
         }
     });
+    let endDate = contract?.endDate
+    let activeDate = contract?.activeDate
+    if (newStage.stage === Stage.ENDED) {
+        endDate = new Date(Date.now())
+    } else if (newStage.stage === Stage.ACTIVE) {
+        activeDate = new Date(Date.now())
+    }
     await bypassPrisma.contract.update({
         where: { id },
-        data: { stageId: newStage.id }
+        data: { stageId: newStage.id, endDate, activeDate}
     });
 };
 
