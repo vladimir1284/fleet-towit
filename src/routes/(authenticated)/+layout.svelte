@@ -10,19 +10,13 @@
 
 	const currentTenant = writable();
 	setContext('currentTenant', currentTenant);
-	$: console.log('CURRENT TENANT: ', $currentTenant);
-	
-	onMount(async () => {
-		currentTenant.set(loadFromSessionStorage('currentTenant'));
-	});
+	currentTenant.set(loadFromSessionStorage('currentTenant'));
 
 	$: if ($currentTenant === undefined) {
 		goto('/select-tenant');
-	}
-
-	$: if (
+	} else if (
 		!data.session.user?.tenantUsers.some(
-			(tenantUser: { tenantId: any }) => tenantUser.tenantId == $currentTenant.id
+	 		(tenantUser: { tenantId: any }) => tenantUser.tenantId == $currentTenant.id
 		)
 	) {
 		goto('/select-tenant');
