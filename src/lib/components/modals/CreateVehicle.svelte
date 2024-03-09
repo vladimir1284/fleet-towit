@@ -4,6 +4,7 @@
 	import ExtraFields from './components/ExtraFields.svelte';
 
 	export let show = false;
+	export let close;
 	export let createVehicle;
 
 	/*
@@ -21,7 +22,7 @@
 	let costs = [];
 </script>
 
-<Modal bind:open={show} size="xs" autoclose={false} class="w-full">
+<Modal bind:open={show} size="xs" autoclose={false} class="w-full" on:close={close}>
 	<form class="flex flex-col space-y-6" action="#">
 		<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">New Vehicle</h3>
 		<Label class="space-y-2">

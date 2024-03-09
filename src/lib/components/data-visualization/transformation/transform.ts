@@ -1,9 +1,21 @@
 import type { TransformRule } from "./types";
 
-function isAlphabetic(char: string) {
+const isAlphabetic = (char: string) => {
   // Check if the character is a letter using Unicode character categories
   return (/\p{L}/u.test(char));
 }
+
+const isUrl = (str: string) => {
+  try {
+    // Create a new URL object
+    new URL(str);
+    return true;
+  } catch (err) {
+    // If an error is thrown, it's not a valid URL
+    return false;
+  }
+};
+
 
 const wordifyBySymbol = (value: string, symbol = "_"): string => {
   return value.split(symbol).join(" ")
@@ -48,6 +60,40 @@ const capitalize = (value: string): string => {
   return result.join(" ")
 }
 
+const simpleDatetime = (value: string | Date) => {
+  const isDatetime = (str) => {
+    try {
+      // Create a new Date object from the string
+      const date = new Date(str);
+
+      // Check if the date object is valid (not "Invalid Date")
+      return !isNaN(date.getTime());
+    } catch (err) {
+      // If an error is thrown, it's not a valid date/datetime
+      return false;
+    }
+  }
+
+  if (!isDatetime(value)) return value
+
+  const datetime = new Date(value)
+
+  const zerofy = (value) => {
+    if (Math.abs(value) >= 10) return value
+
+    return value < 0 ? `-0${value}` : `0${value}`
+  }
+
+  const year = zerofy(datetime.getFullYear())
+  const month = zerofy(datetime.getMonth())
+  const day = zerofy(datetime.getDay())
+  const hours = zerofy(datetime.getHours())
+  const minutes = zerofy(datetime.getMinutes())
+  const seconds = zerofy(datetime.getSeconds())
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
 
 export const applyRule = (value: string, rule: TransformRule | undefined = undefined): string => {
   if (!rule) return value
@@ -61,13 +107,21 @@ export const applyRule = (value: string, rule: TransformRule | undefined = undef
       return value.toUpperCase()
     case "wordify":
       return wordifyBySymbol(wordifyCamel(value))
+    case "simple-datetime":
+      return simpleDatetime(value)
     default:
       return value
   }
 }
 
 export const transform = (value: string, rules: TransformRule[]): string => {
-  let result: string = value
+  if (!['string', 'boolean', 'number', 'bigint'].includes(typeof value)) {
+    throw new Error('Not a transformable value type.')
+  }
+
+  if (isUrl(value)) return value
+
+  let result: string = String(value)
 
   rules.forEach((rule: TransformRule) => {
     result = applyRule(result, rule)

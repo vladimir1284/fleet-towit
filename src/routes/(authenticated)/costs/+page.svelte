@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Table from '$lib/components/data-visualization/CostsTable.svelte';
+	import DetailsView from '$lib/components/data-visualization/DetailsView.svelte';
+	import Table from '$lib/components/data-visualization/GenericTable.svelte';
 	import { Heading } from 'flowbite-svelte';
 
 	export let data;
@@ -8,4 +9,4 @@
 </script>
 
 <Heading>Costs</Heading>
-<Table data={data.costs} rules={['capitalize', 'wordify']} />
+<DetailsView />

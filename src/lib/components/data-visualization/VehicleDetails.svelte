@@ -7,13 +7,10 @@
 	export let showModal: boolean;
 	export let onClose: (e: Event) => {};
 	export let title: string = '';
-	export let data: Object[] = [];
+	export let details: Object[] = [];
 	export let rules: TransformRule[] = [];
-	export let createButton: CustomButton | null = null;
-
-	$: console.log('MODAL DATA\n' + JSON.stringify(data));
 </script>
 
 <Modal bind:open={showModal} size="xs" autoclose={false} class="w-full" on:close={onClose}>
-	<JsonTable {title} {data} {rules} {createButton} />
+	{#each details as detail}{/each}
 </Modal>

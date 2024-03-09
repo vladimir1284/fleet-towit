@@ -16,8 +16,8 @@ const seedVehicles = async (prisma) => {
 			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
-					{ image: 'https://example.com/car1.jpg' },
-					{ image: 'https://example.com/car2.jpg' }
+					{ image: '/src/lib/mocks/pictures/1.jpg' },
+					{ image: '/src/lib/mocks/pictures/2.jpg' },
 				]
 			},
 			documents: {
@@ -31,6 +31,30 @@ const seedVehicles = async (prisma) => {
 						tags: {
 							create: [{ name: 'Important' }, { name: 'Expired' }]
 						}
+					}
+				]
+			},
+			"costs": {
+				"create": [
+					{
+						"value": 75.25,
+						"concept": "Restaurant dinner",
+						"category": {
+							"create": {
+								"name": "Eating Out"
+							}
+						},
+						"date": "2024-03-10T19:00:00Z"
+					},
+					{
+						"value": 20.00,
+						"concept": "Movie tickets",
+						"category": {
+							"create": {
+								"name": "Entertainment"
+							}
+						},
+						"date": "2024-03-11T15:30:00Z"
 					}
 				]
 			}
@@ -53,8 +77,9 @@ const seedVehicles = async (prisma) => {
 			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
-					{ image: 'https://example.com/elantra1.jpg' },
-					{ image: 'https://example.com/elantra2.jpg' }
+					{ image: '/src/lib/mocks/pictures/3.jpg' },
+					{ image: '/src/lib/mocks/pictures/4.jpg' },
+					{ image: '/src/lib/mocks/pictures/1.jpg' },
 				]
 			},
 			documents: {
@@ -113,8 +138,8 @@ const seedVehicles = async (prisma) => {
 			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
-					{ image: 'https://example.com/cx51.jpg' },
-					{ image: 'https://example.com/cx52.jpg' }
+					{ image: '/src/lib/mocks/pictures/3.jpg' },
+					{ image: '/src/lib/mocks/pictures/1.jpg' },
 				]
 			},
 			documents: {
@@ -174,8 +199,10 @@ const seedVehicles = async (prisma) => {
 			status: 'AVAILABLE',
 			vehiclePictures: {
 				create: [
-					{ image: 'https://example.com/yzf1.jpg' },
-					{ image: 'https://example.com/yzf2.jpg' }
+					{ image: '/src/lib/mocks/pictures/4.jpg' },
+					{ image: '/src/lib/mocks/pictures/2.jpg' },
+					{ image: '/src/lib/mocks/pictures/1.jpg' },
+					{ image: '/src/lib/mocks/pictures/3.jpg' },
 				]
 			},
 			documents: {

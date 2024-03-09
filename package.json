@@ -12,7 +12,8 @@
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
 		"test:unit": "vitest",
-		"migrate": "npx prisma migrate dev --name"
+		"migrate": "npx prisma migrate dev --name",
+		"reseed": "npx prisma generate && npx prisma db push --force-reset && npx prisma db seed"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^4.5.10",

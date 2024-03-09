@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { Button } from 'flowbite-svelte';
+	import * as ICON from 'flowbite-svelte-icons';
 
-	export let icon: any;
+	export let iconName: string;
 	export let onClick: (e: Event) => {};
 </script>
 
 <Button on:click={onClick}>
 	<div class="flex gap-2">
-		{#if icon}
-			<svelte:component this={icon} class="pointer-events-none" />
+		{#if iconName}
+			<svelte:component this={ICON[iconName]} class="pointer-events-none" />
 		{/if}
 	</div>
 </Button>
