@@ -11,7 +11,9 @@
 
 <div class="flex flex-col gap-4">
 	<div>
-		<Label for="part-name" class="mb-2">Part name:</Label>
+		<Label for="part-name" class="mb-2 font-medium text-sm font-sans text-slate-700"
+			>Part name:</Label
+		>
 		<Input
 			type="text"
 			id="part-name"
@@ -21,7 +23,7 @@
 		/>
 	</div>
 	<div class="flex justify-between">
-		<div class="flex flew-row basis-2/3 gap-2">
+		<div class="flex basis-2/3 gap-2">
 			<Input
 				type="number"
 				name="amount"

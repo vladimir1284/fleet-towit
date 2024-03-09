@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Search, Dropdown, DropdownItem, Button } from 'flowbite-svelte';
-	import { ChevronDownSolid, PlusOutline, CirclePlusOutline } from 'flowbite-svelte-icons';
+	import { ChevronDownSolid, CirclePlusOutline } from 'flowbite-svelte-icons';
 
 	import {
 		Table,
@@ -33,7 +33,7 @@
 		<Dropdown>
 			<DropdownItem>Export All</DropdownItem>
 			<DropdownItem>Edit Categories</DropdownItem>
-			<DropdownItem>Edit locations</DropdownItem>
+			<DropdownItem>Edit Locations</DropdownItem>
 			<DropdownItem>Delete</DropdownItem>
 		</Dropdown>
 		<Button on:click={() => (isVisiblePartModal = true)}

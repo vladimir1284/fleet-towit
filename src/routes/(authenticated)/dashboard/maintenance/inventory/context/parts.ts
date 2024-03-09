@@ -7,3 +7,11 @@ export const setPartListContext = (PartList: CustomInventoryPart[]): void => {
 	const parts = writable(PartList);
 	setContext('PartList', parts);
 };
+
+export const setPartCreationFormContext = (): void => {
+	const partCreationFormStore = writable({
+		locations: [],
+		vendors: []
+	});
+	setContext('PartCreationForm', partCreationFormStore);
+};
