@@ -101,7 +101,7 @@ export interface Subscription {
 	 * @type {string}
 	 * @memberof Subscription
 	 */
-	planName: string;
+	planName?: string;
 	/**
 	 *
 	 * @type {string}
