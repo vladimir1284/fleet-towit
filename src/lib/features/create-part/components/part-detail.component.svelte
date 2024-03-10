@@ -6,7 +6,7 @@
 		PART_UPC_LAYOUT_CONSTRAINT,
 		PART_QTY_LAYOUT_CONSTRAINT,
 		PART_NUMBER_LAYOUT_CONSTRAINT
-	} from './helpers';
+	} from '../helpers';
 </script>
 
 <div class="flex flex-col gap-4">

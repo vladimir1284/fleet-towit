@@ -1,8 +1,8 @@
 <script lang="ts">
 	export let data;
 	import { Heading } from 'flowbite-svelte';
-	import { PartManagement } from './components';
-	import { setPartListContext } from './context';
+	import { PartManagement } from '$lib/features/list-part/components';
+	import { setPartListContext } from '$lib/context/part.context.js';
 
 	const { initialParts } = data;
 

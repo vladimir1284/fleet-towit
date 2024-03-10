@@ -9,7 +9,7 @@ import {
 	PART_SCHEMA_CREATION_ACTION_ROUTE,
 	PART_SCHEMA_RETRIEVAL_ACTION_ROUTE,
 	INVALID_PART_SCHEMA_VALIDATION_MESSAGE
-} from './helpers';
+} from '$lib/shared';
 import {
 	// Constants.
 	INTERNAL_ERROR_STATUS

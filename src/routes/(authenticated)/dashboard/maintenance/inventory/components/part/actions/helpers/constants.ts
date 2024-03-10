@@ -1,5 +1,0 @@
-export const // Part-actions related constants.
-
-	PART_NUMBER_LAYOUT_CONSTRAINT = 100,
-	PART_QTY_LAYOUT_CONSTRAINT = 100,
-	PART_UPC_LAYOUT_CONSTRAINT = 100;

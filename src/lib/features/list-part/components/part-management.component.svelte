@@ -12,14 +12,14 @@
 		Checkbox
 	} from 'flowbite-svelte';
 
-	import { PartCreation } from './actions';
+	import { PartCreation } from '$lib/features/create-part/components';
 
 	import { getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
 	import type { Part } from '@prisma/client';
 
-	let isVisiblePartModal = false;
+	let isVisiblePartWizard = false;
 
 	// Retrieve part list context.
 	const writablePartStore: Writable<Part[]> = getContext('PartList');
@@ -36,13 +36,13 @@
 			<DropdownItem>Edit Locations</DropdownItem>
 			<DropdownItem>Delete</DropdownItem>
 		</Dropdown>
-		<Button on:click={() => (isVisiblePartModal = true)}
+		<Button on:click={() => (isVisiblePartWizard = true)}
 			><CirclePlusOutline class="w-4 h-4 me-2 text-white dark:text-white" />Part</Button
 		>
 	</div>
 </div>
 
-<PartCreation bind:isVisiblePartModal />
+<PartCreation bind:isVisiblePartWizard />
 
 <Table hoverable={true}>
 	<TableHead>
