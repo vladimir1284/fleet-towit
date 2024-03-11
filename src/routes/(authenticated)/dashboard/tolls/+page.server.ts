@@ -6,7 +6,7 @@ const fixSchema = z.object({
     amount: z.number().gte(0),
     vehicleId: z.number(),
     contractId: z.number(),
-    stage: z.enum(['PAID', 'UNPAID']),
+    stage: z.enum(['PAID', 'UNPAID']).default('UNPAID'),
     invoice: z.string().optional(),
     invoiceNumber: z.string().optional(),
     createDate: z.date(),

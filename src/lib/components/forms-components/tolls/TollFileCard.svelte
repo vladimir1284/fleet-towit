@@ -11,13 +11,13 @@
 	import { Section } from 'flowbite-svelte-blocks';
 	import { Card, Label } from 'flowbite-svelte';
 
-	export let handleDelete: void;
+	export let handleDelete = () => {};
 	export let fileName: string;
 	export let size: number;
 	let extension: string;
 	let type: string;
 
-	extension = fileName.split('.').toReversed()[0];
+	extension = fileName?.split('.').toReversed()[0];
 	extension == 'jpg' || extension == 'jpeg' || extension == 'png' || extension == 'webp'
 		? (type = 'image')
 		: extension == 'pdf'
@@ -40,7 +40,7 @@
 		{/if}
 		<div class="flex-1 min-w-0">
 			<p class="text-sm font-bold text-gray-700 tracking-tight">
-				{fileName.split('.')[0]}
+				{fileName?.split('.')[0]}
 			</p>
 			<p class="text-sm text-gray-500 truncate dark:text-gray-400">
 				{size}
@@ -51,6 +51,7 @@
 			outline
 			color="red"
 			styles="w-[10%] flex justify-center align-center mx-auto"
+			onClick={handleDelete}
 		>
 			<Label>
 				<TrashBinSolid class="text-red-500" />

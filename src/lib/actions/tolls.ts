@@ -16,7 +16,7 @@ export const createToll = async ({ amount, vehicleId, contractId, stage, invoice
 export const updateToll = async ({ id, amount, vehicleId, contractId, stage, invoice, invoiceNumber, createDate, note }: updateTollType) => {
     const toll = await bypassPrisma.tollDue.update({
         where: { id },
-        data: { amount, vehicleId, contractId, stage, invoice, invoiceNumber, createDate, note }
+        data: { amount, vehicleId, contractId, stage, invoice: invoice || null, invoiceNumber, createDate, note: note || null }
     })
     return toll
 }

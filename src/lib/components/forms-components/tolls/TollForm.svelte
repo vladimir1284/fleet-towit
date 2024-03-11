@@ -13,13 +13,7 @@
 
 	import TollFileCard from '$lib/components/forms-components/tolls/TollFileCard.svelte';
 
-	import {
-		PaperClipOutline,
-		FileImageOutline,
-		FileZipOutline,
-		FileInvoiceOutline,
-		FileLinesOutline
-	} from 'flowbite-svelte-icons';
+	import { PaperClipOutline } from 'flowbite-svelte-icons';
 
 	export let data;
 	export let selectedToll;
@@ -42,11 +36,20 @@
 				3: 'G',
 				4: 'T'
 			};
-			return size.toFixed(1).toString() + ' ' + x[exp] + 'B';
+			return size?.toFixed(1).toString() + ' ' + x[exp] + 'B';
 		}
 	};
 
 	onMount(async () => {
+		if ($form.invoice) {
+			fetch(
+				`https://minios3.crabdance.com/develop/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}/${selectedToll.invoice}`
+			).then((r) => {
+				fileSize = parseInt(r.headers.get('Content-Length'));
+			});
+
+			attachFile = true;
+		}
 		headers = { 'X-User-Tenant': $currentTenant.id };
 		const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, {
 			headers
@@ -75,11 +78,19 @@
 		$form.amount = selectedToll.amount;
 		$form.vehicleId = selectedToll.vehicle.plate;
 		$form.stage = selectedToll.stage;
+		$form.invoice = selectedToll.invoice;
 		$form.invoiceNumber = selectedToll.invoiceNumber;
 		$form.note = selectedToll.note;
 		$form.createDate = selectedToll.createDate.slice(0, 10);
 		actionURL = `/api/tenants/${$currentTenant.id}/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}`;
 	}
+
+	const deleteFile = () => {
+		document.getElementById('fileData').value = null;
+		fileSize = 0;
+		attachFile = false;
+		$form.invoice = '';
+	};
 
 	function changeFile(event: Event) {
 		const inputElement = event.target as HTMLInputElement;
@@ -95,7 +106,6 @@
 		event.preventDefault();
 		const formData = new FormData(event.target);
 		formData.set('vehicleId', findVehicleID($form.vehicleId));
-		console.log('elformf', formData);
 		const headers = {
 			'X-User-Tenant': $currentTenant.currentUserTenant.id
 		};
@@ -167,8 +177,7 @@
 	<div class="sm:col-span-2">
 		<TextInputComponent formPointer="note" {form} {errors} {constraints} placeholder="Note" />
 	</div>
-
-	<div class="sm:col-span-2">
+	<div class={selectedToll ? 'sm:col-span-2' : 'hidden'}>
 		<Select
 			class="mt-2"
 			items={stageSelectorList}
@@ -180,7 +189,7 @@
 
 	{#if attachFile}
 		<div class="sm:col-span-2">
-			<TollFileCard fileName={$form.invoice} size={getSize(fileSize)}  />
+			<TollFileCard fileName={$form.invoice} size={getSize(fileSize)} handleDelete={deleteFile} />
 		</div>
 	{/if}
 	<div class="flex gap-1">
@@ -188,21 +197,18 @@
 			placeholder={!selectedToll ? 'Create toll' : 'Update toll'}
 			styles="w-[70%] grow mx-auto block"
 		/>
+		<Fileupload class="hidden" name="fileData" id="fileData" on:change={changeFile} />
 		{#if !attachFile}
 			<ButtonComponent
 				placeholder=""
 				outline
 				styles="w-[10%] flex justify-center align-center mx-auto"
+				onClick={() => {
+					document.getElementById('fileData')?.click();
+				}}
 			>
 				<Label>
-					<PaperClipOutline id="attach" class="text-gray-400" />
-					<Fileupload
-						class="hidden"
-						name="fileData"
-						id="fileData"
-						for="attach"
-						on:change={changeFile}
-					/>
+					<PaperClipOutline class="text-gray-400" />
 				</Label>
 			</ButtonComponent>
 		{/if}
