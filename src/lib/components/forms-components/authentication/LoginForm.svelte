@@ -12,12 +12,16 @@
 
 	let show = false;
 	let useMagicLink = true;
+	let loading = false;
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				signIn('email', { email: form.data.email, callbackUrl: '/select-tenant' });
 			}
+		},
+		onSubmit: async () => {
+			loading = true;
 		}
 	});
 </script>
@@ -53,7 +57,11 @@
 		<Checkbox checked={useMagicLink} on:change={() => (useMagicLink = !useMagicLink)}>
 			Receive access token
 		</Checkbox>
-		<SubmitButtonComponent placeholder="Login to your account" styles="w-full color-blue" />
+		<SubmitButtonComponent
+			placeholder="Login to your account"
+			styles="w-full color-blue"
+			loading={loading}
+		/>
 		<ButtonComponent
 			placeholder="Sign in with Google"
 			color="light"

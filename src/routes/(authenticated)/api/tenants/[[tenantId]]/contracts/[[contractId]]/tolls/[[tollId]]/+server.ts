@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { RequestHandler } from "@sveltejs/kit";
 import { actionResult, superValidate } from "sveltekit-superforms/server";
 import { createToll, deleteToll, listTollsByContractId, updateToll, listTolls } from "$lib/actions/tolls";
+import { getContractByDateRange } from "$lib/actions/contracts";
 import { minioClient } from "$lib/minio";
 
 const tollSchema = z.object({
@@ -49,6 +50,8 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
     console.log('FORM ON SERVER: ', form)
     if (form.valid) {
         let toll
+        const contract = await getContractByDateRange({vehicleId: form.data.vehicleId, date: form.data.createDate})
+        form.data.contractId = contract?.id || NaN
         if (!params.tollId) {
             toll = await createToll({
                 amount: form.data.amount,

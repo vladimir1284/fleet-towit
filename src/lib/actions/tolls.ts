@@ -27,12 +27,15 @@ export const deleteToll = async ({ id }: { id: number }) => {
 
 export const listTollsByContractId = async ({ contractId }: { contractId: number }) => {
     const tolls = await bypassPrisma.tollDue.findMany({
-        where: { contractId }
+        where: { contractId },
+        include: {contract: true, vehicle: true}
     })
     return tolls
 }
 
 export const listTolls = async () => {
-    const tolls = await bypassPrisma.tollDue.findMany()
+    const tolls = await bypassPrisma.tollDue.findMany({
+        include: {contract: true, vehicle: true}
+    })
     return tolls
 } 

@@ -39,6 +39,10 @@
 				...tenantUser.tenant,
 				currentUserTenant: tenantUser
 			});
+			currentTenant.set({
+				...tenantUser.tenant,
+				currentUserTenant: tenantUser
+			})
 		}
 	}
 </script>
@@ -81,7 +85,9 @@
 	</Dropdown>
 	<Avatar
 		class="hidden sm:flex"
-		src="https://minios3.crabdance.com/develop/users/{userData.id}/{userData.image}"
 		rounded
+		src={userData.image
+			? `https://minios3.crabdance.com/develop/users/${userData.id}/${userData.image}`
+			: undefined}
 	/>
 </div>

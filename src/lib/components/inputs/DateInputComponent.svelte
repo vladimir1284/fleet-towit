@@ -5,8 +5,6 @@
 	export let constraints: any | undefined;
 	export let errors: any | undefined;
 	export let form: any | undefined;
-
-    $: console.log('DATE: ', $form[formPointer])
 </script>
 
 <FloatingLabelInput

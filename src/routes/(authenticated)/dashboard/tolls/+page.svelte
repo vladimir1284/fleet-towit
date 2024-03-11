@@ -10,12 +10,13 @@
 		TableHead,
 		TableHeadCell,
 		Modal,
-		Alert
+		Alert,
+		Badge
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
-	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
+	import { TrashBinSolid, FileEditSolid, ArrowDownToBracketOutline } from 'flowbite-svelte-icons';
 	import TollForm from '$lib/components/forms-components/tolls/TollForm.svelte';
 	import DeleteTollForm from '$lib/components/forms-components/tolls/DeleteTollForm.svelte';
 
@@ -32,6 +33,18 @@
 
 	const currentTenant = getContext('currentTenant');
 	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
+	const formatDate = (date: Date | string) => {
+		if (!date) {
+			return undefined;
+		}
+		return new Date(date).toLocaleDateString('en-us', {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	};
 
 	onMount(async () => {
 		try {
@@ -55,10 +68,13 @@
 		}, 4000);
 	}
 
-	function handleCloseModal(event) {
+	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Toll created succesfully!');
-		location.reload();
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
+			headers
+		});
+		tolls = [...(await response.json())];
 	}
 
 	async function handleEdit(toll) {
@@ -69,25 +85,31 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Toll edited succesfully!');
-		location.reload();
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
+			headers
+		});
+		tolls = [...(await response.json())];
 	}
 
-	async function handleDelete(tollId) {
-		selectedId = tollId;
+	async function handleDelete(toll) {
+		selectedToll = toll;
 		deleteModal = true;
 	}
 
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Toll deleted succesfully!');
-		location.reload();
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
+			headers
+		});
+		tolls = [...(await response.json())];
 	}
 </script>
 
 {#if loading}
 	<p>Loading...</p>
 {:else}
-	<Modal bind:open={createModal} size="xs">
+	<Modal bind:open={createModal} class="w-fit min-w-[25vw]">
 		<TollForm {data} on:formvalid={handleCloseModal} />
 	</Modal>
 
@@ -96,7 +118,11 @@
 	</Modal>
 
 	<Modal size="xs" padding="md" bind:open={deleteModal}>
-		<DeleteTollForm data={selectedId} on:formvalid={handleCloseDeleteModal} />
+		<DeleteTollForm
+			tollId={selectedToll.id}
+			contractId={selectedToll.contractId}
+			on:formvalid={handleCloseDeleteModal}
+		/>
 	</Modal>
 
 	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
@@ -114,18 +140,37 @@
 				<TableHeadCell class="text-center">CONTRACT ID</TableHeadCell>
 				<TableHeadCell class="text-center">INVOICE NUMBER</TableHeadCell>
 				<TableHeadCell class="text-center">CREATED DATE</TableHeadCell>
+				<TableHeadCell class="text-center">INVOICE</TableHeadCell>
 				<TableHeadCell class="text-center">STAGE</TableHeadCell>
 				<TableHeadCell class="text-center"></TableHeadCell>
 			</TableHead>
 			<TableBody class="divide-y">
 				{#each tolls as toll}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">{toll.name}</TableBodyCell>
-						<TableBodyCell class="text-center">{toll.amount}</TableBodyCell>
-						<TableBodyCell class="text-center">{toll.periodicity}</TableBodyCell>
+						<TableBodyCell class="text-center">{toll.vehicle.plate}</TableBodyCell>
+						<TableBodyCell class="text-center">{toll.contractId}</TableBodyCell>
+						<TableBodyCell class="text-center">{toll.invoiceNumber}</TableBodyCell>
+						<TableBodyCell class="text-center">{formatDate(toll.createDate)}</TableBodyCell>
+						<TableBodyCell class="flex justify-center">
+							{#if toll.invoice}
+								<a
+									download
+									href={`https://minios3.crabdance.com/develop/contracts/${toll.contractId}/tolls/${toll.id}/${toll.invoice}`}
+								>
+									<ArrowDownToBracketOutline class="text-blue-700" />
+								</a>
+							{:else}
+								-
+							{/if}
+						</TableBodyCell>
+						<TableBodyCell class="text-center">
+							<Badge color={toll.stage === 'PAID' ? 'green' : 'red'} rounded class="px-2.5 py-0.5"
+								>{toll.stage}</Badge
+							>
+						</TableBodyCell>
 						<TableBodyCell class="flex w-32 justify-between">
 							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(toll)} />
-							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(toll.id)} />
+							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(toll)} />
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}

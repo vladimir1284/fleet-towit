@@ -14,8 +14,12 @@
 	$: if ($form[formPointer] == 0) {
 		$form[formPointer] = undefined;
 	}
-
-	$: filteredSuggestions = filterSuggestions(suggestions, $form[formPointer]?.toUpperCase(), filterCriteria);
+	$: console.log('x', $form[formPointer]?.toUpperCase);
+	$: filteredSuggestions = filterSuggestions(
+		suggestions,
+		$form[formPointer]?.toUpperCase(),
+		filterCriteria
+	);
 
 	function handleInput(event: any) {
 		$form[formPointer] = event.target.value;

@@ -136,8 +136,10 @@ export const updateContractStage = async ({
     let activeDate = contract?.activeDate
     if (newStage.stage === Stage.ENDED) {
         endDate = new Date(Date.now())
+        endDate.setHours(0, 0, 0, 0)
     } else if (newStage.stage === Stage.ACTIVE) {
         activeDate = new Date(Date.now())
+        activeDate.setHours(0, 0, 0, 0)
     }
     await bypassPrisma.contract.update({
         where: { id },
@@ -148,3 +150,18 @@ export const updateContractStage = async ({
 export const deleteContract = async ({ id }: { id: number }) => {
     await bypassPrisma.contract.delete({ where: { id } });
 };
+
+export const getContractByDateRange = async({vehicleId, date}: {vehicleId: number, date: Date}) => {
+    const contract = await bypassPrisma.contract.findFirst({
+        where:{
+            vehicleId,
+            activeDate: { lte: date },
+            OR: [
+                {endDate: {gte: date}},
+                {endDate: null}
+            ]
+        }
+    })
+    console.log(contract)
+    return contract
+}
