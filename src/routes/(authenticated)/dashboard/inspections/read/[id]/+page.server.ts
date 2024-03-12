@@ -34,10 +34,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			// if inspection not have responses
 			if (!inspection?.responses.length) redirect_to_back();
 
-			const fontelloURL = `${url.origin}/fontello.ttf`;
-			const twtImg = `${url.origin}/twt.jpg`;
-
-			return { inspection, FormFieldType, fontelloURL, twtImg };
+			return { inspection, FormFieldType };
 		} catch (err) {
 			redirect_to_back();
 		}
