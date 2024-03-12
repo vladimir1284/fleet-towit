@@ -12,7 +12,7 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, url }) => {
 	const session = await verifySession(locals);
 
 	const inspectionId = Number(params.id);
@@ -34,7 +34,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// if inspection not have responses
 			if (!inspection?.responses.length) redirect_to_back();
 
-			return { inspection, FormFieldType };
+			const fontelloURL = `${url.origin}/fontello.ttf`;
+			const twtImg = `${url.origin}/twt.jpg`;
+
+			return { inspection, FormFieldType, fontelloURL, twtImg };
 		} catch (err) {
 			redirect_to_back();
 		}
