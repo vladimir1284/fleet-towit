@@ -1,6 +1,5 @@
 import { error } from '@sveltejs/kit';
 import path from 'node:path';
-import fs from 'node:fs';
 import type { RequestHandler } from './$types';
 import PdfPrinter from 'pdfmake';
 import blobStream, { type IBlobStream } from 'blob-stream';
