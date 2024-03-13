@@ -12,7 +12,7 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, url }) => {
 	const session = await verifySession(locals);
 
 	const inspectionId = Number(params.id);

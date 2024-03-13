@@ -129,7 +129,7 @@ export const createResponseToInspection = async ({
 
 	const data: {
 		fieldId: number;
-		tenantUserId: string;
+		tenantUserId: number;
 		checkOptionId?: number;
 		content?: string;
 		checked?: boolean;
