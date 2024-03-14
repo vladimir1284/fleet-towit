@@ -5,7 +5,29 @@ import PdfPrinter from 'pdfmake';
 import blobStream, { type IBlobStream } from 'blob-stream';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FormFieldType } from '@prisma/client';
+import type {
+	Inspection,
+	Vehicle,
+	CustomForm,
+	CustomField,
+	CustomFieldResponse,
+	CheckOption
+} from '@prisma/client';
 import { retrieveInspectionById } from '$lib/actions/inspections';
+
+interface CustomFields extends CustomField {
+	responses: CustomFieldResponse[];
+	checkOptions: CheckOption[];
+}
+
+interface CustomForms extends CustomForm {
+	fields: CustomFields[];
+}
+
+interface Inspections extends Inspection {
+	vehicle: Vehicle;
+	customForm: CustomForms;
+}
 
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const session = await locals.getSession();
@@ -30,17 +52,17 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	// this code is for testing purposes only
 	const tenant = session?.user.tenantUsers[0].tenant;
 
-	const inspection = await retrieveInspectionById({
+	const inspection = (await retrieveInspectionById({
 		tenantId: tenant.id,
 		id: inspectionId
-	});
+	})) as Inspections;
 
 	const pdf = await createPDF(inspection);
 
 	return new Response(pdf);
 };
 
-const createPDF = async (inspection: any) => {
+const createPDF = async (inspection: Inspections) => {
 	const day = inspection.createdAt.getDate() + 1;
 	const month = inspection.createdAt.getMonth() + 1;
 	const year = inspection.createdAt.getFullYear();
@@ -59,7 +81,7 @@ const createPDF = async (inspection: any) => {
 		}
 	};
 
-	const docDefinition: TDocumentDefinitions = {
+	const docDefinition = {
 		content: [
 			{
 				columns: [
@@ -163,10 +185,16 @@ const createPDF = async (inspection: any) => {
 		}
 	};
 
+	interface Column {
+		text: string | (string | { text: string; style: string })[];
+		style: string;
+		width?: number;
+	}
+
 	for (const field of inspection.customForm.fields) {
 		// text , number
 		if (field.type === FormFieldType.NUMBER || field.type === FormFieldType.TEXT) {
-			const columns: any = [
+			const columns: Column[] = [
 				{
 					text: `${field.name}:`,
 					style: 'content',
@@ -177,7 +205,7 @@ const createPDF = async (inspection: any) => {
 			// response
 			for (const response of field.responses) {
 				columns.push({
-					text: response.content,
+					text: response.content as string,
 					style: 'content'
 				});
 			}
@@ -186,7 +214,7 @@ const createPDF = async (inspection: any) => {
 			docDefinition.content.push('\n');
 			// single ckeck
 		} else if (field.type === FormFieldType.SINGLE_CHECK) {
-			const columns: any = [
+			const columns: Column[] = [
 				{
 					text: `${field.name}:`,
 					style: 'content',
@@ -234,7 +262,7 @@ const createPDF = async (inspection: any) => {
 	const printer = new PdfPrinter(fonts);
 
 	return new Promise((resolve, reject) => {
-		const pdf = printer.createPdfKitDocument(docDefinition);
+		const pdf = printer.createPdfKitDocument(docDefinition as TDocumentDefinitions);
 
 		pdf
 			.pipe(blobStream())

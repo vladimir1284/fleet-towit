@@ -53,24 +53,24 @@ async function main() {
 		testTenantId = existingTenant.id;
 	}
 
-	for (const userData of usersData) {
-		const array = [tenantId, testTenantId];
-		for (let index = 0; index < array.length; index++) {
-			const existingUser = await prisma.tenantUser.findFirst({
-				where: {
-					tenantId: array[index],
-					user: { email: userData.email }
-				}
-			});
+	// for (const userData of usersData) {
+	// 	const array = [tenantId, testTenantId];
+	// 	for (let index = 0; index < array.length; index++) {
+	// 		const existingUser = await prisma.tenantUser.findFirst({
+	// 			where: {
+	// 				tenantId: array[index],
+	// 				user: { email: userData.email }
+	// 			}
+	// 		});
 
-			if (!existingUser) {
-				await createTenantUser({ ...userData, tenantId: array[index] });
-			}
-		}
-	}
+	// 		if (!existingUser) {
+	// 			await createTenantUser({ ...userData, tenantId: array[index] });
+	// 		}
+	// 	}
+	// }
 
 	// Vehicles
-	await seedVehicles(prisma);
+	// await seedVehicles(prisma);
 	// Inspection
 	await seedInspection(prisma, [testTenantId, tenantId]);
 }
