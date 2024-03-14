@@ -28,20 +28,37 @@ export interface CustomInventoryPart extends Part {
 	vendors: Vendor[];
 }
 
-type WizardPickedPart = Pick<Part, 'criticalQty' | 'upc' | 'description' | 'name' | 'number'>;
+// Wizard-related types.
+
+type WizardPickedPart = {
+	name: string;
+	description: string;
+	upc: string;
+	// Garantee the placeholder display.
+	number: string;
+	criticalQty: string;
+};
 
 type WizardPartRelatedReference = {
 	uuid: string;
 };
 
-type WizardPickedCategory = Pick<Category, 'name'> & WizardPartRelatedReference;
-export type WizardPickedVendor = Pick<Vendor, 'name'> &
-	Pick<VendorOnParts, 'cost'> &
-	WizardPartRelatedReference;
+export type WizardPickedCategory = {
+	name: string;
+} & WizardPartRelatedReference;
 
-export type WizardPickedLocation = Pick<Location, 'name'> &
-	Pick<LocationsOnParts, 'quantity' | 'unit'> &
-	WizardPartRelatedReference;
+export type WizardPickedVendor = {
+	name: string;
+	// Garantee the placeholder display.
+	cost: string;
+} & WizardPartRelatedReference;
+
+export type WizardPickedLocation = {
+	name: string;
+	unit: string;
+	// Garantee the placeholder display.
+	quantity: string;
+} & WizardPartRelatedReference;
 
 export interface PartCreationWizard extends WizardPickedPart {
 	vendors: WizardPickedVendor[];

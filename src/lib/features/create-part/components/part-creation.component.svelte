@@ -9,18 +9,18 @@
 	import PartStepper from './part-stepper.components.svelte';
 	import PartCustomization from './part-customization.component.svelte';
 
-	import { DEFAULT_PART_CREATION_DATA } from '../helpers';
+	import { DEFAULT_PART_WIZARD_DATA } from '../helpers';
 
 	// Set part creation data context.
-	setPartCreationWizardContext(DEFAULT_PART_CREATION_DATA);
+	setPartCreationWizardContext(DEFAULT_PART_WIZARD_DATA);
 
 	let currentStep = 0;
 	const partComponentPerStep = [PartDetail, PartCustomization];
 
 	const handleWizardStep = (numberOfSteps: number) => {
 		const nextStep = currentStep + numberOfSteps;
-		if (nextStep < partComponentPerStep.length || nextStep > 0) {
-			currentStep += numberOfSteps;
+		if (nextStep >= 0 && nextStep < partComponentPerStep.length) {
+			currentStep = nextStep;
 		}
 	};
 

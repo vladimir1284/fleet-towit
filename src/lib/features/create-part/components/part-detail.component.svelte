@@ -7,6 +7,14 @@
 		PART_QTY_LAYOUT_CONSTRAINT,
 		PART_NUMBER_LAYOUT_CONSTRAINT
 	} from '../helpers';
+
+	import { getContext } from 'svelte';
+
+	import type { Writable } from 'svelte/store';
+	import type { PartCreationWizard } from '$lib/types';
+
+	// Retrieve part creation wizard context.
+	const partCreationWizardStore: Writable<PartCreationWizard> = getContext('PartCreationWizard');
 </script>
 
 <div class="flex flex-col gap-4">
@@ -19,6 +27,7 @@
 			id="part-name"
 			name="name"
 			placeholder="Ex: Transmission, Radiator, Axle"
+			bind:value={$partCreationWizardStore.name}
 			required
 		/>
 	</div>
@@ -31,6 +40,7 @@
 				min="0"
 				max={PART_NUMBER_LAYOUT_CONSTRAINT}
 				class="basis-1/3"
+				bind:value={$partCreationWizardStore.number}
 				required
 			/>
 			<Input
@@ -40,6 +50,8 @@
 				min="0"
 				max={PART_QTY_LAYOUT_CONSTRAINT}
 				class="basis-1/3"
+				bind:value={$partCreationWizardStore.criticalQty}
+				on:input={() => console.log(1)}
 				required
 			/>
 			<InfoCircleSolid class="self-center" />
@@ -51,6 +63,7 @@
 			min="0"
 			max={PART_UPC_LAYOUT_CONSTRAINT}
 			class="basis-1/3"
+			bind:value={$partCreationWizardStore.upc}
 			required
 		/>
 	</div>

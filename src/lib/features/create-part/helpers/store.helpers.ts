@@ -6,13 +6,15 @@ export const createDefaultPartVendor = (): WizardPickedVendor => ({
 	// Part vendor-like.
 	uuid: uuidv4(),
 	name: '',
-	cost: 0.0
+	// Garantee the placeholder display.
+	cost: ''
 });
 
 export const createDefaultPartLocation = (): WizardPickedLocation => ({
 	// Part location-like.
 	uuid: uuidv4(),
 	name: '',
-	quantity: 0,
-	unit: ''
+	// Garantee the placeholder display.
+	unit: '',
+	quantity: ''
 });

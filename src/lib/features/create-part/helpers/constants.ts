@@ -1,15 +1,13 @@
 import { createDefaultPartVendor, createDefaultPartLocation } from './store.helpers';
 
-import type { PartCreationWizard } from '$lib/types';
-
 export const // Customized part default data.
 
-	DEFAULT_PART_CREATION_DATA: PartCreationWizard = {
+	DEFAULT_PART_WIZARD_DATA = {
 		name: '',
 		description: '',
-		upc: 0,
-		number: 0,
-		criticalQty: 0,
+		upc: '',
+		number: '',
+		criticalQty: '',
 
 		// uuid is spreaded in order to allow svelte to track component modifications.
 		vendors: [createDefaultPartVendor()],

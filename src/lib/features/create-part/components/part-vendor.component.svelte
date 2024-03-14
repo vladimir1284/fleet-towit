@@ -4,7 +4,7 @@
 
 	// Part wizard binding values.
 	export let partVendorName: string;
-	export let partVendorCost: number;
+	export let partVendorCost: string;
 
 	import { fade } from 'svelte/transition';
 	import { TrashBinSolid } from 'flowbite-svelte-icons';
@@ -13,12 +13,23 @@
 
 <div class="flex justify-between gap-10" transition:fade>
 	<div class="basis-3/5">
-		<Input type="text" placeholder="Vendor's name" bind:partVendorName required />
+		<Input
+			type="                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             text"
+			placeholder="Vendor's name"
+			bind:value={partVendorName}
+			required
+		/>
 	</div>
 	<div class="flex basis-2/5 gap-3 items-center">
 		<ButtonGroup class="w-full">
 			<InputAddon>$</InputAddon>
-			<Input type="number" step={0.1} placeholder="Part cost" bind:partVendorCost required />
+			<Input
+				type="number"
+				step={0.01}
+				placeholder="Part cost"
+				bind:value={partVendorCost}
+				required
+			/>
 		</ButtonGroup>
 		{#if index > 0}
 			<TrashBinSolid on:click={() => handleRemovePartVendor(index)} />
