@@ -7,10 +7,12 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
-	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
 	import { createEventDispatcher } from 'svelte';
+	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
+
 	export let users;
 	export let showOptions = false;
+	
 	const dispatch = createEventDispatcher();
 </script>
 

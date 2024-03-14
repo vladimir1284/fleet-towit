@@ -1,8 +1,10 @@
 <script>
 	// @ts-nocheck
 	import { createEventDispatcher } from 'svelte';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
+
 	export let data;
+	
 	let loading = false;
 	const dispatch = createEventDispatcher();
 

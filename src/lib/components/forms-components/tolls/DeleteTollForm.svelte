@@ -1,12 +1,13 @@
 <script>
 	// @ts-nocheck
-	import { createEventDispatcher } from 'svelte';
-	import { getContext } from 'svelte';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import { createEventDispatcher, getContext } from 'svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
+
 	export let tollId;
 	export let contractId;
-	let loading = false;
 
+
+	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	const handleSubmit = async (event) => {

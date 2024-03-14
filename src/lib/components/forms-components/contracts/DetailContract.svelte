@@ -1,24 +1,26 @@
 <script async lang="ts">
 	//@ts-nocheck
-	import { getContext } from 'svelte';
-	import { Badge, Label, Timeline, TimelineItem } from 'flowbite-svelte';
-	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import {
 		TruckOutline,
 		DollarOutline,
 		UserOutline,
 		ClipboardListOutline
 	} from 'flowbite-svelte-icons';
-	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
-	import ClientForm from '../clients/ClientForm.svelte';
+	import { getContext } from 'svelte';
 	import UpdateStage from './UpdateStage.svelte';
+	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
+	import { Badge, Label, Timeline, TimelineItem } from 'flowbite-svelte';
+	import ClientForm from '$lib/forms-components/clients/ClientForm.svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
+	
 	export let data: any;
 	export let selectedContract: any = undefined;
 	export let contractStagesList: any = undefined;
+
+
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
-
 	const currentTenant = getContext('currentTenant');
 	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 

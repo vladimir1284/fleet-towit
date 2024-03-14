@@ -1,5 +1,7 @@
 <script async script lang="ts">
 	import { FloatingLabelInput, Label } from 'flowbite-svelte';
+
+	
 	export let placeholder: string;
 	export let suggestions: any;
 	export let formPointer: any | undefined;

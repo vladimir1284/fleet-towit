@@ -1,29 +1,30 @@
 <script lang="ts">
 	// @ts-nocheck
-	import AutocompleteInputComponent from '../../inputs/AutocompleteInputComponent.svelte';
-	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
+	import { onMount } from 'svelte';
+	import { superForm } from 'sveltekit-superforms/client';
+	import { PaperClipOutline } from 'flowbite-svelte-icons';
+	import { createEventDispatcher, getContext } from 'svelte';
+	import { Select, Fileupload, Label } from 'flowbite-svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
 	import DateInputComponent from '$lib/components/inputs/DateInputComponent.svelte';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
-	import ButtonComponent from '../../buttons/ButtonComponent.svelte';
-	import { createEventDispatcher, getContext } from 'svelte';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { Select, Fileupload, Label } from 'flowbite-svelte';
-	import { onMount } from 'svelte';
-
 	import TollFileCard from '$lib/components/forms-components/tolls/TollFileCard.svelte';
+	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
+	import AutocompleteInputComponent from '$lib/components/inputs/AutocompleteInputComponent.svelte';
 
-	import { PaperClipOutline } from 'flowbite-svelte-icons';
+
 
 	export let data;
 	export let selectedToll;
+
+
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let headers;
 	let vehicles = [];
 	let attachFile = false;
 	let loading = false;
-
 	let fileSize = 0;
 
 	const getSize = function (size, exp = 0) {

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Navbar, NavHamburger } from 'flowbite-svelte';
-	import Breadcumb from './Breadcumb.svelte';
-	import ProfileHeader from '../profile-components/ProfileHeader.svelte';
-	import Navlinks from './Navlinks.svelte';
-	import Notifications from '../profile-components/Notifications.svelte';
+	import Navlinks from '$lib/components/navigation-components/Navlinks.svelte';
+	import Breadcumb from '$lib/components/navigation-components/Breadcumb.svelte';
+	import ProfileHeader from '$lib/components/profile-components/ProfileHeader.svelte';
+	import Notifications from '$lib/components/profile-components/Notifications.svelte';
 
 	export let data: any;
 </script>

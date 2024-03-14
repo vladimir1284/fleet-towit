@@ -1,10 +1,10 @@
 <script async lang="ts">
 	//@ts-nocheck
+	import { getContext } from 'svelte';
 	import { Select } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { getContext } from 'svelte';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
 	export let clients: [];
@@ -12,7 +12,6 @@
 	export let rentalPlans: [];
 	export let selectedContract: any = undefined;
 
-	let loading = false;
 	let clientsSelector: any = [];
 	let vehiclesSelector: any = [];
 	let rentalPlansSelector: any = [];

@@ -1,15 +1,18 @@
 <script lang="ts">
 	// @ts-nocheck
-	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { getContext } from 'svelte';
-	import { Select } from 'flowbite-svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { z } from 'zod';
+	import { Select } from 'flowbite-svelte';
+	import { superForm } from 'sveltekit-superforms/client';
+	import { createEventDispatcher, getContext } from 'svelte';
+	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
+
+
 	export let data;
 	export let selectedUser;
 	export let tenantsList = [];
+
+	
 	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');

@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { NavLi, DropdownItem, Dropdown } from 'flowbite-svelte';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
+	import { NavLi, DropdownItem, Dropdown } from 'flowbite-svelte';
 
 	export let navStyle: string;
 </script>
 
 <NavLi class={navStyle} href="/dashboard">Dashboard</NavLi>
-
 <NavLi class={navStyle} href="/dashboard/plans">Rental Plans</NavLi>
 <NavLi class={navStyle} href="/dashboard/clients">Clients</NavLi>
 <NavLi class={navStyle} href="/dashboard/contracts">Contracts</NavLi>
 <NavLi class={navStyle} href="/dashboard/tolls">Tolls</NavLi>
+
 <NavLi class={navStyle}>
 	Inspections<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>
@@ -23,6 +23,7 @@
 		>Exception report</DropdownItem
 	>
 </Dropdown>
+
 <NavLi class={navStyle}>
 	Maintence<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>

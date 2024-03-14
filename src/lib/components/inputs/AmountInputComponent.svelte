@@ -1,6 +1,6 @@
 <script async script lang="ts">
-	import { FloatingLabelInput } from 'flowbite-svelte';
 	import { CashSolid } from 'flowbite-svelte-icons';
+	import { FloatingLabelInput } from 'flowbite-svelte';
 
 	export let placeholder: string;
 	export let constraints: any;

@@ -2,15 +2,19 @@
 	// @ts-nocheck
 	import { z } from 'zod';
 	import { createEventDispatcher } from 'svelte';
+	import { UserSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
 	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import PhoneNumberInputComponent from '$lib/components/inputs/PhoneNumberInputComponent.svelte';
-	import { UserSolid } from 'flowbite-svelte-icons';
+
+
 	export let data;
 	export let selectedClient;
 	import { getContext } from 'svelte';
+
+	
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant.id}/client`;

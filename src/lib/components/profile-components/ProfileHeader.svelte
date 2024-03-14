@@ -1,21 +1,23 @@
 <script>
 	// @ts-nocheck
-
+	import { getContext } from 'svelte';
 	import { signOut } from '@auth/sveltekit/client';
-	import { saveToSessionStorage } from '$lib/store/context-store';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
-	import ButtonComponent from '../buttons/ButtonComponent.svelte';
+	import { saveToSessionStorage } from '$lib/store/context-store';
 	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
-	import { getContext } from 'svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
-	const currentTenant = getContext('currentTenant');
-
+	
 	/**
 	 * @type {{ id: number; name: null; email: any; defaultTenantUser: { tenant: { name: any; }; }[]; image: any; }}
 	 */
 	export let userData;
+	
 
+	const currentTenant = getContext('currentTenant');
+	
+	
 	async function handleSignOut() {
 		await signOut();
 	}

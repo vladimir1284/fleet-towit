@@ -1,14 +1,15 @@
 <script>
 	// @ts-nocheck
-	import { createEventDispatcher } from 'svelte';
-	import { getContext } from 'svelte';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
-	export let data;
-	let loading = false;
+	import { createEventDispatcher, getContext } from 'svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
+
+	export let data;
+
+	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
-	console.log('DATA: ', data);
+
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 		const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan/${data}`, {

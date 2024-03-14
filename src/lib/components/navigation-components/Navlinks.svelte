@@ -1,8 +1,8 @@
 <script lang="ts">
 	//@ts-nocheck
-	import { NavUl, NavLi } from 'flowbite-svelte';
-	import UserNavLink from './role-navlinks/User-navLink.svelte';
 	import { getContext } from 'svelte';
+	import { NavUl, NavLi } from 'flowbite-svelte';
+	import UserNavLink from '$lib/components/navigation-components/role-navlinks/User-navLink.svelte';
 
 	const currentTenant = getContext('currentTenant');
 </script>
