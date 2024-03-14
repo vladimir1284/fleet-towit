@@ -50,18 +50,18 @@
 		<div class="sm:col-span-2">
 			<TextInputComponent
 				formPointer="comments"
-				form={form}
-				errors={errors}
-				constraints={constraints}
+				{form}
+				{errors}
+				{constraints}
 				placeholder="Type a comment..."
 			/>
 		</div>
 		<div class="sm:col-span-2">
 			<TextInputComponent
 				formPointer="reason"
-				form={form}
-				errors={errors}
-				constraints={constraints}
+				{form}
+				{errors}
+				{constraints}
 				placeholder="Type a reason..."
 			/>
 		</div>

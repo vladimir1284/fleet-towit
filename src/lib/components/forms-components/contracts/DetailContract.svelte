@@ -13,11 +13,9 @@
 	import ClientForm from '$lib/forms-components/clients/ClientForm.svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
-	
 	export let data: any;
 	export let selectedContract: any = undefined;
 	export let contractStagesList: any = undefined;
-
 
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
@@ -42,7 +40,8 @@
 			{ headers }
 		);
 		const contractStages = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
+			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`,
+			{ headers }
 		);
 		selectedContract = await contractData.json();
 		contractStagesList = await contractStages.json();
