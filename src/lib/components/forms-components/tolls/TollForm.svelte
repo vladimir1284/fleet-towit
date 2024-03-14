@@ -22,6 +22,7 @@
 	let headers;
 	let vehicles = [];
 	let attachFile = false;
+	let loading = false;
 
 	let fileSize = 0;
 
@@ -103,6 +104,7 @@
 	}
 
 	async function handleSubmit(event) {
+		loading = true;
 		event.preventDefault();
 		const formData = new FormData(event.target);
 		formData.set('vehicleId', findVehicleID($form.vehicleId));
@@ -114,10 +116,14 @@
 			headers: headers,
 			body: formData
 		});
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		} else {
-			console.log('Form submitted successfully');
+		try{
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			} else {
+				console.log('Form submitted successfully');
+			}
+		}finally{
+			loading = false;
 		}
 	}
 
@@ -196,6 +202,7 @@
 		<SubmitButtonComponent
 			placeholder={!selectedToll ? 'Create toll' : 'Update toll'}
 			styles="w-[70%] grow mx-auto block"
+			{loading}
 		/>
 		<Fileupload class="hidden" name="fileData" id="fileData" on:change={changeFile} />
 		{#if !attachFile}

@@ -6,7 +6,7 @@
 	export let loading: boolean = false;
 </script>
 
-<Button type="submit" class={styles} on:click={onClick}>
+<Button type="submit" class={styles} disabled={loading} on:click={onClick}>
 	{#if loading}
 		<Spinner size="5" color="white" />
 	{:else}

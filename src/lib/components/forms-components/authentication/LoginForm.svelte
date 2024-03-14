@@ -18,6 +18,8 @@
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				signIn('email', { email: form.data.email, callbackUrl: '/select-tenant' });
+			} else {
+				loading = false;
 			}
 		},
 		onSubmit: async () => {
@@ -60,13 +62,21 @@
 		<SubmitButtonComponent
 			placeholder="Login to your account"
 			styles="w-full color-blue"
-			loading={loading}
+			{loading}
 		/>
 		<ButtonComponent
 			placeholder="Sign in with Google"
 			color="light"
 			styles="justify-evenly text-blue-700 text-lg font-bold"
-			onClick={() => signIn('google')}
+			{loading}
+			onClick={() => {
+				try {
+					loading = true;
+					signIn('google');
+				} catch (error) {
+					loading = false;
+				}
+			}}
 		>
 			<!-- svelte-ignore illegal-attribute-character -->
 			<svg

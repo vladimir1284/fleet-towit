@@ -1,15 +1,16 @@
 <script lang="ts">
 	// @ts-nocheck
 	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { getContext } from 'svelte';
 	import { Select } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { z } from 'zod';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	export let data;
 	export let selectedUser;
 	export let tenantsList = [];
+	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant.currentUserTenant.tenantId}/users`;
@@ -53,6 +54,7 @@
 	}
 
 	async function handleSubmit(event) {
+		loading = true;
 		event.preventDefault();
 		$form.email = $form.email.trim();
 		const formData = new FormData(event.target);
@@ -64,10 +66,14 @@
 			headers: headers,
 			body: formData
 		});
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		} else {
-			console.log('Form submitted successfully');
+		try{
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			} else {
+				console.log('Form submitted successfully');
+			}
+		}finally{
+			loading = false;
 		}
 	}
 </script>
@@ -104,5 +110,6 @@
 	<SubmitButtonComponent
 		placeholder={!selectedUser ? 'Create user' : 'Update user'}
 		styles="w-[50%] mx-auto block"
+		{loading}
 	/>
 </form>

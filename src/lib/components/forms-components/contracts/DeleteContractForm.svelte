@@ -4,20 +4,27 @@
 	import { getContext } from 'svelte';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	export let data;
+	let loading = false;
 
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	const handleSubmit = async (event) => {
+		loading = true;
 		event.preventDefault();
 		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/${data}`, {
 			method: 'DELETE'
 		});
-		if (!response.ok) {
-			console.error('Failed to delete');
-			return;
+		try {
+			if (!response.ok) {
+				console.error('Failed to delete', response);
+				return;
+			}else {
+				console.log('Deleted successfully');
+				dispatch('formvalid', false);
+			}
+		} finally {
+			loading = false;
 		}
-		console.log('Deleted successfully');
-		dispatch('formvalid', false);
 	};
 </script>
 
@@ -29,5 +36,6 @@
 		placeholder="Delete"
 		styles="w-[50%] mx-auto block"
 		onClick={handleSubmit}
+		{loading}
 	/>
 </div>

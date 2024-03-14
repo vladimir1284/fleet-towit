@@ -5,6 +5,7 @@
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	export let tollId;
 	export let contractId;
+	let loading = false;
 
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
@@ -16,12 +17,17 @@
 				method: 'DELETE'
 			}
 		);
-		if (!response.ok) {
-			console.error('Failed to delete');
-			return;
+		try{
+			if (!response.ok) {
+				console.error('Failed to delete');
+				return;
+			}else {
+				console.log('Deleted successfully');
+				dispatch('formvalid', false);
+			}
+		}finally{
+			loading = false;
 		}
-		console.log('Deleted successfully');
-		dispatch('formvalid', false);
 	};
 </script>
 
@@ -33,5 +39,6 @@
 		placeholder="Delete"
 		styles="w-[50%] mx-auto block"
 		onClick={handleSubmit}
+		{loading}
 	/>
 </div>

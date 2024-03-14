@@ -7,6 +7,6 @@
 	"files.autoSave": "afterDelay", // optional but recommended
 	"vs-code-prettier-eslint.prettierLast": false,
 	"[svelte]": {
-		"editor.defaultFormatter": "ms-vsliveshare.vsliveshare"
+		"editor.defaultFormatter": "svelte.svelte-vscode"
 	} // set as "true" to run 'prettier' last not first
   }

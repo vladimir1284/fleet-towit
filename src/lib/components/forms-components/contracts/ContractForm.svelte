@@ -12,6 +12,7 @@
 	export let rentalPlans: [];
 	export let selectedContract: any = undefined;
 
+	let loading = false;
 	let clientsSelector: any = [];
 	let vehiclesSelector: any = [];
 	let rentalPlansSelector: any = [];

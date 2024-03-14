@@ -14,6 +14,7 @@
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant.id}/client`;
+	let loading = false;
 
 	const fixSchema = z.object({
 		name: z.string(),
@@ -44,6 +45,7 @@
 	}
 
 	async function handleSubmit(event) {
+		loading = true;
 		event.preventDefault();
 		$form.email = $form.email.trim();
 		const formData = new FormData(event.target);
@@ -55,10 +57,14 @@
 			headers: headers,
 			body: formData
 		});
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		} else {
-			console.log('Form submitted successfully');
+		try {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			} else {
+				console.log('Form submitted successfully');
+			}
+		} finally {
+			loading = false;
 		}
 	}
 </script>
@@ -86,5 +92,6 @@
 	<SubmitButtonComponent
 		placeholder={!selectedClient ? 'Create client' : 'Update client'}
 		styles="w-[50%] mx-auto block"
+		{loading}
 	/>
 </form>
