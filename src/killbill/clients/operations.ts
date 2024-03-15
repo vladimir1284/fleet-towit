@@ -71,7 +71,7 @@ async function createClient(args: Prisma.ClientCreateArgs) {
 
 	await accountApi.createAccountRaw({
 		body: newAccount,
-		xKillbillCreatedBy: 'admin'
+		xKillbillCreatedBy: 'admin' // TODO use the authenticated user that triggered the action
 	});
 }
 

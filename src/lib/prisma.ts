@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { bypassRLS, forTenant, forUser } from './rls_prisma';
 import { KillBillPExt } from '../killbill/prisma_ext';
+import { KILLBILL } from '$env/static/private';
 
 export let _prisma: PrismaClient;
 
@@ -18,7 +19,11 @@ if (process.env.NODE_ENV === 'production') {
 	_prisma = global.prisma;
 }
 
-export let prisma = _prisma.$extends(KillBillPExt);
+export let prisma = _prisma;
+if (KILLBILL) {
+	console.log('Kill Bill live sync!');
+	prisma = _prisma.$extends(KillBillPExt);
+}
 
 export const bypassPrisma = prisma.$extends(bypassRLS());
 export function tenantPrisma(tenant: number) {
