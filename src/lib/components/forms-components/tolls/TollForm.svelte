@@ -1,11 +1,13 @@
 <script lang="ts">
 	// @ts-nocheck
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { PaperClipOutline } from 'flowbite-svelte-icons';
 	import { createEventDispatcher, getContext } from 'svelte';
-	import { Select, Fileupload, Label } from 'flowbite-svelte';
+	import { Select, Fileupload, Label, Badge } from 'flowbite-svelte';
+	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
+	import { PaperClipOutline, ExclamationCircleSolid } from 'flowbite-svelte-icons';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
 	import DateInputComponent from '$lib/components/inputs/DateInputComponent.svelte';
 	import TollFileCard from '$lib/components/forms-components/tolls/TollFileCard.svelte';
@@ -13,11 +15,8 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import AutocompleteInputComponent from '$lib/components/inputs/AutocompleteInputComponent.svelte';
 
-
-
 	export let data;
 	export let selectedToll;
-
 
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
@@ -26,6 +25,8 @@
 	let attachFile = false;
 	let loading = false;
 	let fileSize = 0;
+	let selectedContract;
+	let formDisabled = true;
 
 	const getSize = function (size, exp = 0) {
 		if (size > 900) {
@@ -41,6 +42,22 @@
 			return size?.toFixed(1).toString() + ' ' + x[exp] + 'B';
 		}
 	};
+
+	async function getContractByDate(selectedDate: string, vehiclePlate: string) {
+		headers = { 'X-User-Tenant': $currentTenant.id };
+		let vehicleId = findVehicleID(vehiclePlate);
+		if (vehicleId) {
+			const response = await fetch(
+				`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&vehicle_id=${vehicleId}`,
+				{ headers }
+			);
+
+			selectedContract = await response.json();
+			console.log('FINDED ', selectedContract);
+		} else {
+			selectedContract = undefined;
+		}
+	}
 
 	onMount(async () => {
 		if ($form.invoice) {
@@ -68,7 +85,6 @@
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		SPA: true,
-		//validators: tollSchema,
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -117,108 +133,153 @@
 			headers: headers,
 			body: formData
 		});
-		try{
+		try {
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			} else {
 				console.log('Form submitted successfully');
 			}
-		}finally{
+		} finally {
 			loading = false;
 		}
 	}
 
 	function findVehicleID(plate) {
-		let selectedVehicle = vehicles.filter((vehicle) =>
-			vehicle['plate'].includes(plate.toUpperCase())
-		);
-		return selectedVehicle[0].id;
+		let selectedVehicle = vehicles.filter((vehicle) => vehicle['plate'] === plate.toUpperCase());
+		if (selectedVehicle.length) {
+			return selectedVehicle[0].id;
+		} else {
+			return undefined;
+		}
+	}
+
+	$: if ($form.vehicleId !== 0 && $form.vehicleId !== undefined && $form.createDate !== undefined) {
+		getContractByDate($form.createDate, $form.vehicleId);
+	}
+	$: if (selectedContract && selectedContract?.message !== 'no_data') {
+		formDisabled = false;
+	} else {
+		formDisabled = true;
 	}
 </script>
 
-<form
-	class="flex flex-col justify-center align-center space-y-6 gap-2"
-	method="POST"
-	enctype="multipart/form-data"
-	on:submit={handleSubmit}
-	use:enhance
->
-	<input hidden name="id" bind:value={$form.id} />
-	<input hidden name="invoice" bind:value={$form.invoice} />
-	<div class="sm:col-span-2">
-		<TextInputComponent
-			formPointer="invoiceNumber"
-			{form}
-			{errors}
-			{constraints}
-			placeholder="Invoice number"
-		/>
-	</div>
-
-	<div class="sm:col-span-2">
-		<DateInputComponent
-			formPointer="createDate"
-			{form}
-			{errors}
-			{constraints}
-			placeholder="Select date"
-		/>
-	</div>
-
-	<div class="sm:col-span-2">
-		<AutocompleteInputComponent
-			formPointer="vehicleId"
-			filterCriteria="plate"
-			{form}
-			{errors}
-			{constraints}
-			placeholder="Type vehicle plate"
-			suggestions={vehicles}
-		/>
-	</div>
-
-	<div class="sm:col-span-2">
-		<AmountInputComponent placeholder="Amount" {form} {errors} {constraints} />
-	</div>
-
-	<div class="sm:col-span-2">
-		<TextInputComponent formPointer="note" {form} {errors} {constraints} placeholder="Note" />
-	</div>
-	<div class={selectedToll ? 'sm:col-span-2' : 'hidden'}>
-		<Select
-			class="mt-2"
-			items={stageSelectorList}
-			name="stage"
-			placeholder="Select a stage..."
-			bind:value={$form.stage}
-		/>
-	</div>
-
-	{#if attachFile}
+<div class="flex flex-row justify-center align-center space-y-6 gap-4">
+	<form
+		class="flex flex-col justify-center align-center space-y-6 gap-2"
+		method="POST"
+		enctype="multipart/form-data"
+		on:submit={handleSubmit}
+		use:enhance
+	>
+		<input hidden name="id" bind:value={$form.id} />
+		<input hidden name="invoice" bind:value={$form.invoice} />
 		<div class="sm:col-span-2">
-			<TollFileCard fileName={$form.invoice} size={getSize(fileSize)} handleDelete={deleteFile} />
+			<TextInputComponent
+				formPointer="invoiceNumber"
+				{form}
+				{errors}
+				{constraints}
+				placeholder="Invoice number"
+			/>
+		</div>
+
+		<div class="sm:col-span-2">
+			<AutocompleteInputComponent
+				formPointer="vehicleId"
+				filterCriteria="plate"
+				{form}
+				{errors}
+				{constraints}
+				placeholder="Type vehicle plate"
+				suggestions={vehicles}
+			/>
+		</div>
+
+		<div class="sm:col-span-2">
+			<DateInputComponent
+				formPointer="createDate"
+				{form}
+				{errors}
+				{constraints}
+				placeholder="Select date"
+			/>
+		</div>
+
+		<div class="sm:col-span-2">
+			<AmountInputComponent placeholder="Amount" {form} {errors} {constraints} />
+		</div>
+
+		<div class="sm:col-span-2">
+			<TextInputComponent formPointer="note" {form} {errors} {constraints} placeholder="Note" />
+		</div>
+		<div class={selectedToll ? 'sm:col-span-2' : 'hidden'}>
+			<Select
+				class="mt-2"
+				items={stageSelectorList}
+				name="stage"
+				placeholder="Select a stage..."
+				bind:value={$form.stage}
+			/>
+		</div>
+
+		{#if attachFile}
+			<div class="sm:col-span-2">
+				<TollFileCard fileName={$form.invoice} size={getSize(fileSize)} handleDelete={deleteFile} />
+			</div>
+		{/if}
+		<div class="flex gap-1">
+			<SubmitButtonComponent
+				placeholder={!selectedToll ? 'Create toll' : 'Update toll'}
+				styles="w-[70%] grow mx-auto block"
+				{loading}
+				disabled={formDisabled}
+			/>
+			<Fileupload class="hidden" name="fileData" id="fileData" on:change={changeFile} />
+			{#if !attachFile}
+				<ButtonComponent
+					placeholder=""
+					outline
+					styles="w-[10%] flex justify-center align-center mx-auto"
+					onClick={() => {
+						document.getElementById('fileData')?.click();
+					}}
+				>
+					<Label>
+						<PaperClipOutline class="text-gray-400" />
+					</Label>
+				</ButtonComponent>
+			{/if}
+		</div>
+	</form>
+	{#if selectedContract && selectedContract?.message !== 'no_data'}
+		<div transition:slide={{ duration: 300, axis: 'x' }}>
+			<FeatureDefault>
+				<FeatureItem class="flex flex-row">
+					<svelte:fragment slot="h3">Contract information:</svelte:fragment>
+					<svelte:fragment slot="paragraph">
+						<Label class="my-4 w-max">
+							Status: <Badge class="my-1">{selectedContract?.stage.stage}</Badge>
+						</Label>
+						<Label class="my-4 w-max">Client name: {selectedContract?.client.name}</Label>
+						<Label class="my-4 w-max">Client email: {selectedContract?.client.email}</Label>
+						<Label class="my-4 w-max">
+							Client phone number: {selectedContract?.client.phoneNumber}
+						</Label>
+					</svelte:fragment>
+				</FeatureItem>
+			</FeatureDefault>
+		</div>
+	{:else if selectedContract && selectedContract?.message == 'no_data'}
+		<div class="flex justify-center align-center gap-2" transition:slide={{ duration: 300, axis: 'x' }}>
+			<ExclamationCircleSolid class="text-red-300" />
+			<FeatureDefault>
+				<FeatureItem class="flex flex-row">
+					<svelte:fragment slot="h3">No contract found:</svelte:fragment>
+					<svelte:fragment slot="paragraph">
+						<Label class="my-4 w-max">There is no active contract on selected date</Label>
+					</svelte:fragment>
+				</FeatureItem>
+			</FeatureDefault>
 		</div>
 	{/if}
-	<div class="flex gap-1">
-		<SubmitButtonComponent
-			placeholder={!selectedToll ? 'Create toll' : 'Update toll'}
-			styles="w-[70%] grow mx-auto block"
-			{loading}
-		/>
-		<Fileupload class="hidden" name="fileData" id="fileData" on:change={changeFile} />
-		{#if !attachFile}
-			<ButtonComponent
-				placeholder=""
-				outline
-				styles="w-[10%] flex justify-center align-center mx-auto"
-				onClick={() => {
-					document.getElementById('fileData')?.click();
-				}}
-			>
-				<Label>
-					<PaperClipOutline class="text-gray-400" />
-				</Label>
-			</ButtonComponent>
-		{/if}
-	</div>
-</form>
+</div>

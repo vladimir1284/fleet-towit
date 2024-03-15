@@ -10,7 +10,7 @@
 	import UpdateStage from './UpdateStage.svelte';
 	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import { Badge, Label, Timeline, TimelineItem } from 'flowbite-svelte';
-	import ClientForm from '$lib/forms-components/clients/ClientForm.svelte';
+	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
 	export let data: any;

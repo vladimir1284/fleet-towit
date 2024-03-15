@@ -2,7 +2,7 @@
 import { z } from "zod";
 import type { RequestHandler } from "@sveltejs/kit";
 import { actionResult, superValidate } from "sveltekit-superforms/server";
-import { getAllContracts, getContract, createContract, updateContract, deleteContract } from "$lib/actions/contracts";
+import { getAllContracts, getContract, createContract, updateContract, deleteContract, getContractByDateRange } from "$lib/actions/contracts";
 
 const fixSchema = z.object({
 	clientId: z.number(),
@@ -12,14 +12,26 @@ const fixSchema = z.object({
 });
 
 
-export const GET: RequestHandler = async ({ locals, params }) => {
+export const GET: RequestHandler = async ({ locals, params, url }) => {
 	let response: any;
 	const session = await locals.getSession();
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
+	const searchDate = url.searchParams.get('search_date') || 'undefined';
+	const _vehicleId = url.searchParams.get('vehicle_id') || 'undefined'
+
 	if (params.contractId) {
 		response = await getContract({ contractId: parseInt(params.contractId) });
+	} else if (searchDate !== 'undefined' && _vehicleId !== 'undefined' ) {
+        const date = new Date(searchDate);
+        const vehicleId = parseInt(_vehicleId)
+        const contract = await getContractByDateRange({vehicleId, date})
+		if (contract == null){
+			return new Response(JSON.stringify({message: 'no_data'}), {status: 404})
+		}else{
+			return new Response(JSON.stringify(contract), {status: 200})
+		}
 	} else {
 		response = await getAllContracts();
 	}

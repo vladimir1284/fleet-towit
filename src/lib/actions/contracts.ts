@@ -12,8 +12,16 @@ type updateContractStageType = {
     stage: Stage;
 };
 
-export const getAllContracts = async () => {
+export const getAllContracts = async (isAdminUser = false) => {
+    const _stage = isAdminUser ? undefined : 'DISMISS'
     const contracts = await bypassPrisma.contract.findMany({
+        where: {
+            NOT: {
+                stage: {
+                    stage: _stage
+                }
+            }
+        },
         include: {
             client: true,
             rentalPlan: true,
@@ -159,9 +167,18 @@ export const getContractByDateRange = async({vehicleId, date}: {vehicleId: numbe
             OR: [
                 {endDate: {gte: date}},
                 {endDate: null}
-            ]
+            ],
+            NOT: {
+                stage: {
+                    stage: 'DISMISS'
+                }
+            }
+        },
+        include: {
+            stage: true,
+            client: true,
+            vehicle: true
         }
     })
-    console.log(contract)
     return contract
 }
