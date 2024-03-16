@@ -1,11 +1,8 @@
-import type { Actions, PageServerLoad } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
 import { retrieveInspectionById } from '$lib/actions/inspections';
-import {
-	TEMPORARY_REDIRECT_STATUS,
-	MISSING_SECURITY_HEADER_STATUS,
-	PERMANENT_REDIRECT_STATUS
-} from '$lib/shared';
+import { TEMPORARY_REDIRECT_STATUS, PERMANENT_REDIRECT_STATUS } from '$lib/shared';
+import { FormFieldType } from '@prisma/client';
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
@@ -15,7 +12,7 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, url }) => {
 	const session = await verifySession(locals);
 
 	const inspectionId = Number(params.id);
@@ -37,7 +34,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// if inspection not have responses
 			if (!inspection?.responses.length) redirect_to_back();
 
-			return { inspection };
+			return { inspection, FormFieldType };
 		} catch (err) {
 			redirect_to_back();
 		}

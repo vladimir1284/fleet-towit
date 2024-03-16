@@ -1,5 +1,4 @@
-import { CostCategory } from "@prisma/client";
-import type { ExtendedBypassPrismaClient } from '../../src/lib/prisma'
+import { CostCategory } from '@prisma/client';
 
 const seedVehicles = async (prisma: ExtendedBypassPrismaClient) => {
 	console.log('Seeding vehicles data...');

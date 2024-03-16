@@ -3,16 +3,17 @@ import { bypassPrisma } from '../src/lib/prisma';
 import { PrismaPromise, Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
 import seedInspection from './seeders/inspections.seed';
-import seedParts from './seeders/part.seed';
-
+import { seedContracts } from './seeders/contracts.seed';
 const prisma = bypassPrisma;
 
 async function main() {
 	const usersData = [
 		{ email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'gsg2604@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
-		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true }
+		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true }
 		// Add more users as needed
 	];
 	const tenantsData = {
@@ -75,8 +76,8 @@ async function main() {
 	await seedVehicles(prisma);
 	// Inspection.
 	await seedInspection(prisma, [testTenantId, tenantId]);
-	// Parts.
-	await seedParts(prisma, [testTenantId, tenantId]);
+	// Contracts
+	await seedContracts(prisma);
 }
 
 main()

@@ -15,6 +15,7 @@ import {
 	SMTP_PASSWORD,
 	EMAIL_FROM,
 	ENVIRONMENT,
+	KILLBILL,
 	AUTH_SECRET
 } from '$env/static/private';
 import EmailProvider from '@auth/core/providers/email';
@@ -27,7 +28,15 @@ import bcrypt from 'bcryptjs';
 import { getAdminTenant } from '$lib/actions/admin';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
 import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
+import { building } from '$app/environment';
+import { syncKillBill } from './killbill/killbill';
 
+if (KILLBILL) {
+	console.log('Kill Bill initial sync!');
+	if (!building) {
+		syncKillBill();
+	}
+}
 const handleAuth = (async (...args) => {
 	const [{ event }] = args;
 	return SvelteKitAuth({

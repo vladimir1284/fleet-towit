@@ -6,10 +6,10 @@
 	"editor.formatOnSaveMode": "file", // required to format on save
 	"files.autoSave": "onFocusChange", // optional but recommended
 	"vs-code-prettier-eslint.prettierLast": false,
+	"[svelte]": {
+		"editor.defaultFormatter": "svelte.svelte-vscode"
+	},
 	"[typescript]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"[prisma]": {
-		"editor.defaultFormatter": "Prisma.prisma"
 	} // set as "true" to run 'prettier' last not first
   }

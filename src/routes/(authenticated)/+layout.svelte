@@ -33,11 +33,11 @@
 	<title>FLEET-TOWIT</title>
 </svelte:head>
 
-<div class="flex flex-col justify-between mx-auto w-full">
-	<header class="mb-20">
+<div class="flex flex-col mx-auto w-full min-h-screen max-h-screen">
+	<header class="flex">
 		<Header data={data.session.user} {currentTenant} />
 	</header>
-	<main class="flex justify-evenly flex-wrap w-full gap-2">
+	<main class="flex justify-evenly flex-wrap w-full h- gap-2">
 		<slot />
 	</main>
 </div>
