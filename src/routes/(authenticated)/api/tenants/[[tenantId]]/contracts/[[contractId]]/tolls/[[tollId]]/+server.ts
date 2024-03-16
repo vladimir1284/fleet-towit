@@ -1,9 +1,10 @@
 import { z } from "zod";
 import type { RequestHandler } from "@sveltejs/kit";
-import { actionResult, superValidate } from "sveltekit-superforms/server";
+import { actionResult, setError, superValidate } from "sveltekit-superforms/server";
 import { createToll, deleteToll, listTollsByContractId, updateToll, listTolls } from "$lib/actions/tolls";
 import { getContractByDateRange } from "$lib/actions/contracts";
 import { minioClient } from "$lib/minio";
+import type { $Enums } from "@prisma/client";
 
 const tollSchema = z.object({
     amount: z.number().gte(0),
@@ -48,7 +49,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
     const form = await superValidate(formData, tollSchema);
     const file = formData.get('fileData');
     if (form.valid) {
-        let toll
+        let toll: { contractId: number; id: number; vehicleId: number; note: string | null; amount: number; stage: $Enums.TollDueStage; invoice: string | null; invoiceNumber: string | null; createDate: Date; };
         const contract = await getContractByDateRange({vehicleId: form.data.vehicleId, date: form.data.createDate})
         form.data.contractId = contract?.id || NaN
         if (!params.tollId) {
@@ -76,21 +77,30 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
                 note: form.data.note,
             })
         }
-        if (file instanceof File) {
-            const buff = Buffer.from(await file.arrayBuffer());
-            if (file.size) {
-                console.log('start upload');
-                await minioClient
-                    .putObject('develop', `/contracts/${form.data.contractId}/tolls/${toll.id}/${file.name}`, buff)
-                    .catch((e) => {
-                        console.log('error re loco', e);
-                    })
-                    .finally(async () => {
-                        console.log('finished');
-                    });
+
+        try{
+
+            if (file instanceof File) {
+                const buff = Buffer.from(await file.arrayBuffer());
+                if (file.size) {
+                    console.log('start upload');
+                    await minioClient
+                    .putObject('develop', `/contracts/${form.data.contractId}/tolls/${toll.id}/${file.name}`, buff);
+                    return actionResult('success', { form }, { status: 200 })
+                }else {
+                    return actionResult('success', { form }, { status: 200 })
+                }
+            } else {
+                return actionResult('success', { form }, { status: 200 })
             }
+        }catch {
+            await deleteToll({id: toll.id});
+
+            setError(form, 'invoice', 'Invalid')
+            
+            return actionResult('failure', { form }, { status: 400 })
         }
-        return actionResult('success', { form }, { status: 200 })
+
     } else {
         return actionResult('failure', { form }, { status: 400 })
     }

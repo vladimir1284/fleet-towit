@@ -84,12 +84,7 @@
 	let actionURL = `/api/tenants/${$currentTenant.id}/contracts/tolls`;
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
-		SPA: true,
-		onUpdated: async ({ form }) => {
-			if (form.valid) {
-				dispatch('formvalid', false);
-			}
-		}
+		SPA: true
 	});
 
 	if (selectedToll) {
@@ -134,9 +129,15 @@
 			body: formData
 		});
 		try {
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
+			if (response.status !== 200) {
+				const responseData = await response.json();
+				console.log(responseData);
+				Object.keys(responseData.data.errors).forEach((field) => {
+					console.log(field, errors[field]);
+					setError(form, field, errors[field]);
+				});
 			} else {
+				dispatch('formvalid', false);
 				console.log('Form submitted successfully');
 			}
 		} finally {
@@ -270,7 +271,10 @@
 			</FeatureDefault>
 		</div>
 	{:else if selectedContract && selectedContract?.message == 'no_data'}
-		<div class="flex justify-center align-center gap-2" transition:slide={{ duration: 300, axis: 'x' }}>
+		<div
+			class="flex justify-center align-center gap-2"
+			transition:slide={{ duration: 300, axis: 'x' }}
+		>
 			<ExclamationCircleSolid class="text-red-300" />
 			<FeatureDefault>
 				<FeatureItem class="flex flex-row">

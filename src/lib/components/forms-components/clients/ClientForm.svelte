@@ -33,11 +33,6 @@
 	const { form, errors, constraints, enhance } = superForm(data, {
 		SPA: true,
 		validators: fixSchema,
-		onUpdated: async ({ form }) => {
-			if (form.valid) {
-				dispatch('formvalid', false);
-			}
-		}
 	});
 
 	if (selectedClient) {
@@ -65,6 +60,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			} else {
+				dispatch('formvalid', false);
 				console.log('Form submitted successfully');
 			}
 		} finally {
