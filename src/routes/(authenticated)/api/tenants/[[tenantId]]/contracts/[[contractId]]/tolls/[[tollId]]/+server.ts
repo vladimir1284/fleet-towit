@@ -105,7 +105,12 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
         }
 
     } else {
-        return actionResult('failure', { form }, { status: 400 })
+        return new Response(JSON.stringify({
+            status: 'failure',
+            data: {
+                errors: form.errors
+            },
+            message: 'Form validation failed'}), { status: 400 })
     }
 }
 
