@@ -106,7 +106,7 @@
 		</div>
 		<div class="flex sm:col-span-2 justify-center items-center">
 			<SubmitButtonComponent
-				placeholder={!selectedContract ? 'Create plan' : 'Update plan'}
+				placeholder={!selectedContract ? 'Create contract' : 'Update contract'}
 				styles="w-40"
 			/>
 		</div>

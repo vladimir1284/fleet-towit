@@ -2,41 +2,54 @@
 	// @ts-nocheck
 	import { getContext } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { superForm } from 'sveltekit-superforms/client';
+	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
 
-	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
-	const handleSubmit = async (event) => {
-		loading = true;
-		event.preventDefault();
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/${data}`, {
-			method: 'DELETE'
-		});
-		try {
-			if (!response.ok) {
-				console.error('Failed to delete', response);
-				return;
-			}else {
-				console.log('Deleted successfully');
+	let actionURL = `/api/tenants/${$currentTenant?.id}/contracts/${data}/stage`;
+
+	const { form, errors, constraints, enhance } = superForm(data.stageForm, {
+		onUpdated: async ({ form }) => {
+			if (form.valid) {
 				dispatch('formvalid', false);
 			}
-		} finally {
-			loading = false;
 		}
-	};
+	});
+
+	if (data) {
+		$form.stage = 'DISMISS';
+	}
 </script>
 
-<div class="flex flex-col justify-center align-center space-y-6">
-	<div class="sm:col-span-2">
-		<h1>Delete?</h1>
+<form method="POST" use:enhance action={actionURL}>
+	<div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
+		<input hidden name="id" bind:value={$form.id} />
+		<input hidden name="stage" bind:value={$form.stage} />
+		<div class="sm:col-span-2">
+			<TextInputComponent
+				formPointer="reason"
+				{form}
+				{errors}
+				{constraints}
+				placeholder="Type a reason..."
+			/>
+		</div>
+		<div class="sm:col-span-2">
+			<TextInputComponent
+				formPointer="comments"
+				{form}
+				{errors}
+				{constraints}
+				placeholder="Type a comment..."
+			/>
+		</div>
+		<div class="sm:col-span-2"></div>
+		<div class="flex sm:col-span-2 justify-center items-center">
+			<SubmitButtonComponent placeholder="Dismiss" styles="w-40" />
+		</div>
 	</div>
-	<SubmitButtonComponent
-		placeholder="Delete"
-		styles="w-[50%] mx-auto block"
-		onClick={handleSubmit}
-		{loading}
-	/>
-</div>
+</form>

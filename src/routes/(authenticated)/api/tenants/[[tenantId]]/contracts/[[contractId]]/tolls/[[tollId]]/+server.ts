@@ -12,7 +12,7 @@ const tollSchema = z.object({
     contractId: z.number(),
     stage: z.enum(['PAID', 'UNPAID']),
     invoice: z.string().optional(),
-    invoiceNumber: z.string().optional(),
+    invoiceNumber: z.string().min(1),
     createDate: z.date(),
     note: z.string().optional()
 })
@@ -46,8 +46,10 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
         return new Response('Forbidden', { status: 403 });
     }
     const formData = await request.formData();
+    console.log('FORMDATA', formData)
     const form = await superValidate(formData, tollSchema);
     const file = formData.get('fileData');
+    console.log('FORM', form)
     if (form.valid) {
         let toll: { contractId: number; id: number; vehicleId: number; note: string | null; amount: number; stage: $Enums.TollDueStage; invoice: string | null; invoiceNumber: string | null; createDate: Date; };
         const contract = await getContractByDateRange({vehicleId: form.data.vehicleId, date: form.data.createDate})

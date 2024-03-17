@@ -54,7 +54,6 @@
 			);
 
 			selectedContract = await response.json();
-			console.log('FINDED ', selectedContract);
 		} else {
 			selectedContract = undefined;
 		}
@@ -141,7 +140,7 @@
 				console.log(response);
 				if (response.data.errors) {
 					Object.keys(response.data.errors).forEach((field) => {
-						if (!field == '_errors') {
+						if (!(field == '_errors')) {
 							$errors[field] = response.data.errors[field][0];
 						} else {
 							handleAlert();
