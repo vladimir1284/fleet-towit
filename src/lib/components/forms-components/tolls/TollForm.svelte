@@ -4,8 +4,8 @@
 	import { slide } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { createEventDispatcher, getContext } from 'svelte';
-	import { Select, Fileupload, Label, Badge } from 'flowbite-svelte';
 	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
+	import { Select, Fileupload, Label, Badge, Alert } from 'flowbite-svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 	import { PaperClipOutline, ExclamationCircleSolid } from 'flowbite-svelte-icons';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
@@ -27,6 +27,7 @@
 	let fileSize = 0;
 	let selectedContract;
 	let formDisabled = true;
+	let showAlert = false;
 
 	const getSize = function (size, exp = 0) {
 		if (size > 900) {
@@ -114,6 +115,13 @@
 		attachFile = !attachFile;
 	}
 
+	function handleAlert() {
+		showAlert = true;
+		setTimeout(() => {
+			showAlert = false;
+		}, 10000);
+	}
+	
 	async function handleSubmit(event) {
 		loading = true;
 		event.preventDefault();
@@ -135,6 +143,8 @@
 					Object.keys(response.data.errors).forEach((field) => {
 						if (!field == '_errors') {
 							$errors[field] = response.data.errors[field][0];
+						} else {
+							handleAlert();
 						}
 					});
 				}
@@ -253,6 +263,11 @@
 				</ButtonComponent>
 			{/if}
 		</div>
+		{#if showAlert}
+			<Alert class="fixed bottom-0 right-0 m-4 z-1" color="red" dismissable>
+				Cannot connect to server to upload file
+			</Alert>
+		{/if}
 	</form>
 	{#if selectedContract && selectedContract?.message !== 'no_data'}
 		<div transition:slide={{ duration: 300, axis: 'x' }}>

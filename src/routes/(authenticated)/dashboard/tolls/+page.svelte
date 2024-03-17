@@ -111,8 +111,8 @@
 		});
 		tolls = [...(await response.json())];
 	}
-
 </script>
+
 {#if loading}
 	<p>Loading...</p>
 {:else}
@@ -120,7 +120,7 @@
 		<TollForm {data} on:formvalid={handleCloseModal} />
 	</Modal>
 
-	<Modal bind:open={editModal} size="xs">
+	<Modal bind:open={editModal} class="w-fit min-w-[25vw]">
 		<TollForm {data} {selectedToll} on:formvalid={handleCloseEditModal} />
 	</Modal>
 
