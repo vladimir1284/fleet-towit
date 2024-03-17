@@ -95,10 +95,13 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
             }
         }catch {
             await deleteToll({id: toll.id});
-
-            setError(form, 'invoice', 'Invalid')
-            
-            return actionResult('failure', { form }, { status: 400 })
+            setError(form, 'Error sending the file')
+            return new Response(JSON.stringify({
+                status: 'failure', 
+                data: {
+                    errors: form.errors
+                },
+                message: 'Fail'}), {status: 400})
         }
 
     } else {

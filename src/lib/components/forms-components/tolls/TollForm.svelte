@@ -62,7 +62,8 @@
 	onMount(async () => {
 		if ($form.invoice) {
 			fetch(
-				`https://minios3.crabdance.com/develop/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}/${selectedToll.invoice}`
+				`https://minios3.crabdance.com/develop/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}/${selectedToll.invoice}`,
+				{ method: 'HEAD' }
 			).then((r) => {
 				fileSize = parseInt(r.headers.get('Content-Length'));
 			});
@@ -70,9 +71,7 @@
 			attachFile = true;
 		}
 		headers = { 'X-User-Tenant': $currentTenant.id };
-		const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, {
-			headers
-		});
+		const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, { headers });
 		vehicles = [...(await vehiclesResponse.json())];
 	});
 
@@ -123,19 +122,22 @@
 		const headers = {
 			'X-User-Tenant': $currentTenant.currentUserTenant.id
 		};
-		const response = await fetch(actionURL, {
+		const request = await fetch(actionURL, {
 			method: 'POST',
 			headers: headers,
 			body: formData
 		});
 		try {
-			if (response.status !== 200) {
-				const responseData = await response.json();
-				console.log(responseData);
-				Object.keys(responseData.data.errors).forEach((field) => {
-					console.log(field, errors[field]);
-					setError(form, field, errors[field]);
-				});
+			if (request.status !== 200) {
+				const response = await request.json();
+				console.log(response);
+				if (response.data.errors) {
+					Object.keys(response.data.errors).forEach((field) => {
+						if (!field == '_errors') {
+							$errors[field] = response.data.errors[field][0];
+						}
+					});
+				}
 			} else {
 				dispatch('formvalid', false);
 				console.log('Form submitted successfully');
