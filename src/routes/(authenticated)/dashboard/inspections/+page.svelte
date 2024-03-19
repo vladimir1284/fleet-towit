@@ -40,9 +40,9 @@
 					<TableBodyCell>{inspection.id}</TableBodyCell>
 					<TableBodyCell>{inspection.customForm.name}</TableBodyCell>
 					<TableBodyCell>
-						{inspection.createdAt.getDate() + 1} /
+						{inspection.createdAt.getDate()} /
 						{inspection.createdAt.getMonth() + 1} /
-						{inspection.createdAt.getFullYear() + 1}
+						{inspection.createdAt.getFullYear()}
 					</TableBodyCell>
 					<TableBodyCell
 						><a href={`${$page.url.pathname}/read/${inspection.id}`}>Read</a></TableBodyCell

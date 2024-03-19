@@ -2,94 +2,94 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { CheckOption } from '@prisma/client';
-	import { Button, Input, Label, Select, Helper } from 'flowbite-svelte';
+	import { Button, Input, Label, Select, Helper, Modal } from 'flowbite-svelte';
 	import {
 		TrashBinOutline,
 		PenOutline,
 		CheckOutline,
 		CloseOutline,
-		PlusOutline
+		PlusOutline,
+		ArrowDownOutline
 	} from 'flowbite-svelte-icons';
-	import DeleteCustomFromModal from '$lib/components/forms-components/custom-forms/DeleteCustomFormModal.svelte';
+	import DeleteCustomFormModal from '$lib/components/forms-components/custom-forms/DeleteCustomFormModal.svelte';
 	import DeleteCardModal from '$lib/components/forms-components/custom-forms/DeleteCardModal.svelte';
 
 	export let data: PageData;
 
 	if (data?.redirect_to) goto(`/dashboard/inspections/forms/${data.redirect_to}/`);
 
-	const { form, constraints } = superForm(data.form);
+	const { form, constraints, enhance } = superForm(data.form);
 
 	// modals
 	let openDeleteFormModal = false;
-	const handleDeleteFormModalClose = () => (openDeleteFormModal = false);
+	const handlerDeleteFormModalClose = () => (openDeleteFormModal = false);
 
 	let openDeleteCardModal = false;
-	const handleDeleteCardModalClose = () => (openDeleteCardModal = false);
+	const handlerDeleteCardModalClose = () => (openDeleteCardModal = false);
+
+	// delete and edit card
+	let idCardSelected: number;
+
+	// new card
+	let newCardName: string;
 
 	// edit form name
 	let isEditFormName = false;
 	let formName = data.customForm?.name;
 
-	// edit card
-	let isEditCard = false;
-
-	let editCheckOptions: (CheckOption | string)[];
-	$: stringifyEditCheckOptions = JSON.stringify(editCheckOptions);
-
-	let cardTypeSelect: string;
-
-	let newCardName: string;
-
-	const setCardTypeToEdit = (fieldType: data.FormFieldType) => {
-		if (fieldType === data.FormFieldType.TEXT) cardTypeSelect = 'text';
-
-		if (fieldType === data.FormFieldType.NUMBER) cardTypeSelect = 'number';
-
-		if (fieldType === data.FormFieldType.CHECKBOXES) cardTypeSelect = 'checkboxes';
-
-		if (fieldType === data.FormFieldType.SINGLE_CHECK) cardTypeSelect = 'single_check';
-	};
-
-	// checkboxes input (can have multiple inputs)
-	let checkBoxes = [''];
-	$: stringifyCheckBoxes = JSON.stringify(checkBoxes);
-
-	// single checkboxes (only have 2 inputs)
-	let singleCheckboxes = ['', ''];
-	$: stringifySingleCheckboxes = JSON.stringify(singleCheckboxes);
-
-	// delete and edit card
-	let idCardSelected: number;
-
-	// select component
-	let selected: string;
-
+	//
 	let cardTypes = [
 		{
-			value: 'number',
+			value: 'NUMBER',
 			name: 'Data Entry Numeric',
 			description: 'User is able to input numeric data.'
 		},
 		{
-			value: 'text',
+			value: 'TEXT',
 			name: 'Data Entry Alphanumeric',
 			description: 'User is able to input alphanumeric data.'
 		},
 		{
-			value: 'checkboxes',
-			name: 'Checkboxes',
-			description: 'User is able to select multiple options.'
-		},
-		{
-			value: 'single_check',
+			value: 'SINGLE_CHECK',
 			name: 'Single Check',
 			description: 'User is able to check (pass or fail) a single point.'
 		}
 	];
+
+	interface Field {
+		labelName: string;
+		type: data.FormFieldType;
+		pointPass?: string;
+		pointFail?: string;
+	}
+
+	let fields: Field[] = [];
+	let cardTypeSelect: data.FormFieldType;
+	let labelName: string;
+	let pointPass: string;
+	let pointFail: string;
+
+	$: stringifyFields = JSON.stringify(fields);
+
+	const addFieldToCard = () => {
+		fields = [
+			...fields,
+			{
+				labelName: labelName,
+				type: cardTypeSelect,
+				pointPass,
+				pointFail
+			}
+		];
+
+		labelName = '';
+		pointPass = undefined;
+		pointFail = undefined;
+	};
 </script>
 
 <section class="flex flex-col gap-4 w-full sm:w-2/3 pb-10 p-1">
+	<!-- nombre del formulario -->
 	<div class="flex justify-between gap-4 shadow bg-white p-6 rounded-lg">
 		{#if isEditFormName}
 			<!-- Form -->
@@ -127,9 +127,14 @@
 				class="text-lg lg:text-2xl inline-flex gap-4 font-bold break-all text-gray-900 dark:text-white w-1/2"
 			>
 				{formName}
-
-				<Button outline size="xs" color="light" class="h-max">
-					<PenOutline on:click={() => (isEditFormName = true)} class="h-5 w-5" />
+				<Button
+					on:click={() => (isEditFormName = true)}
+					outline
+					size="xs"
+					color="light"
+					class="h-max"
+				>
+					<PenOutline class="h-5 w-5" />
 				</Button>
 			</h5>
 		{/if}
@@ -143,259 +148,130 @@
 		>
 	</div>
 
-	<div class="flex flex-col lg:flex-row gap-4">
-		<!-- Edit Card -->
-		{#if isEditCard}
-			<div class="w-full lg:w-1/2 h-max bg-white rounded-lg shadow p-6">
-				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-					Edit card
-				</h5>
-				<div>
-					<Label>
-						Select an option
-						<Select class="mt-2" items={cardTypes} bind:value={cardTypeSelect} />
-					</Label>
-					<Helper class="mt-2">
-						{#each cardTypes as { value, description }}
-							{#if cardTypeSelect === value}
-								<p>{description}</p>
-							{/if}
-						{/each}
-					</Helper>
-				</div>
-
-				<div class="border-t mt-4 py-4">
-					<!-- Form -->
-					<form method="post" class="space-y-4" action="?/updateField">
-						<input name="card_type" type="hidden" bind:value={cardTypeSelect} />
-						<input name="card_id" type="hidden" bind:value={idCardSelected} />
-						<input name="checkboxes" type="hidden" bind:value={stringifyEditCheckOptions} />
-
-						<Label class="space-y-2">
-							<span>Card name*</span>
-							<Input
-								name="new_card_name"
-								type="text"
-								placeholder="Type here"
-								bind:value={newCardName}
-							/>
-						</Label>
-
-						<!-- checkboxes -->
-
-						{#if cardTypeSelect === 'checkboxes'}
-							<div class="space-y-4 mb-4">
-								{#if editCheckOptions}
-									{#each editCheckOptions as options, index}
-										<!-- button to delete this option -->
-										<Button
-											disabled={editCheckOptions.length <= 1 ? true : false}
-											type="button"
-											size="xs"
-											color="light"
-											on:click={() =>
-												(editCheckOptions = editCheckOptions.filter((_, i) => i !== index))}
-										>
-											<CloseOutline class="w-2 h-2" />
-										</Button>
-
-										<Label class="space-y-2" key={index}>
-											<span>Point {index + 1}*</span>
-											{#if options?.id}
-												<Input
-													type="text"
-													placeholder="Type here"
-													bind:value={options.name}
-													required
-												/>
-											{:else}
-												<Input
-													type="text"
-													placeholder="Type here"
-													bind:value={editCheckOptions[index]}
-													required
-												/>
-											{/if}
-										</Label>
-									{/each}
-								{/if}
-								<!-- button to add another option -->
-								<Button
-									color="light"
-									size="xs"
-									on:click={() => (editCheckOptions = [...editCheckOptions, ''])}
-								>
-									<PlusOutline class="w-3 h-3 me-2" />
-									Add another option</Button
-								>
-							</div>
-
-							<!-- single checkbox -->
-
-							<!-- single check -->
-						{:else if cardTypeSelect === 'single_check'}
-							<div class="space-y-4 mb-4">
-								<Label class="space-y-2">
-									<span class="text-green-400">Point pass*</span>
-									<Input
-										type="text"
-										placeholder="Type here"
-										bind:value={editCheckOptions[0].name}
-										required
-									/>
-								</Label>
-
-								<Label class="space-y-2">
-									<span class="text-red-500">Point fail*</span>
-									<Input
-										type="text"
-										placeholder="Type here"
-										bind:value={editCheckOptions[1].name}
-										required
-									/>
-								</Label>
-							</div>
+	<!-- create card -->
+	<div class="flex w-full gap-4">
+		<div class="bg-white p-4 flex flex-col gap-4 shadow rounded-lg w-1/2 h-max">
+			<div>
+				<Label for="card_name" class="mb-2">Card name*</Label>
+				<Input
+					bind:value={newCardName}
+					type="text"
+					id="card_name"
+					placeholder="Type here"
+					required
+				/>
+			</div>
+			<!-- select -->
+			<div>
+				<Label>
+					Select an option
+					<Select class="mt-2" items={cardTypes} bind:value={cardTypeSelect} />
+				</Label>
+				<Helper class="mt-2">
+					{#each cardTypes as { value, description }}
+						{#if cardTypeSelect === value}
+							<p>{description}</p>
 						{/if}
-
-						<div class="inline-flex gap-4">
-							<Button on:click={() => (isEditCard = false)} outline color="red">Cancel</Button>
-							<Button type="submit" color="blue">Update</Button>
-						</div>
-					</form>
-					<!-- Form -->
-				</div>
+					{/each}
+				</Helper>
 			</div>
-		{:else}
-			<!-- Add Card  -->
-			<div class="w-full lg:w-1/2 h-max bg-white rounded-lg shadow p-6">
-				<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-					Add card
-				</h5>
-				<div>
-					<Label>
-						Select an option
-						<Select class="mt-2" items={cardTypes} bind:value={selected} />
+			<!-- /select -->
+
+			{#if cardTypeSelect}
+				<div class="border-t mt-4 py-4 flex flex-col gap-4">
+					<!-- label field -->
+					<Label class="space-y-2">
+						<span>Label name*</span>
+						<Input name="label_name" type="text" placeholder="Type here" bind:value={labelName} />
 					</Label>
-					<Helper class="mt-2">
-						{#each cardTypes as { value, description }}
-							{#if selected === value}
-								<p>{description}</p>
+
+					{#if cardTypeSelect === 'SINGLE_CHECK'}
+						<div class="space-y-4 mb-4">
+							<Label class="space-y-2">
+								<span class="text-green-400">Point pass*</span>
+								<Input type="text" placeholder="Type here" bind:value={pointPass} />
+							</Label>
+
+							<Label class="space-y-2">
+								<span class="text-red-500">Point fail*</span>
+								<Input type="text" placeholder="Type here" bind:value={pointFail} />
+							</Label>
+						</div>
+					{/if}
+
+					<div class="inline-flex gap-4">
+						<Button on:click={() => (cardTypeSelect = '')} outline color="red">Cancel</Button>
+						<Button type="button" color="blue" on:click={addFieldToCard}>Add field</Button>
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		<!-- view custom fields -->
+		<div class="bg-white h-max p-4 flex flex-col gap-4 shadow rounded-lg w-1/2">
+			<h4 class="font-semibold text-lg">{newCardName ? newCardName : 'New Card'}</h4>
+			<div class="h-80 overflow-y-auto border rounded-lg">
+				{#each fields as field, index}
+					<div class="p-2 flex flex-col">
+						<!-- field label -->
+						{field.labelName}
+
+						<!-- field type -->
+						{#each cardTypes as ct}
+							{#if ct.value === field.type}
+								<p class="text-blue-500">{ct.name}</p>
 							{/if}
 						{/each}
-					</Helper>
-				</div>
 
-				{#if selected}
-					<div class="border-t mt-4 py-4">
-						<!-- Form -->
-						<form method="post" class="space-y-4" action="?/addField">
-							<input name="form_id" type="hidden" bind:value={data.customForm.id} />
-							<input name="card_type" type="hidden" bind:value={selected} />
-
-							{#if selected}
-								<Label class="space-y-2">
-									<span>Card name*</span>
-									<Input
-										name="card_name"
-										type="text"
-										placeholder="Type here"
-										{...$constraints.card_name}
-										bind:value={$form.card_name}
-									/>
-								</Label>
-							{/if}
-							<!-- checkboxes -->
-							{#if selected === 'checkboxes'}
-								<input type="hidden" name="checkboxes" bind:value={stringifyCheckBoxes} />
-
-								<div class="space-y-4 mb-4">
-									{#each checkBoxes as checkbox, index}
-										<Button
-											disabled={checkBoxes.length <= 1 ? true : false}
-											type="button"
-											size="xs"
-											color="light"
-											on:click={() => (checkBoxes = checkBoxes.filter((_, i) => i !== index))}
-										>
-											<CloseOutline class="w-2 h-2" />
-										</Button>
-										<Label class="space-y-2" key={index}>
-											<span>Point {index + 1}*</span>
-											<Input
-												type="text"
-												placeholder="Type here"
-												bind:value={checkBoxes[index]}
-												required
-											/>
-										</Label>
-									{/each}
-
-									<Button
-										color="light"
-										size="xs"
-										on:click={() => (checkBoxes = [...checkBoxes, ''])}
-									>
-										<PlusOutline class="w-3 h-3 me-2" />
-										Add another option</Button
-									>
-								</div>
-
-								<!-- single checkbox -->
-							{:else if selected === 'single_check'}
-								<input type="hidden" name="checkboxes" bind:value={stringifySingleCheckboxes} />
-								<div class="space-y-4 mb-4">
-									<Label class="space-y-2">
-										<span class="text-green-400">Point pass*</span>
-										<Input
-											type="text"
-											placeholder="Type here"
-											bind:value={singleCheckboxes[0]}
-											required
-										/>
-									</Label>
-
-									<Label class="space-y-2">
-										<span class="text-red-500">Point fail*</span>
-										<Input
-											type="text"
-											placeholder="Type here"
-											bind:value={singleCheckboxes[1]}
-											required
-										/>
-									</Label>
-								</div>
-							{/if}
-
-							<div class="inline-flex gap-4">
-								<Button on:click={() => (selected = '')} outline color="red">Cancel</Button>
-								<Button type="submit" color="blue">Add</Button>
-							</div>
-						</form>
-						<!-- Form -->
+						<Button
+							type="button"
+							size="xs"
+							color="light"
+							class="w-max"
+							on:click={() => (fields = fields.filter((_, i) => i !== index))}
+						>
+							<CloseOutline class="w-2 h-2" />
+						</Button>
 					</div>
-				{/if}
+					<div class="border-b"></div>
+				{/each}
 			</div>
-		{/if}
 
-		<div class="w-full lg:w-1/2 bg-white rounded-lg shadow p-6 h-max">
-			<h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-				Cards ({data.customForm.fields.length})
-			</h5>
+			<form method="post" action="?/addCard" use:enhance>
+				<input
+					type="hidden"
+					name="card_name"
+					bind:value={newCardName}
+					{...$constraints.card_name}
+				/>
+				<input
+					type="hidden"
+					name="form_id"
+					bind:value={data.customForm.id}
+					{...$constraints.form_id}
+				/>
+				<input type="hidden" name="fields" bind:value={stringifyFields} {...$constraints.fields} />
+				<Button type="submit">Create card</Button>
+			</form>
+		</div>
+	</div>
 
-			<div class="grid grid-cols-1 gap-4 h-96 overflow-y-auto">
-				<!-- List Cards -->
-				{#each data.customForm.fields as field}
-					<div class="shadow bg-white p-6 rounded-lg">
-						<h5 class="font-medium text-lg text-gray-800">
-							{field.name}
-						</h5>
-
-						{#if field.type === data.FormFieldType.NUMBER}
-							<p class="text-blue-500">{cardTypes[0].name}</p>
-						{:else if field.type === data.FormFieldType.TEXT}
-							<p class="text-blue-500">{cardTypes[1].name}</p>
-						{:else if field.type === data.FormFieldType.CHECKBOXES || field.type === data.FormFieldType.SINGLE_CHECK}
-							<!-- list options -->
+	<!-- card list -->
+	<div class="bg-white shadow rounded-lg p-4 flex flex-col gap-4">
+		<h4 class="font-bold text-xl">Cards ({data.customForm.cards.length})</h4>
+		<div class="border-t"></div>
+		{#each data.customForm.cards as card}
+			<div class="border-b pb-4">
+				<h5 class="font-semibold text-lg underline">
+					{card.name}:
+				</h5>
+				<div class="ml-4 mt-4 flex flex-col gap-2">
+					{#each card.fields as field}
+						<!-- field -->
+						<div class="border p-2 rounded-lg">
+							<h5 class="font-medium text-lg">
+								{field.name}
+							</h5>
 							{#if field.checkOptions}
 								<ul class="list-disc list-inside">
 									{#each field.checkOptions as options}
@@ -405,59 +281,43 @@
 									{/each}
 								</ul>
 							{/if}
-							{#if field.type == 'SINGLE_CHECK'}
-								<p class="text-blue-500">{cardTypes[3].name}</p>
-							{:else}
-								<p class="text-blue-500">{cardTypes[2].name}</p>
-							{/if}
-						{/if}
-
-						<div class="flex gap-4">
-							<!-- delete button -->
-							<Button
-								outline
-								size="xs"
-								color="light"
-								on:click={() => {
-									idCardSelected = field.id;
-									openDeleteCardModal = true;
-								}}
-							>
-								<TrashBinOutline class="h-4 w-4" />
-							</Button>
-							<!-- edit button -->
-							<Button
-								on:click={() => {
-									isEditCard = true;
-									newCardName = field.name;
-									idCardSelected = field.id;
-									setCardTypeToEdit(field.type);
-									editCheckOptions = field.checkOptions.length >= 1 ? field.checkOptions : [''];
-								}}
-								outline
-								size="xs"
-								color="light"
-							>
-								<PenOutline class="h-4 w-4" />
-							</Button>
+							{#each cardTypes as ct}
+								{#if ct.value === field.type}
+									<span class="text-blue-500 font-normal">{ct.name}</span>
+								{/if}
+							{/each}
 						</div>
-					</div>
-				{/each}
+					{/each}
+				</div>
+				<div class="ml-4 mt-4">
+					<!-- delete field button -->
+					<Button
+						outline
+						size="xs"
+						color="light"
+						on:click={() => {
+							idCardSelected = card.id;
+							openDeleteCardModal = true;
+						}}
+					>
+						<TrashBinOutline class="h-4 w-4" />
+					</Button>
+				</div>
 			</div>
-		</div>
+		{/each}
 	</div>
 
 	<!-- Modal to delete Form-->
-	<DeleteCustomFromModal
+	<DeleteCustomFormModal
 		isOpen={openDeleteFormModal}
-		onClose={handleDeleteFormModalClose}
+		onClose={handlerDeleteFormModalClose}
 		customFormId={data.customForm.id}
 	/>
 
 	<!-- Modal to delete Card-->
 	<DeleteCardModal
 		isOpen={openDeleteCardModal}
-		onClose={handleDeleteCardModalClose}
+		onClose={handlerDeleteCardModalClose}
 		customFormId={data.customForm.id}
 		{idCardSelected}
 	/>

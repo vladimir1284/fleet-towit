@@ -83,7 +83,7 @@ model TenantUser {
   deletedParts Part[] @relation("deletionAuthor")
 
   customFieldResponses CustomFieldResponse[]
-  inspections           Inspection[]
+  inspections          Inspection[]
 }
 
 model Client {
@@ -146,18 +146,18 @@ enum Type {
 }
 
 model Vehicle {
-  id              Int              @id @default(autoincrement())
-  type            Type
-  year            Int
-  make            String
-  model           String
-  trim            String
-  plate           String           @unique
-  vin             String           @unique
-  odometer        Int
-  nickname        String
-  spare_tires     Int
-  extraFields     Json?
+  id          Int    @id @default(autoincrement())
+  type        Type
+  year        Int
+  make        String
+  model       String
+  trim        String
+  plate       String @unique
+  vin         String @unique
+  odometer    Int
+  nickname    String
+  spare_tires Int
+  extraFields Json?
 
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
@@ -212,8 +212,16 @@ model CustomForm {
   createdAt   DateTime      @default(now())
   // Only show form if is active
   isActive    Boolean       @default(true)
-  fields      CustomField[]
   inspections Inspection[]
+  cards       Card[]
+}
+
+model Card {
+  id     Int           @id @default(autoincrement())
+  name   String
+  formId Int
+  form   CustomForm    @relation(fields: [formId], references: [id], onDelete: Cascade)
+  fields CustomField[]
 }
 
 enum FormFieldType {
@@ -239,19 +247,16 @@ model CustomField {
   name         String
   type         FormFieldType
   required     Boolean?              @default(true)
-  formId       Int
-  form         CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
   checkOptions CheckOption[]
   // tenant user responses
   responses    CustomFieldResponse[]
+  card         Card?                 @relation(fields: [cardId], references: [id])
+  cardId       Int?
 }
 
 model CustomFieldResponse {
   id            Int          @id @default(autoincrement())
-  // if is text , number etc
   content       String?
-  // if is checkbox ,radio
-  checked       Boolean?
   note          String?
   createdAt     DateTime     @default(now())
   tenantUserId  Int
@@ -444,7 +449,6 @@ model Cost {
 //        END:COSTS         //
 // ************************ //
 
-
 model RentalPlan {
   id          Int         @id @default(autoincrement())
   amount      Int
@@ -484,7 +488,7 @@ model StageUpdate {
   previousStage   StageUpdate? @relation(name: "previousStage", fields: [previousStageId], references: [id])
   previousStageId Int          @unique
   stage           Stage
-  
+
   //keeps for back ref
   stageRef  StageUpdate? @relation(name: "previousStage")
   contracts Contract[]
