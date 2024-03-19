@@ -2,20 +2,71 @@
 	// Modal management variable.
 	export let isVisiblePartWizard: boolean;
 
+	import { getContext } from 'svelte';
 	import { Modal, Button } from 'flowbite-svelte';
-	import { setPartCreationWizardContext } from '$lib/context/part.context';
+	import { superForm } from 'sveltekit-superforms';
+	import { zod } from 'sveltekit-superforms/adapters';
 
 	import PartDetail from './part-detail.component.svelte';
 	import PartStepper from './part-stepper.components.svelte';
 	import PartCustomization from './part-customization.component.svelte';
 
-	import { DEFAULT_PART_WIZARD_DATA } from '../helpers';
+	import { PartDetailSchema, PartCustomizationSchema } from '$lib/features/create-part/zod';
 
-	// Set part creation data context.
-	setPartCreationWizardContext(DEFAULT_PART_WIZARD_DATA);
+	import type { Writable } from 'svelte/store';
+	import type { PartCreationType } from '$lib/features/create-part/zod';
+	import type { SuperValidated } from 'sveltekit-superforms';
 
 	let currentStep = 0;
-	const partComponentPerStep = [PartDetail, PartCustomization];
+	const partComponentPerStep = [
+		{ component: PartDetail, stepSchema: zod(PartDetailSchema) },
+		{ component: PartCustomization, stepSchema: zod(PartCustomizationSchema) }
+	];
+
+	// Retrieve part creation wizard context.
+	const partCreationWizardStore: Writable<SuperValidated<PartCreationType>> =
+		getContext('PartCreationWizard');
+
+	// Get current step validator.
+	$: options.validators = partComponentPerStep[currentStep].stepSchema;
+	const {
+		form: superPartStore,
+		errors,
+		message,
+		enhance,
+		validateForm,
+		options
+	} = superForm($partCreationWizardStore, {
+		resetForm: true,
+		dataType: 'json',
+
+		// Events management.
+		async onSubmit({ cancel }) {
+			// If on last step, make a normal request
+			if (currentStep === partComponentPerStep.length - 1) return;
+			else cancel();
+
+			// Make a manual client-side validation, since we have cancelled.
+			const superValidatedStep = await validateForm({ update: true });
+			console.log(superValidatedStep);
+			if (superValidatedStep.valid) {
+				handleWizardStep(1);
+			}
+		},
+		async onUpdated({ form }) {
+			if (form.valid) {
+				currentStep = 0;
+			}
+		}
+		// async onResult(event) {
+		// 	const result = event.result as FormResult<ActionData>;
+		// 	if (result.type === 'success' && result.data?.product) {
+		// 		const createdProduct = result.data?.product;
+		// 		$partCreationWizardStore = [...$productStore, createdProduct];
+		// 		event.formEl.reset();
+		// 	}
+		// }
+	});
 
 	const handleWizardStep = (numberOfSteps: number) => {
 		const nextStep = currentStep + numberOfSteps;
@@ -28,6 +79,9 @@
 		currentStep = 0;
 		// Others operations on close.
 	};
+
+	$: currentStepButtonText =
+		currentStep < partComponentPerStep.length - 1 ? 'Next Step' : 'Add Part';
 </script>
 
 <Modal
@@ -36,10 +90,14 @@
 	autoclose={false}
 	on:close={handleWizardClose}
 >
-	<form>
+	<form method="POST" action="?/create" use:enhance>
 		<div class="flex flex-col gap-10">
-			<PartStepper />
-			<svelte:component this={partComponentPerStep[currentStep]} />
+			<PartStepper {currentStep} />
+			<svelte:component
+				this={partComponentPerStep[currentStep].component}
+				{errors}
+				{superPartStore}
+			/>
 			<div
 				class="flex flex-row"
 				class:justify-between={currentStep}
@@ -48,13 +106,7 @@
 				{#if currentStep}
 					<Button color="blue" class="w-1/5" on:click={() => handleWizardStep(-1)}>Back</Button>
 				{/if}
-				{#if currentStep < partComponentPerStep.length - 1}
-					<Button type="button" color="blue" class="w-1/5" on:click={() => handleWizardStep(1)}
-						>Next Step</Button
-					>
-				{:else}
-					<Button type="submit" color="blue" class="w-1/5">Add Part</Button>
-				{/if}
+				<Button type="submit" color="blue" class="w-1/5">{currentStepButtonText}</Button>
 			</div>
 		</div>
 	</form>

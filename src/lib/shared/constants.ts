@@ -39,7 +39,7 @@ export const // Prisma constants.
 
 export const // SuperForm-zod related constants.
 
-	ZOD_ECLUDED_VALIDATION_PROPERTIES = {
+	ZOD_EXCLUDED_VALIDATION_PROPERTIES = {
 		// CUID property.
 		id: true,
 

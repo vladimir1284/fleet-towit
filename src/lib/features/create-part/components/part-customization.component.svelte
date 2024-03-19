@@ -1,4 +1,7 @@
 <script lang="ts">
+	export let errors: SuperFormError;
+	export let superPartStore: Writable<PartCreationType>;
+
 	import { CirclePlusSolid } from 'flowbite-svelte-icons';
 	import { Heading, P } from 'flowbite-svelte';
 
@@ -6,54 +9,51 @@
 	import PartLocation from './part-location.component.svelte';
 	import PartCategory from './part-category.component.svelte';
 
-	import { getContext } from 'svelte';
 	import {
 		createDefaultPartVendor,
 		createDefaultPartLocation
 	} from '$lib/features/create-part/helpers';
 
 	import type { Writable } from 'svelte/store';
-	import type { PartCreationWizard } from '$lib/types';
-
-	// Retrieve part creation wizard context.
-	const partCreationWizardStore: Writable<PartCreationWizard> = getContext('PartCreationWizard');
+	import type { PartCreationType } from '$lib/types';
+	import type { SuperFormError } from 'sveltekit-superforms';
 
 	// Create new category, vendor or location components and form data.
 	const handleAddPartCategory = () => {
-		const updatedWizardStore = { ...$partCreationWizardStore };
-		partCreationWizardStore.set(updatedWizardStore);
+		const updatedWizardStore = { ...$superPartStore };
+		superPartStore.set(updatedWizardStore);
 	};
 	const handleAddPartVendor = () => {
-		const updatedWizardStore = { ...$partCreationWizardStore };
+		const updatedWizardStore = { ...$superPartStore };
 		updatedWizardStore.vendors.push(createDefaultPartVendor());
 		// Assign update to trigger re-render.
-		partCreationWizardStore.set(updatedWizardStore);
+		superPartStore.set(updatedWizardStore);
 	};
 	const handleAddPartLocation = () => {
-		const updatedWizardStore = { ...$partCreationWizardStore };
+		const updatedWizardStore = { ...$superPartStore };
 		updatedWizardStore.locations.push(createDefaultPartLocation());
 		// Assign update to trigger re-render.
-		partCreationWizardStore.set(updatedWizardStore);
+		superPartStore.set(updatedWizardStore);
 	};
 
 	// Remove part related vendor or location based on its index.
 	const handleRemovePartVendor = (index: number) => {
-		let updatedWizardStore = { ...$partCreationWizardStore };
+		let updatedWizardStore = { ...$superPartStore };
 		updatedWizardStore.vendors = [
 			...updatedWizardStore.vendors.slice(0, index),
 			...updatedWizardStore.vendors.slice(index + 1, updatedWizardStore.vendors.length)
 		];
 		// Assign update to trigger re-render.
-		partCreationWizardStore.set(updatedWizardStore);
+		superPartStore.set(updatedWizardStore);
 	};
 	const handleRemovePartLocation = (index: number) => {
-		let updatedWizardStore = { ...$partCreationWizardStore };
+		let updatedWizardStore = { ...$superPartStore };
 		updatedWizardStore.locations = [
 			...updatedWizardStore.locations.slice(0, index),
 			...updatedWizardStore.locations.slice(index + 1, updatedWizardStore.locations.length)
 		];
 		// Assign update to trigger re-render.
-		partCreationWizardStore.set(updatedWizardStore);
+		superPartStore.set(updatedWizardStore);
 	};
 </script>
 
@@ -78,13 +78,13 @@
 			</div>
 		</div>
 		<div class="flex flex-col gap-2">
-			{#each $partCreationWizardStore.vendors as vendor, index (vendor.uuid)}
+			{#each $superPartStore.vendors as vendor, index (vendor.uuid)}
 				<svelte:component
 					this={PartVendor}
 					{index}
 					{handleRemovePartVendor}
-					bind:partVendorName={$partCreationWizardStore.vendors[index].name}
-					bind:partVendorCost={$partCreationWizardStore.vendors[index].cost}
+					bind:partVendorName={$superPartStore.vendors[index].name}
+					bind:partVendorCost={$superPartStore.vendors[index].cost}
 				/>
 			{/each}
 		</div>
@@ -106,14 +106,14 @@
 			</div>
 		</div>
 		<div class="flex flex-col gap-2">
-			{#each $partCreationWizardStore.locations as location, index (location.uuid)}
+			{#each $superPartStore.locations as location, index (location.uuid)}
 				<svelte:component
 					this={PartLocation}
 					{index}
 					{handleRemovePartLocation}
-					bind:partLocationName={$partCreationWizardStore.locations[index].name}
-					bind:partLocationQuantiy={$partCreationWizardStore.locations[index].quantity}
-					bind:partLocationUnit={$partCreationWizardStore.locations[index].unit}
+					bind:partLocationName={$superPartStore.locations[index].name}
+					bind:partLocationQuantity={$superPartStore.locations[index].quantity}
+					bind:partLocationUnit={$superPartStore.locations[index].unit}
 				/>
 			{/each}
 		</div>

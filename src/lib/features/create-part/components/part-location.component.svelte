@@ -4,7 +4,7 @@
 
 	// Part wizard binding values.
 	export let partLocationName: string;
-	export let partLocationQuantiy: string;
+	export let partLocationQuantity: string | null;
 	export let partLocationUnit: string;
 
 	import { fade } from 'svelte/transition';
@@ -20,9 +20,10 @@
 		<div class="flex justify-between gap-2">
 			<Input
 				type="number"
+				name="quantity"
 				placeholder="Quantity"
 				class="basis-4/5"
-				bind:value={partLocationQuantiy}
+				bind:value={partLocationQuantity}
 				required
 			/>
 			<Select class="basis-1/5" bind:value={partLocationUnit} />

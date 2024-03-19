@@ -1,38 +1,55 @@
-import { fail } from '@sveltejs/kit';
 import { PartSchema } from '$lib/zod';
+import { zod } from 'sveltekit-superforms/adapters';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
 import {
 	// Constants.
 	FAILED_PART_RECORD_CREATION,
-	ZOD_ECLUDED_VALIDATION_PROPERTIES,
 	PART_SCHEMA_CREATION_ACTION_ROUTE,
+	ZOD_EXCLUDED_VALIDATION_PROPERTIES,
 	PART_SCHEMA_RETRIEVAL_ACTION_ROUTE,
 	INVALID_PART_SCHEMA_VALIDATION_MESSAGE
 } from '$lib/shared';
-import {
-	// Constants.
-	INTERNAL_ERROR_STATUS
-} from '$lib/shared';
+
+import { PartCustomizationSchema } from '$lib/features/create-part/zod';
 
 import type { RequestEvent } from './$types';
+import type { Category, Location, Vendor } from '@prisma/client';
 
 export async function load(event) {
+	// Create the form with the last step, to get all default values.
+	const superValidatedPartWizard = await superValidate(zod(PartCustomizationSchema));
+
+	// Part retrieval management.
 	const partRetrievalResponse = await event.fetch(PART_SCHEMA_RETRIEVAL_ACTION_ROUTE);
-	if (partRetrievalResponse.ok) {
-		const { data: initialParts } = await partRetrievalResponse.json();
-		return {
-			initialParts
-		};
-	} else {
-		const error = await partRetrievalResponse.text();
-		return fail(INTERNAL_ERROR_STATUS, { error });
-	}
+
+	const { data: initialParts } = await partRetrievalResponse.json();
+
+	// Build categories, vendors and locations via part retrieval data.
+	const initialVendors: Vendor[] = [];
+	const initialLocations: Location[] = [];
+	const initialCategories: Category[] = [];
+
+	return {
+		initialParts,
+		initialVendors,
+		initialLocations,
+		initialCategories,
+		superValidatedPartWizard
+	};
 }
 
 export const actions = {
 	create: async (event: RequestEvent) => {
-		const untainedPartValidationSchema = PartSchema.omit(ZOD_ECLUDED_VALIDATION_PROPERTIES);
+		const partCreationResponse = await event.fetch(PART_SCHEMA_CREATION_ACTION_ROUTE, {
+			method: 'POST',
+			body: JSON.stringify(event)
+		});
+		console.log(partCreationResponse);
+		return true;
+	},
+	default: async (event: RequestEvent) => {
+		const untainedPartValidationSchema = PartSchema.omit(ZOD_EXCLUDED_VALIDATION_PROPERTIES);
 
 		const superValidatedPart = await superValidate(event.request, untainedPartValidationSchema);
 		if (!superValidatedPart.valid) {

@@ -1,20 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { WizardPickedVendor, WizardPickedLocation } from '$lib/types';
+import type { partVendorType, partLocationType } from '$lib/types';
 
-export const createDefaultPartVendor = (): WizardPickedVendor => ({
+export const createDefaultPartVendor = (): partVendorType => ({
 	// Part vendor-like.
 	uuid: uuidv4(),
 	name: '',
-	// Garantee the placeholder display.
 	cost: ''
 });
 
-export const createDefaultPartLocation = (): WizardPickedLocation => ({
+export const createDefaultPartLocation = (): partLocationType => ({
 	// Part location-like.
 	uuid: uuidv4(),
 	name: '',
-	// Garantee the placeholder display.
-	unit: '',
+	unit: 'Foot',
 	quantity: ''
 });

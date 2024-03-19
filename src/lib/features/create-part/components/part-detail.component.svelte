@@ -1,4 +1,7 @@
 <script lang="ts">
+	export let errors: Writable<SuperFormError>;
+	export let superPartStore: Writable<PartCreationType>;
+
 	import { Label, Input, Textarea } from 'flowbite-svelte';
 	import { InfoCircleSolid } from 'flowbite-svelte-icons';
 	import {
@@ -6,15 +9,11 @@
 		PART_UPC_LAYOUT_CONSTRAINT,
 		PART_QTY_LAYOUT_CONSTRAINT,
 		PART_NUMBER_LAYOUT_CONSTRAINT
-	} from '../helpers';
-
-	import { getContext } from 'svelte';
+	} from '$lib/features/create-part/helpers';
 
 	import type { Writable } from 'svelte/store';
-	import type { PartCreationWizard } from '$lib/types';
-
-	// Retrieve part creation wizard context.
-	const partCreationWizardStore: Writable<PartCreationWizard> = getContext('PartCreationWizard');
+	import type { PartCreationType } from '$lib/types';
+	import { SuperFormError } from 'sveltekit-superforms';
 </script>
 
 <div class="flex flex-col gap-4">
@@ -25,47 +24,32 @@
 		<Input
 			type="text"
 			id="part-name"
-			name="name"
 			placeholder="Ex: Transmission, Radiator, Axle"
-			bind:value={$partCreationWizardStore.name}
-			required
+			bind:value={$superPartStore.name}
 		/>
 	</div>
 	<div class="flex justify-between">
 		<div class="flex basis-2/3 gap-2">
 			<Input
 				type="number"
-				name="amount"
 				placeholder="Part amount"
-				min="0"
-				max={PART_NUMBER_LAYOUT_CONSTRAINT}
 				class="basis-1/3"
-				bind:value={$partCreationWizardStore.number}
-				required
+				bind:value={$superPartStore.number}
 			/>
 			<Input
 				type="number"
-				name="qty"
 				placeholder="Critical QTY"
-				min="0"
-				max={PART_QTY_LAYOUT_CONSTRAINT}
 				class="basis-1/3"
-				bind:value={$partCreationWizardStore.criticalQty}
-				on:input={() => console.log(1)}
-				required
+				bind:value={$superPartStore.criticalQty}
 			/>
 			<InfoCircleSolid class="self-center" />
 		</div>
-		<Input
-			type="number"
-			name="upc"
-			placeholder="UPC"
-			min="0"
-			max={PART_UPC_LAYOUT_CONSTRAINT}
-			class="basis-1/3"
-			bind:value={$partCreationWizardStore.upc}
-			required
-		/>
+		<Input type="number" placeholder="UPC" class="basis-1/3" bind:value={$superPartStore.upc} />
 	</div>
-	<Textarea placeholder="Part description" rows="4" name="description" class="resize-none" />
+	<Textarea
+		placeholder="Part description"
+		rows="4"
+		class="resize-none"
+		bind:value={$superPartStore.description}
+	/>
 </div>

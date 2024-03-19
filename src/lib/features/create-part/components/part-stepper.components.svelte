@@ -1,4 +1,6 @@
-<script lang="ts"></script>
+<script lang="ts">
+	export let currentStep: number;
+</script>
 
 <ol
 	class="items-center w-full space-y-4 sm:flex sm:justify-between sm:space-x-8 sm:space-y-0 rtl:space-x-reverse"
