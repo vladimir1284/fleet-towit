@@ -63,10 +63,14 @@
 		showUsers = true;
 	}
 
-	function handleCloseModal(event) {
+	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Tenant created succesfully!');
-		location.reload();
+
+		const response = await fetch('/api/tenants');
+		const usersResponse = await fetch('/api/tenants/users', { headers });
+		tenants = [...(await response.json())];
+		users = [...(await usersResponse.json())];
 	}
 
 	async function handleEdit(tenant) {
@@ -78,7 +82,11 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Tenant edited succesfully!');
-		location.reload();
+
+		const response = await fetch('/api/tenants');
+		const usersResponse = await fetch('/api/tenants/users', { headers });
+		tenants = [...(await response.json())];
+		users = [...(await usersResponse.json())];
 	}
 
 	async function handleDelete(tenantId) {
@@ -89,7 +97,11 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Tenant deleted succesfully!');
-		location.reload();
+
+		const response = await fetch('/api/tenants');
+		const usersResponse = await fetch('/api/tenants/users', { headers });
+		tenants = [...(await response.json())];
+		users = [...(await usersResponse.json())];
 	}
 </script>
 
@@ -114,7 +126,7 @@
 		</Table>
 	</Modal>
 
-	<Card size="xl" padding="md" class="fixed w-full md:w-auto h-auto z-0">
+	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
