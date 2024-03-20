@@ -26,8 +26,15 @@
 	});
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
-		SPA: true,
 		validators: fixSchema,
+		onSubmit: async (event) => {
+			$form.email = $form.email.trim();
+		},
+		onUpdated: async ({ form }) => {
+			if (form.valid) {
+				dispatch('formvalid', false);
+			}
+		}
 	});
 
 	let roles = [
@@ -50,38 +57,13 @@
 	$: if (!$currentTenant.isAdmin) {
 		$form.tenantId = $currentTenant.id;
 	}
-
-	async function handleSubmit(event) {
-		loading = true;
-		event.preventDefault();
-		$form.email = $form.email.trim();
-		const formData = new FormData(event.target);
-		const headers = {
-			'X-User-Tenant': $currentTenant.currentUserTenant.id
-		};
-		const response = await fetch(actionURL, {
-			method: 'POST',
-			headers: headers,
-			body: formData
-		});
-		try{
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			} else {
-				dispatch('formvalid', false);
-				console.log('Form submitted successfully');
-			}
-		}finally{
-			loading = false;
-		}
-	}
 </script>
 
 <form
 	class="flex flex-col justify-center align-center space-y-6"
 	method="POST"
 	enctype="multipart/form-data"
-	on:submit={handleSubmit}
+	action={actionURL}
 	use:enhance
 >
 	<input hidden name="id" bind:value={$form.id} />

@@ -87,14 +87,11 @@
 			event.formData.set('vehicleId', findVehicleID($form.vehicleId));
 		},
 		onUpdate: async (event) => {
-			//console.log('plate', event.form);
 			const vehicle = vehicles.filter((_vehicle) => _vehicle.id == event.form.data.vehicleId);
-			//console.log('veh', vehicle)
 			event.form.data.vehicleId = vehicle[0].plate;
 			event.form.data.createDate = event.form.data.createDate
 				.toISOString()
 				.slice(0, 10)
-			//console.log(event.form);
 			if (event.form.errors._errors) {
 				handleAlert(event.form.errors._errors[0])
 			}
@@ -124,6 +121,7 @@
 		$form.invoice = '';
 	};
 
+
 	function changeFile(event: Event) {
 		const inputElement = event.target as HTMLInputElement;
 		if (inputElement && inputElement.files) {
@@ -134,6 +132,7 @@
 		attachFile = !attachFile;
 	}
 
+
 	function handleAlert(message) {
 		showAlert = message;
 		setTimeout(() => {
@@ -141,40 +140,6 @@
 		}, 10000);
 	}
 
-	async function handleSubmit(event) {
-		loading = true;
-		event.preventDefault();
-		const formData = new FormData(event.target);
-		formData.set('vehicleId', findVehicleID($form.vehicleId));
-		const headers = {
-			'X-User-Tenant': $currentTenant.currentUserTenant.id
-		};
-		const request = await fetch(actionURL, {
-			method: 'POST',
-			headers: headers,
-			body: formData
-		});
-		try {
-			if (request.status !== 200) {
-				const response = await request.json();
-				console.log(response);
-				if (response.data.errors) {
-					Object.keys(response.data.errors).forEach((field) => {
-						if (!(field == '_errors')) {
-							$errors[field] = response.data.errors[field][0];
-						} else {
-							handleAlert();
-						}
-					});
-				}
-			} else {
-				dispatch('formvalid', false);
-				console.log('Form submitted successfully');
-			}
-		} finally {
-			loading = false;
-		}
-	}
 
 	function findVehicleID(plate) {
 		let selectedVehicle = vehicles.filter((vehicle) => vehicle['plate'] === plate.toUpperCase());
