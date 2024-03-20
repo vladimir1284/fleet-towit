@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let errors: SuperFormError;
+	export let errors: Writable<any>; // Unable to infer correct type value.
 	export let superPartStore: Writable<PartCreationType>;
 
 	import { CirclePlusSolid } from 'flowbite-svelte-icons';
@@ -16,7 +16,6 @@
 
 	import type { Writable } from 'svelte/store';
 	import type { PartCreationType } from '$lib/types';
-	import type { SuperFormError } from 'sveltekit-superforms';
 
 	// Create new category, vendor or location components and form data.
 	const handleAddPartCategory = () => {
@@ -82,6 +81,7 @@
 				<svelte:component
 					this={PartVendor}
 					{index}
+					{errors}
 					{handleRemovePartVendor}
 					bind:partVendorName={$superPartStore.vendors[index].name}
 					bind:partVendorCost={$superPartStore.vendors[index].cost}
@@ -110,6 +110,7 @@
 				<svelte:component
 					this={PartLocation}
 					{index}
+					{errors}
 					{handleRemovePartLocation}
 					bind:partLocationName={$superPartStore.locations[index].name}
 					bind:partLocationQuantity={$superPartStore.locations[index].quantity}

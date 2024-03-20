@@ -32,7 +32,6 @@
 	const {
 		form: superPartStore,
 		errors,
-		message,
 		enhance,
 		validateForm,
 		options
@@ -48,24 +47,16 @@
 
 			// Make a manual client-side validation, since we have cancelled.
 			const superValidatedStep = await validateForm({ update: true });
-			console.log(superValidatedStep);
 			if (superValidatedStep.valid) {
 				handleWizardStep(1);
 			}
 		},
 		async onUpdated({ form }) {
+			// Errors might be checked inside form.errors field.
 			if (form.valid) {
 				currentStep = 0;
 			}
 		}
-		// async onResult(event) {
-		// 	const result = event.result as FormResult<ActionData>;
-		// 	if (result.type === 'success' && result.data?.product) {
-		// 		const createdProduct = result.data?.product;
-		// 		$partCreationWizardStore = [...$productStore, createdProduct];
-		// 		event.formEl.reset();
-		// 	}
-		// }
 	});
 
 	const handleWizardStep = (numberOfSteps: number) => {
@@ -77,7 +68,7 @@
 
 	const handleWizardClose = () => {
 		currentStep = 0;
-		// Others operations on close.
+		// Others operations on close...
 	};
 
 	$: currentStepButtonText =

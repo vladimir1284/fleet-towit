@@ -1,24 +1,8 @@
-import { createDefaultPartVendor, createDefaultPartLocation } from './store.helpers';
-
-export const // Customized part default data.
-
-	DEFAULT_PART_WIZARD_DATA = {
-		name: '',
-		description: '',
-		upc: '',
-		number: '',
-		criticalQty: '',
-
-		// uuid is spreaded in order to allow svelte to track component modifications.
-		vendors: [createDefaultPartVendor()],
-		locations: [createDefaultPartLocation()],
-		categories: []
-	};
-
 export const // Part creation inputs.
 
+	PART_OUT_OF_RANGE_MESSAGE = 'Positive below',
 	PART_INVALID_NUMBER_MESSAGE = 'Invalid number value',
-	PART_OUT_OF_RANGE_MESSAGE = 'Number must be a positive lower than',
+	PART_STRING_TOO_SMALL_MESSAGE = `Zero characters? Let's add one!`,
 	// Constraints.
 	PART_UPC_LAYOUT_CONSTRAINT = 100,
 	PART_QTY_LAYOUT_CONSTRAINT = 100,
