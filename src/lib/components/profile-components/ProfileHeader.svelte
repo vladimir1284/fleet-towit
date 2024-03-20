@@ -1,25 +1,29 @@
 <script>
 	// @ts-nocheck
-
+	import { getContext } from 'svelte';
 	import { signOut } from '@auth/sveltekit/client';
-	import { tenantActor } from '$lib/store/context-store';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
-	import ButtonComponent from '../buttons/ButtonComponent.svelte';
+	import { saveToSessionStorage } from '$lib/store/context-store';
 	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
+	
 	/**
 	 * @type {{ id: number; name: null; email: any; defaultTenantUser: { tenant: { name: any; }; }[]; image: any; }}
 	 */
 	export let userData;
-	export let currentTenant;
+	
 
+	const currentTenant = getContext('currentTenant');
+	
+	
 	async function handleSignOut() {
 		await signOut();
 	}
 
 	async function handleChangeUserTenant(tenantUser) {
-		const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+		const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 		const formData = new FormData();
 		formData.append('tenantUserId', tenantUser.id);
 		formData.append('is_default', true);
@@ -33,10 +37,14 @@
 		} else {
 			console.log('Form submitted successfully');
 			location.reload();
-			tenantActor.send({
-				type: 'tenant.update',
-				value: { ...tenantUser.tenant, currentUserTenant: tenantUser }
+			saveToSessionStorage('currentTenant', {
+				...tenantUser.tenant,
+				currentUserTenant: tenantUser
 			});
+			currentTenant.set({
+				...tenantUser.tenant,
+				currentUserTenant: tenantUser
+			})
 		}
 	}
 </script>
@@ -58,7 +66,7 @@
 		</div>
 		{#if userData.tenantUsers.length}
 			<DropdownItem class="cursor-pointer">
-				{currentTenant.name}<ChevronDownOutline
+				{$currentTenant.name}<ChevronDownOutline
 					class="w-3 h-3 ms-2 text-primary-800 dark:text-white inline"
 				/>
 			</DropdownItem>
@@ -79,7 +87,9 @@
 	</Dropdown>
 	<Avatar
 		class="hidden sm:flex"
-		src="https://minios3.crabdance.com/develop/users/{userData.id}/{userData.image}"
 		rounded
+		src={userData.image
+			? `https://minios3.crabdance.com/develop/users/${userData.id}/${userData.image}`
+			: undefined}
 	/>
 </div>

@@ -17,7 +17,7 @@
 	import DeleteClientForm from '$lib/components/forms-components/clients/DeleteClientForm.svelte';
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 
 	export let data: PageData;
 	let clients = [];
@@ -30,11 +30,11 @@
 	let selectedClient = undefined;
 	let message = '';
 
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+	const currentTenant = getContext('currentTenant');
+	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${currentTenant.id}/client`, { headers });
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
 			clients = [...(await response.json())];
 			loading = false;
 		} catch (error) {
@@ -55,7 +55,7 @@
 		createModal = event.detail;
 		handleAlert('Client created succesfully!');
 
-		const response = await fetch(`/api/tenants/${currentTenant.id}/client`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
 		clients = [...(await response.json())];
 	}
 
@@ -68,7 +68,7 @@
 		editModal = event.detail;
 		handleAlert('Client edited succesfully!');
 
-		const response = await fetch(`/api/tenants/${currentTenant.id}/client`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
 		clients = [...(await response.json())];
 	}
 
@@ -81,7 +81,7 @@
 		deleteModal = event.detail;
 		handleAlert('Client deleted succesfully!');
 
-		const response = await fetch(`/api/tenants/${currentTenant.id}/client`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
 		clients = [...(await response.json())];
 	}
 </script>

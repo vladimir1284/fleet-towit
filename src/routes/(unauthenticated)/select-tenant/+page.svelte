@@ -2,8 +2,7 @@
 	//@ts-nocheck
 	import { goto } from '$app/navigation';
 	import { Card, Button } from 'flowbite-svelte';
-	import { tenantActor } from '$lib/store/context-store';
-
+	import { saveToSessionStorage } from '$lib/store/context-store';
 	import bcrypt from 'bcryptjs';
 	//import { USER_TENANT_HEADER } from '$lib/shared/helpers';
 
@@ -12,12 +11,9 @@
 	import { onMount } from 'svelte';
 
 	onMount(() => {
-		if (data.session?.user.defaultTenantUser) {
+		if (data?.session?.user.defaultTenantUser) {
 			const currentUserTenant = data.session.user.defaultTenantUser;
-			tenantActor.send({
-				type: 'tenant.update',
-				value: { ...currentUserTenant.tenant, currentUserTenant }
-			});
+			saveToSessionStorage('currentTenant', { ...currentUserTenant.tenant, currentUserTenant });
 			goto('/dashboard');
 		}
 	});
@@ -26,16 +22,17 @@
 		const currentUserTenant = data.session.user.tenantUsers.find(
 			(tenantUser) => tenantUser.tenantId == tenant.id
 		);
+		saveToSessionStorage('currentTenant', { ...currentUserTenant.tenant, currentUserTenant });
+		goto('/dashboard');
 
 		// Set X-User-Tenant cookie on browser level.
 		/*
 		const salt = bcrypt.genSaltSync(10);
 		const currentUserTenantHash = await bcrypt.hash(currentUserTenant.id, salt);
 		document.cookie = `${USER_TENANT_HEADER}=${currentUserTenantHash};`;
-		*/
-
-		tenantActor.send({ type: 'tenant.update', value: { ...tenant, currentUserTenant } });
-		await goto('/dashboard');
+		
+		await goto('/dashboard');*/
+		
 	}
 </script>
 

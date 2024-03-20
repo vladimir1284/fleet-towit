@@ -1,23 +1,26 @@
 <script async lang="ts">
 	//@ts-nocheck
-	import { tenantActor } from '$lib/store/context-store';
-	import { Badge, Label, Timeline, TimelineItem } from 'flowbite-svelte';
-	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import {
 		TruckOutline,
 		DollarOutline,
 		UserOutline,
 		ClipboardListOutline
 	} from 'flowbite-svelte-icons';
-	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
-	import ClientForm from '../clients/ClientForm.svelte';
+	import { getContext } from 'svelte';
 	import UpdateStage from './UpdateStage.svelte';
+	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
+	import { Badge, Label, Timeline, TimelineItem } from 'flowbite-svelte';
+	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
 	export let data: any;
 	export let selectedContract: any = undefined;
 	export let contractStagesList: any = undefined;
+
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
+	const currentTenant = getContext('currentTenant');
+	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	const formatDate = (date: Date | string) => {
 		if (!date) {
@@ -32,14 +35,13 @@
 	};
 
 	async function updateContractData() {
-		const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-		const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
 		const contractData = await fetch(
-			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}`,
+			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`,
 			{ headers }
 		);
 		const contractStages = await fetch(
-			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}/stage`
+			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`,
+			{ headers }
 		);
 		selectedContract = await contractData.json();
 		contractStagesList = await contractStages.json();

@@ -1,19 +1,19 @@
 <script async lang="ts">
+	import { Select } from 'flowbite-svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { BuildingSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { createEventDispatcher } from 'svelte';
-	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
-	import { Select } from 'flowbite-svelte';
+	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
 	export let selectedTenant: any;
 	export let usersList: [] = [];
+
 	let tenantUsersList = [];
 	let tenantUsersSelector: { value: any; name: any }[] = [];
 	let actionURL = '/api/tenants';
-
 	const dispatch = createEventDispatcher();
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {

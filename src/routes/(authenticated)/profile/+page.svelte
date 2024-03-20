@@ -79,8 +79,13 @@
 	<Card class=" flex justify-between w-full max-w-full min-h-full">
 		<Card
 			class="shadow-none border-none"
-			img="https://minios3.crabdance.com/develop/users/{data.session.user?.id}/{data.session.user
-				?.image}"
+			img={data.session.user?.image
+				? `https://minios3.crabdance.com/develop/users/${data.session.user?.id}/${data.session.user?.image}`
+				: `data:image/svg+xml;utf8,<svg width='50' height='50' xmlns='http://www.w3.org/2000/svg'><text x='20' y='30' fill='black'>${
+						data.session.user?.email?.toUpperCase()[0]
+					}</text></svg>`} 
+				
+				
 			horizontal
 			size="md"
 		>

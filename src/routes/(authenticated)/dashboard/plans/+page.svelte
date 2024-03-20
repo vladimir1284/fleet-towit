@@ -14,10 +14,9 @@
 	} from 'flowbite-svelte';
 	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
 	import RentalPlanForm from '$lib/components/forms-components/plans/RentalPlanForm.svelte';
-	import DeleteTenantForm from '$lib/components/forms-components/tenants/DeleteTenantForm.svelte';
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 	import DeletePlanForm from '$lib/components/forms-components/plans/DeletePlanForm.svelte';
 
 	export let data: PageData;
@@ -31,11 +30,11 @@
 	let selectedPlan = undefined;
 	let message = '';
 
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+	const currentTenant = getContext('currentTenant');
+	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${currentTenant.id}/rentalPlan`, { headers });
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, { headers });
 			plans = [...(await response.json())];
 			loading = false;
 		} catch (error) {

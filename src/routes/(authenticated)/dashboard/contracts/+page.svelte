@@ -15,7 +15,7 @@
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import type { PageData } from '../$types';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
@@ -40,18 +40,18 @@
 
 	let contractStagesList = [];
 
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+	const currentTenant = getContext('currentTenant');
+	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 	onMount(async () => {
 		try {
-			const clientsResponse = await fetch(`/api/tenants/${currentTenant.id}/client`, { headers });
-			const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
+			const clientsResponse = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
+			const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
 				headers
 			});
-			const vehiclesResponse = await fetch(`/api/tenants/${currentTenant.id}/vehicles`, {
+			const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, {
 				headers
 			});
-			const rentalPlansResponse = await fetch(`/api/tenants/${currentTenant.id}/rentalPlan`, {
+			const rentalPlansResponse = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, {
 				headers
 			});
 
@@ -79,7 +79,7 @@
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
@@ -94,7 +94,7 @@
 		editModal = event.detail;
 		handleAlert('Contract edited succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
@@ -109,7 +109,7 @@
 		updateModal = event.detail;
 		handleAlert('Contract updated succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
@@ -124,14 +124,14 @@
 		deleteModal = event.detail;
 		handleAlert('Contract deleted succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
 	}
 
 	async function handleDetail(contract) {
-		const request = await fetch(`/api/tenants/${currentTenant.id}/contracts/${contract.id}/stage`);
+		const request = await fetch(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`);
 		contractStagesList = await request.json();
 		selectedContract = contract;
 		detailModal = true;
@@ -143,7 +143,7 @@
 	async function handleCloseDetailModal() {
 		contractStagesList = [];
 
-		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];

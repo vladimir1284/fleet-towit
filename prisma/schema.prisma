@@ -472,6 +472,9 @@ model Contract {
   vehicleId    Int
   stage        StageUpdate @relation(fields: [stageId], references: [id])
   stageId      Int
+  creationDate DateTime    @default(now())
+  activeDate   DateTime?
+  endDate      DateTime?   
   //inspections    Inspection[]  --- doesn't exists yet
   tolls        TollDue[]
 }

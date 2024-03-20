@@ -18,7 +18,7 @@
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
 	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 
 	export let data: PageData;
 	let tenants = [];
@@ -34,8 +34,8 @@
 	let selectedTenantUsersList = undefined;
 	let message = '';
 
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+	const currentTenant = getContext('currentTenant');
+	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 	onMount(async () => {
 		try {
 			const response = await fetch('/api/tenants');

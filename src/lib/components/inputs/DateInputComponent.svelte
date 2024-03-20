@@ -1,6 +1,5 @@
 <script async script lang="ts">
 	import { FloatingLabelInput } from 'flowbite-svelte';
-
 	
 	export let placeholder: string;
 	export let formPointer: any | undefined;
@@ -11,7 +10,7 @@
 
 <FloatingLabelInput
 	style="outlined"
-	type="text"
+	type="date"
 	id={formPointer}
 	name={formPointer}
 	aria-invalid={$errors ? 'true' : undefined}
