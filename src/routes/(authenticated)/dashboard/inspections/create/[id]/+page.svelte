@@ -8,13 +8,17 @@
 </script>
 
 <section class="w-1/3">
-	<form class="flex flex-col gap-4 bg-white p-4 min-w-72" method="post" action="?/createResponse">
+	<form
+		class="flex flex-col gap-4 bg-white rounded-lg shadow p-4 min-w-72"
+		method="post"
+		action="?/createResponse"
+	>
 		<div class="flex flex-col gap-4">
 			{#each data.inspection.customForm.cards as card}
 				<div>
 					<h5 class="font-bold underline">{card.name}</h5>
 
-					<div class="flex flex-col gap-4 ml-4">
+					<div class="flex flex-col gap-4 ml-4 mt-4">
 						{#each card.fields as field}
 							<Label>
 								<h5 class="font-semibold">{field.name}</h5>
@@ -61,6 +65,6 @@
 			{/each}
 		</div>
 
-		<Button type="submit">Send</Button>
+		<Button type="submit">Create</Button>
 	</form>
 </section>

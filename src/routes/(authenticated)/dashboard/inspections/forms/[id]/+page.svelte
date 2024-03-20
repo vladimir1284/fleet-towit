@@ -18,7 +18,7 @@
 
 	if (data?.redirect_to) goto(`/dashboard/inspections/forms/${data.redirect_to}/`);
 
-	const { form, constraints, enhance } = superForm(data.form);
+	const { form, constraints } = superForm(data.form);
 
 	// modals
 	let openDeleteFormModal = false;
@@ -27,7 +27,7 @@
 	let openDeleteCardModal = false;
 	const handlerDeleteCardModalClose = () => (openDeleteCardModal = false);
 
-	// delete and edit card
+	// delete  card
 	let idCardSelected: number;
 
 	// new card
@@ -237,7 +237,7 @@
 				{/each}
 			</div>
 
-			<form method="post" action="?/addCard" use:enhance>
+			<form method="post" action="?/addCard">
 				<input
 					type="hidden"
 					name="card_name"

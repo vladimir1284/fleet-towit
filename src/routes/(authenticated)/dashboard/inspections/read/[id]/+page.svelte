@@ -25,9 +25,9 @@
 	};
 </script>
 
-<section class="bg-white p-4 flex flex-col gap-4 w-2/3">
+<section class="bg-white rounded-lg shadow p-4 flex flex-col gap-4 w-2/3">
 	<Button class="w-max" on:click={makePdf}>Download pdf</Button>
-	<div class="flex flex-wrap lg:flex-nowrap gap-4">
+	<div class="flex flex-wrap justify-between">
 		<h2 class="font-semibold">
 			Model: <span class="font-normal">{data.inspection.vehicle.model}</span>
 		</h2>
@@ -37,7 +37,7 @@
 		<h2 class="font-semibold">
 			Plate: <span class="font-normal">{data.inspection.vehicle.plate}</span>
 		</h2>
-		<h2 class="font-semibold">
+		<h2 class="font-semibold mr-16">
 			Date: <span class="font-normal">
 				{dateInspections}
 			</span>
