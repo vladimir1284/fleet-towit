@@ -22,13 +22,12 @@
 	let loading = true;
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
 			users = await response.json();
-			const tenantsResponse = await fetch('/api/tenants', { headers });
+			const tenantsResponse = await fetch('/api/tenants');
 			tenants = await tenantsResponse.json();
 			loading = false;
 		} catch (error) {
@@ -49,9 +48,9 @@
 		createModal = event.detail;
 		handleAlert('User created succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
 		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants', { headers });
+		const tenantsResponse = await fetch('/api/tenants');
 		tenants = await tenantsResponse.json();
 	}
 
@@ -64,9 +63,9 @@
 		editModal = event.detail;
 		handleAlert('User edited succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
 		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants', { headers });
+		const tenantsResponse = await fetch('/api/tenants');
 		tenants = await tenantsResponse.json();
 	}
 
@@ -79,9 +78,9 @@
 		deleteModal = event.detail;
 		handleAlert('User deleted succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
 		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants', { headers });
+		const tenantsResponse = await fetch('/api/tenants');
 		tenants = await tenantsResponse.json();
 	}
 </script>

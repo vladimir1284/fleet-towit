@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Button, Label, Fileupload, Avatar, Modal } from 'flowbite-svelte';
 	import { Card } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
+	import { Button, Label, Fileupload, Avatar, Modal } from 'flowbite-svelte';
 	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
 	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';

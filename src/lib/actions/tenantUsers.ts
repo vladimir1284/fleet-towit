@@ -47,3 +47,24 @@ export const listTenantUsers = async (instance: PrismaClient) => {
     })
     return tenantUsers
 }
+
+export const updateDefaultTenantUser = async(instance: PrismaClient, { id, tenantId, isDefault}: { id: number, tenantId: number, isDefault: boolean }) => {
+    if (isDefault) {
+        await instance.tenantUser.updateMany({
+            where: {
+                tenantId: tenantId,
+                id: {not: id}
+            },
+            data: {
+                is_default: false
+            }
+    
+        })
+    }
+    const tenantUser = await instance.tenantUser.update({
+		where: { id: id },
+		data: { is_default: isDefault }
+	});
+    
+    return tenantUser
+}

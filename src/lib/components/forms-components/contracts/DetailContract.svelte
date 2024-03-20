@@ -20,7 +20,6 @@
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	const formatDate = (date: Date | string) => {
 		if (!date) {
@@ -36,12 +35,10 @@
 
 	async function updateContractData() {
 		const contractData = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`,
-			{ headers }
+			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`
 		);
 		const contractStages = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`,
-			{ headers }
+			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
 		);
 		selectedContract = await contractData.json();
 		contractStagesList = await contractStages.json();

@@ -23,19 +23,16 @@
 	}
 
 	async function handleChangeUserTenant(tenantUser) {
-		const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 		const formData = new FormData();
 		formData.append('tenantUserId', tenantUser.id);
 		formData.append('is_default', true);
 		const response = await fetch(`/api/tenants/${tenantUser.tenant.id}/users/${tenantUser.id}`, {
 			method: 'PATCH',
-			headers: headers,
 			body: formData
 		});
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		} else {
-			console.log('Form submitted successfully');
 			location.reload();
 			saveToSessionStorage('currentTenant', {
 				...tenantUser.tenant,

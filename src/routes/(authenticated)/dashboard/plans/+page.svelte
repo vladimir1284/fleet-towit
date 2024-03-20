@@ -12,14 +12,15 @@
 		Modal,
 		Alert
 	} from 'flowbite-svelte';
-	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
-	import RentalPlanForm from '$lib/components/forms-components/plans/RentalPlanForm.svelte';
-	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
+	import type { PageData } from '../$types';
+	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
+	import RentalPlanForm from '$lib/components/forms-components/plans/RentalPlanForm.svelte';
 	import DeletePlanForm from '$lib/components/forms-components/plans/DeletePlanForm.svelte';
 
 	export let data: PageData;
+
 	let plans = [];
 	let showAlert = false;
 	let createModal = false;
@@ -31,10 +32,10 @@
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, { headers });
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`);
 			plans = [...(await response.json())];
 			loading = false;
 		} catch (error) {

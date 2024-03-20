@@ -45,12 +45,10 @@
 	};
 
 	async function getContractByDate(selectedDate: string, vehiclePlate: string) {
-		headers = { 'X-User-Tenant': $currentTenant.id };
 		let vehicleId = findVehicleID(vehiclePlate);
 		if (vehicleId) {
 			const response = await fetch(
-				`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&vehicle_id=${vehicleId}`,
-				{ headers }
+				`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&vehicle_id=${vehicleId}`
 			);
 
 			selectedContract = await response.json();
@@ -70,8 +68,7 @@
 
 			attachFile = true;
 		}
-		headers = { 'X-User-Tenant': $currentTenant.id };
-		const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, { headers });
+		const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`);
 		vehicles = [...(await vehiclesResponse.json())];
 	});
 

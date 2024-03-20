@@ -11,23 +11,21 @@
 		TableHeadCell,
 		Modal,
 		Alert,
-		Badge,
-		Dropdown,
-		DropdownItem
+		Badge
 	} from 'flowbite-svelte';
-	import { onMount } from 'svelte';
-	import { getContext } from 'svelte';
-	import type { PageData } from '../$types';
 	import {
 		TrashBinSolid,
 		FileEditSolid,
-		ArrowDownToBracketOutline,
-		RotateOutline
+		ArrowDownToBracketOutline
 	} from 'flowbite-svelte-icons';
+	import { onMount } from 'svelte';
+	import { getContext } from 'svelte';
+	import type { PageData } from '../$types';
 	import TollForm from '$lib/components/forms-components/tolls/TollForm.svelte';
 	import DeleteTollForm from '$lib/components/forms-components/tolls/DeleteTollForm.svelte';
 
 	export let data: PageData;
+
 	let tolls = [];
 	let showAlert = false;
 	let createModal = false;
@@ -39,7 +37,6 @@
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	const formatDate = (date: Date | string) => {
 		if (!date) {
@@ -55,11 +52,8 @@
 
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-				headers
-			});
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`);
 			tolls = [...(await response.json())];
-			console.log(tolls);
 			loading = false;
 		} catch (error) {
 			console.error('Error:', error);
@@ -78,9 +72,7 @@
 	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Toll created succesfully!');
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-			headers
-		});
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`);
 		tolls = [...(await response.json())];
 	}
 
@@ -92,9 +84,7 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Toll edited succesfully!');
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-			headers
-		});
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`);
 		tolls = [...(await response.json())];
 	}
 
@@ -106,9 +96,7 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Toll deleted succesfully!');
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-			headers
-		});
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`);
 		tolls = [...(await response.json())];
 	}
 </script>

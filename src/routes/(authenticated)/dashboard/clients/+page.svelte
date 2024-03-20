@@ -12,14 +12,15 @@
 		Modal,
 		Alert
 	} from 'flowbite-svelte';
+	import { onMount } from 'svelte';
+	import { getContext } from 'svelte';
+	import type { PageData } from '../$types';
 	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
 	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
 	import DeleteClientForm from '$lib/components/forms-components/clients/DeleteClientForm.svelte';
-	import type { PageData } from '../$types';
-	import { onMount } from 'svelte';
-	import { getContext } from 'svelte';
 
 	export let data: PageData;
+
 	let clients = [];
 	let showAlert = false;
 	let createModal = false;
@@ -31,10 +32,9 @@
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
 			clients = [...(await response.json())];
 			loading = false;
 		} catch (error) {
@@ -55,7 +55,7 @@
 		createModal = event.detail;
 		handleAlert('Client created succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
 		clients = [...(await response.json())];
 	}
 
@@ -68,7 +68,7 @@
 		editModal = event.detail;
 		handleAlert('Client edited succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
 		clients = [...(await response.json())];
 	}
 
@@ -81,7 +81,7 @@
 		deleteModal = event.detail;
 		handleAlert('Client deleted succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
 		clients = [...(await response.json())];
 	}
 </script>

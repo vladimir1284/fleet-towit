@@ -35,11 +35,10 @@
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 	onMount(async () => {
 		try {
 			const response = await fetch('/api/tenants');
-			const usersResponse = await fetch('/api/tenants/users', { headers });
+			const usersResponse = await fetch('/api/tenants/users');
 			tenants = [...(await response.json())];
 			users = [...(await usersResponse.json())];
 			loading = false;
@@ -58,7 +57,7 @@
 	}
 
 	async function handleUsers(tenant) {
-		const tempList = await fetch(`/api/tenants/${tenant.id}/users`, { headers });
+		const tempList = await fetch(`/api/tenants/${tenant.id}/users`);
 		selectedTenantUsersList = await tempList.json();
 		showUsers = true;
 	}
@@ -68,7 +67,7 @@
 		handleAlert('Tenant created succesfully!');
 
 		const response = await fetch('/api/tenants');
-		const usersResponse = await fetch('/api/tenants/users', { headers });
+		const usersResponse = await fetch('/api/tenants/users');
 		tenants = [...(await response.json())];
 		users = [...(await usersResponse.json())];
 	}
@@ -84,7 +83,7 @@
 		handleAlert('Tenant edited succesfully!');
 
 		const response = await fetch('/api/tenants');
-		const usersResponse = await fetch('/api/tenants/users', { headers });
+		const usersResponse = await fetch('/api/tenants/users');
 		tenants = [...(await response.json())];
 		users = [...(await usersResponse.json())];
 	}
@@ -99,7 +98,7 @@
 		handleAlert('Tenant deleted succesfully!');
 
 		const response = await fetch('/api/tenants');
-		const usersResponse = await fetch('/api/tenants/users', { headers });
+		const usersResponse = await fetch('/api/tenants/users');
 		tenants = [...(await response.json())];
 		users = [...(await usersResponse.json())];
 	}
