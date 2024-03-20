@@ -82,8 +82,28 @@
 
 	let actionURL = `/api/tenants/${$currentTenant.id}/contracts/tolls`;
 
-	const { form, errors, constraints, enhance } = superForm(data.form, {
-		SPA: true
+	const { form, errors, constraints, enhance, delayed } = superForm(data.form, {
+		onSubmit: async (event) => {
+			event.formData.set('vehicleId', findVehicleID($form.vehicleId));
+		},
+		onUpdate: async (event) => {
+			//console.log('plate', event.form);
+			const vehicle = vehicles.filter((_vehicle) => _vehicle.id == event.form.data.vehicleId);
+			//console.log('veh', vehicle)
+			event.form.data.vehicleId = vehicle[0].plate;
+			event.form.data.createDate = event.form.data.createDate
+				.toISOString()
+				.slice(0, 10)
+			//console.log(event.form);
+			if (event.form.errors._errors) {
+				handleAlert(event.form.errors._errors[0])
+			}
+		},
+		onUpdated: async ({ form }) => {
+			if (form.valid) {
+				dispatch('formvalid', false);
+			}
+		}
 	});
 
 	if (selectedToll) {
@@ -114,13 +134,13 @@
 		attachFile = !attachFile;
 	}
 
-	function handleAlert() {
-		showAlert = true;
+	function handleAlert(message) {
+		showAlert = message;
 		setTimeout(() => {
 			showAlert = false;
 		}, 10000);
 	}
-	
+
 	async function handleSubmit(event) {
 		loading = true;
 		event.preventDefault();
@@ -180,7 +200,7 @@
 		class="flex flex-col justify-center align-center space-y-6 gap-2"
 		method="POST"
 		enctype="multipart/form-data"
-		on:submit={handleSubmit}
+		action={actionURL}
 		use:enhance
 	>
 		<input hidden name="id" bind:value={$form.id} />
@@ -243,7 +263,7 @@
 			<SubmitButtonComponent
 				placeholder={!selectedToll ? 'Create toll' : 'Update toll'}
 				styles="w-[70%] grow mx-auto block"
-				{loading}
+				loading={$delayed}
 				disabled={formDisabled}
 			/>
 			<Fileupload class="hidden" name="fileData" id="fileData" on:change={changeFile} />
@@ -264,7 +284,7 @@
 		</div>
 		{#if showAlert}
 			<Alert class="fixed bottom-0 right-0 m-4 z-1" color="red" dismissable>
-				Cannot connect to server to upload file
+				{showAlert}
 			</Alert>
 		{/if}
 	</form>
