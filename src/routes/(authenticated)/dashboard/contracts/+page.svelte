@@ -11,16 +11,25 @@
 		TableHeadCell,
 		Modal,
 		Alert,
-		Badge
+		Badge,
+		Indicator
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import type { PageData } from '../$types';
 	import { tenantActor } from '$lib/store/context-store';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
+	import {
+		TrashBinSolid,
+		FileEditSolid,
+		RotateOutline,
+		EyeOutline,
+		AnnotationSolid
+	} from 'flowbite-svelte-icons';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
+	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
+	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
 
 	export let data: PageData;
 	let message = '';
@@ -36,7 +45,14 @@
 	let deleteModal = false;
 	let updateModal = false;
 	let detailModal = false;
+	let showNotesModal = false;
 	let selectedContract = undefined;
+
+	$: {
+		contracts.forEach((c) => {
+			c.RemStatus = getContractRemainderStatus(c.notes);
+		});
+	}
 
 	let contractStagesList = [];
 
@@ -148,6 +164,11 @@
 		});
 		contracts = [...(await contractsResponse.json())];
 	}
+
+	async function handleShowNotes(contract) {
+		selectedContract = contract;
+		showNotesModal = true;
+	}
 </script>
 
 {#if loading}
@@ -185,6 +206,11 @@
 		/>
 	</Modal>
 
+	<!-- Notes Modal -->
+	{#if selectedContract}
+		<ViewContractNotes bind:open={showNotesModal} bind:selectedContract {data} />
+	{/if}
+
 	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
 			<caption
@@ -205,7 +231,23 @@
 			<TableBody class="divide-y">
 				{#each contracts as contract}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">
+						<TableBodyCell class="text-center relative">
+							{#if contract.RemStatus.status > -1}
+								<Indicator
+									placement="center-left"
+									size="lg"
+									class="ml-2 p-2"
+									color={contract.RemStatus.color}
+								>
+									<span class="text-white text-xs">
+										{#if contract.RemStatus.count < 10}
+											{contract.RemStatus.count}
+										{:else}
+											9+
+										{/if}
+									</span>
+								</Indicator>
+							{/if}
 							{contract.vehicle.type + '-' + contract.vehicle.make + '-' + contract.vehicle.model}
 						</TableBodyCell>
 						<TableBodyCell class="text-center">
@@ -217,6 +259,7 @@
 						</TableBodyCell>
 						<TableBodyCell class="flex w-40 justify-between">
 							<EyeOutline class="text-gray-400" on:click={() => handleDetail(contract)} />
+							<AnnotationSolid class="text-gray-400" on:click={() => handleShowNotes(contract)} />
 							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(contract)} />
 							<RotateOutline class="text-gray-400" on:click={() => handleUpdateStage(contract)} />
 							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(contract.id)} />
