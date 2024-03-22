@@ -5,7 +5,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { sendWelcomeEmail } from '$lib/actions/emails';
 import { actionResult } from 'sveltekit-superforms/server';
 import { superValidate } from 'sveltekit-superforms/server';
-import { listTenantUsers, createTenantUser, updateTenantUser, updateDefaultTenantUser } from '$lib/actions/tenantUsers';
+import { listTenantUsers, createTenantUser, updateTenantUser, updateDefaultTenantUser, deleteTenantUser } from '$lib/actions/tenantUsers';
 
 const fixSchema = z.object({
 	role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
@@ -75,23 +75,27 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
         locals.inventoryActionObject.currentPrismaClient,
         {
             id: tenantUserId,
+			//@ts-expect-error currenUserData is not string
             tenantId: currentUserData.tenant.id,
             isDefault
         }
     )
-    /*
-	if (isDefault) {
-		// Set all other tenantUsers to is_default: false
-		await currentPrisma.tenantUser.updateMany({
-			where: { tenantId: currentUserData.tenant.id, id: { not: tenantUserId } },
-			data: { is_default: false }
-		});
-	}
-	// Update the specified tenantUser
-	const tenantUser = await currentPrisma.tenantUser.update({
-		where: { id: tenantUserId },
-		data: { is_default: isDefault }
-	});
-    */
 	return new Response(JSON.stringify(tenantUser), { status: 200 });
 };
+
+export const DELETE: RequestHandler = async({locals, params}) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
+	if (params.userId) {
+		console.log(params.userId)
+		await deleteTenantUser(
+			locals.inventoryActionObject.currentPrismaClient,
+			{id: parseInt(params.userId)}
+		)
+		return new Response('Success', {status: 200})
+	} else {
+		return new Response('Invalid userId', {status: 400})
+	}
+}

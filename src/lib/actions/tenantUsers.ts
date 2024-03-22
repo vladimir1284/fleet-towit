@@ -33,9 +33,14 @@ export const updateTenantUser = async (instance: PrismaClient, { id, role, tenan
 }
 
 export const deleteTenantUser = async (instance: PrismaClient, { id }: { id: number }) => {
+    const tenantUser = await instance.tenantUser.findUnique({where:{id}})
     await instance.tenantUser.delete({
         where: { id }
     })
+    const rest = await instance.tenantUser.findMany({where:{userId: tenantUser?.userId}})
+    if (!rest.length && tenantUser) {
+        await bypassPrisma.user.delete({where: {id: tenantUser.userId}})
+    }
 }
 
 export const listTenantUsers = async (instance: PrismaClient) => {
@@ -67,4 +72,17 @@ export const updateDefaultTenantUser = async(instance: PrismaClient, { id, tenan
 	});
     
     return tenantUser
+}
+
+export const getTenantUsers = async({id}: {id: string}) => {
+    const tenantUsers = await bypassPrisma.tenantUser.findMany({
+        where: {
+            userId: id
+        },
+        include: {
+            tenant: true,
+            user: true
+        }
+    })
+    return tenantUsers
 }
