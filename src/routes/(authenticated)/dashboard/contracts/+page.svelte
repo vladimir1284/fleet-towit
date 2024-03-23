@@ -21,6 +21,7 @@
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
+	import { getKillBillData } from '@killbill/temp-api-rq';
 
 	export let data: PageData;
 	let message = '';
@@ -39,6 +40,7 @@
 	let selectedContract = undefined;
 
 	let contractStagesList = [];
+	let contractInvoicesList = [];
 
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
@@ -66,6 +68,37 @@
 			loading = false;
 		}
 	});
+
+	async function getAllInvoices() {
+		// const requestParameters = {
+		// 	offset: 0,
+		// 	limit: 10,
+		// 	audit: false
+		// };
+		// try {
+		// 	const invoices = await invoiceApi.getInvoices(requestParameters);
+		// 	console.log('Facturas:', invoices);
+		// } catch (error) {
+		// 	console.error('Error al obtener las facturas:', error);
+		// }
+		try {
+			const invoices = await getKillBillData('/invoices/pagination', 5);
+
+			contractInvoicesList = await invoices.map((invoice) => ({
+				comments: 'KillBill invoice',
+				date: invoice.invoiceDate, // targetDate
+				invoice_id: invoice.invoiceId,
+				previousStage: null,
+				previousStageId: null,
+				reason: '',
+				stage: invoice.status,
+				amount: invoice.amount,
+				balance: invoice.balance
+			}));
+		} catch (error) {
+			console.error('Error al obtener las facturas:', error);
+		}
+	}
 
 	function handleAlert(text) {
 		showAlert = true;
@@ -133,6 +166,8 @@
 	async function handleDetail(contract) {
 		const request = await fetch(`/api/tenants/${currentTenant.id}/contracts/${contract.id}/stage`);
 		contractStagesList = await request.json();
+		await getAllInvoices();
+
 		selectedContract = contract;
 		detailModal = true;
 	}
@@ -142,6 +177,7 @@
 
 	async function handleCloseDetailModal() {
 		contractStagesList = [];
+		contractInvoicesList = [];
 
 		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 			headers
@@ -181,6 +217,7 @@
 			{data}
 			{selectedContract}
 			{contractStagesList}
+			{contractInvoicesList}
 			on:formvalid={handleCloseDetailModal}
 		/>
 	</Modal>
