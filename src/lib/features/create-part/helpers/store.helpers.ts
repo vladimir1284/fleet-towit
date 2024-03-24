@@ -6,7 +6,7 @@ export const createDefaultPartVendor = (): partVendorType => ({
 	// Part vendor-like.
 	uuid: uuidv4(),
 	name: '',
-	cost: ''
+	cost: 0
 });
 
 export const createDefaultPartLocation = (): partLocationType => ({
@@ -14,5 +14,5 @@ export const createDefaultPartLocation = (): partLocationType => ({
 	uuid: uuidv4(),
 	name: '',
 	unit: 'Foot',
-	quantity: ''
+	quantity: 0
 });

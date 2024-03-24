@@ -1,9 +1,7 @@
 <script lang="ts">
-	export let errors: Writable<any>; // Unable to infer correct type value.
-	export let superPartStore: Writable<PartCreationType>;
-
-	import { CirclePlusSolid } from 'flowbite-svelte-icons';
 	import { Heading, P } from 'flowbite-svelte';
+	import { getContext } from 'svelte';
+	import { CirclePlusSolid } from 'flowbite-svelte-icons';
 
 	import PartVendor from './part-vendor.component.svelte';
 	import PartLocation from './part-location.component.svelte';
@@ -14,8 +12,12 @@
 		createDefaultPartLocation
 	} from '$lib/features/create-part/helpers';
 
-	import type { Writable } from 'svelte/store';
 	import type { PartCreationType } from '$lib/types';
+	import type { SuperForm } from 'sveltekit-superforms';
+
+	// Retrieve super form context.
+	const superPartForm: SuperForm<PartCreationType> = getContext('SuperPartForm');
+	const { form: superPartStore } = superPartForm;
 
 	// Create new category, vendor or location components and form data.
 	const handleAddPartCategory = () => {
@@ -76,15 +78,13 @@
 				<P class="my-3 font-sans text-slate-700 text-sm font-semibold text-nowrap">Add vendor</P>
 			</div>
 		</div>
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col gap-3">
 			{#each $superPartStore.vendors as vendor, index (vendor.uuid)}
 				<svelte:component
 					this={PartVendor}
 					{index}
-					{errors}
 					{handleRemovePartVendor}
 					bind:partVendorName={$superPartStore.vendors[index].name}
-					bind:partVendorCost={$superPartStore.vendors[index].cost}
 				/>
 			{/each}
 		</div>
@@ -105,15 +105,13 @@
 				<P class="my-3 font-sans text-slate-700 text-sm font-semibold text-nowrap">Add location</P>
 			</div>
 		</div>
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col gap-3">
 			{#each $superPartStore.locations as location, index (location.uuid)}
 				<svelte:component
 					this={PartLocation}
 					{index}
-					{errors}
 					{handleRemovePartLocation}
 					bind:partLocationName={$superPartStore.locations[index].name}
-					bind:partLocationQuantity={$superPartStore.locations[index].quantity}
 					bind:partLocationUnit={$superPartStore.locations[index].unit}
 				/>
 			{/each}

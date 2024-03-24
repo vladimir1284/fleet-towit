@@ -2,7 +2,7 @@
 	// Modal management variable.
 	export let isVisiblePartWizard: boolean;
 
-	import { getContext } from 'svelte';
+	import { getContext, setContext } from 'svelte';
 	import { Modal, Button } from 'flowbite-svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
@@ -29,14 +29,8 @@
 
 	// Get current step validator.
 	$: options.validators = partComponentPerStep[currentStep].stepSchema;
-	const {
-		form: superPartStore,
-		errors,
-		enhance,
-		validateForm,
-		options
-	} = superForm($partCreationWizardStore, {
-		resetForm: true,
+	// Super+Model+Form pattern from now on.
+	const superPartForm = superForm($partCreationWizardStore, {
 		dataType: 'json',
 
 		// Events management.
@@ -56,8 +50,15 @@
 			if (form.valid) {
 				currentStep = 0;
 			}
+		},
+		async onResult(event) {
+			// Actions on result...
 		}
 	});
+
+	const { enhance, validateForm, options } = superPartForm;
+	// Set superForm context to use it down there the component tree.
+	setContext('SuperPartForm', superPartForm);
 
 	const handleWizardStep = (numberOfSteps: number) => {
 		const nextStep = currentStep + numberOfSteps;
@@ -82,23 +83,17 @@
 	on:close={handleWizardClose}
 >
 	<form method="POST" action="?/create" use:enhance>
-		<div class="flex flex-col gap-10">
-			<PartStepper {currentStep} />
-			<svelte:component
-				this={partComponentPerStep[currentStep].component}
-				{errors}
-				{superPartStore}
-			/>
-			<div
-				class="flex flex-row"
-				class:justify-between={currentStep}
-				class:justify-end={!currentStep}
-			>
-				{#if currentStep}
-					<Button color="blue" class="w-1/5" on:click={() => handleWizardStep(-1)}>Back</Button>
-				{/if}
-				<Button type="submit" color="blue" class="w-1/5">{currentStepButtonText}</Button>
-			</div>
+		<PartStepper {currentStep} />
+		<svelte:component this={partComponentPerStep[currentStep].component} />
+		<div
+			class="flex flex-row mt-7"
+			class:justify-between={currentStep}
+			class:justify-end={!currentStep}
+		>
+			{#if currentStep}
+				<Button color="blue" class="w-1/5" on:click={() => handleWizardStep(-1)}>Back</Button>
+			{/if}
+			<Button type="submit" color="blue" class="w-1/5">{currentStepButtonText}</Button>
 		</div>
 	</form>
 </Modal>

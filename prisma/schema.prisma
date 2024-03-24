@@ -285,7 +285,7 @@ model Part {
   name             String
   number           Int
   criticalQty      Int
-  upc              Int
+  upc              String
   description      String @db.Text
   extendedPartData Json?
 

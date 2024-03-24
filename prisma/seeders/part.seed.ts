@@ -23,7 +23,7 @@ const seedParts = async (prisma: ExtendedBypassPrismaClient, tenantsId: number[]
 					criticalQty: randomInt(SEED_PROCESS_MAX_INTEGER),
 					number: randomInt(SEED_PROCESS_MAX_INTEGER),
 					description: randomBytes(SEED_PROCESS_MAX_INTEGER / 5).toString('hex'),
-					upc: randomInt(SEED_PROCESS_MAX_INTEGER),
+					upc: randomBytes(SEED_PROCESS_MAX_INTEGER / 5).toString('hex'),
 					tenantId: tenantId,
 					categories: {
 						create: [

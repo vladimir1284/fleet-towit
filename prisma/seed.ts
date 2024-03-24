@@ -4,6 +4,7 @@ import { PrismaPromise, Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
 import seedInspection from './seeders/inspections.seed';
 import { seedContracts } from './seeders/contracts.seed';
+import seedParts from './seeders/part.seed';
 const prisma = bypassPrisma;
 
 async function main() {
@@ -76,8 +77,9 @@ async function main() {
 	await seedVehicles(prisma);
 	// Inspection.
 	await seedInspection(prisma, [testTenantId, tenantId]);
+	await seedParts(prisma, [testTenantId, tenantId]);
 	// Contracts
-	await seedContracts(prisma);
+	// await seedContracts(prisma);
 }
 
 main()

@@ -1,4 +1,3 @@
-import { PartSchema } from '$lib/zod';
 import { zod } from 'sveltekit-superforms/adapters';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
@@ -6,7 +5,6 @@ import {
 	// Constants.
 	FAILED_PART_RECORD_CREATION,
 	PART_SCHEMA_CREATION_ACTION_ROUTE,
-	ZOD_EXCLUDED_VALIDATION_PROPERTIES,
 	PART_SCHEMA_RETRIEVAL_ACTION_ROUTE,
 	INVALID_PART_SCHEMA_VALIDATION_MESSAGE
 } from '$lib/shared';
@@ -41,32 +39,26 @@ export async function load(event) {
 
 export const actions = {
 	create: async (event: RequestEvent) => {
-		const partCreationResponse = await event.fetch(PART_SCHEMA_CREATION_ACTION_ROUTE, {
-			method: 'POST',
-			body: JSON.stringify(event)
-		});
-		console.log(partCreationResponse);
-		return true;
-	},
-	default: async (event: RequestEvent) => {
-		const untainedPartValidationSchema = PartSchema.omit(ZOD_EXCLUDED_VALIDATION_PROPERTIES);
-
-		const superValidatedPart = await superValidate(event.request, untainedPartValidationSchema);
-		if (!superValidatedPart.valid) {
-			return message(superValidatedPart, INVALID_PART_SCHEMA_VALIDATION_MESSAGE);
+		const superValidatedPartWizard = await superValidate(
+			// Validate part wizard data.
+			event.request,
+			zod(PartCustomizationSchema)
+		);
+		if (!superValidatedPartWizard.valid) {
+			return message(superValidatedPartWizard, INVALID_PART_SCHEMA_VALIDATION_MESSAGE);
 		}
 		// Request to create a new part into the database.
 		const partCreationResponse = await event.fetch(PART_SCHEMA_CREATION_ACTION_ROUTE, {
 			method: 'POST',
-			body: JSON.stringify(superValidatedPart.data)
+			body: JSON.stringify(superValidatedPartWizard.data)
 		});
 
 		if (!partCreationResponse.ok) {
-			return message(superValidatedPart, FAILED_PART_RECORD_CREATION);
+			return message(superValidatedPartWizard, FAILED_PART_RECORD_CREATION);
 		}
 		const { data: createdPart } = await partCreationResponse.json();
 		return {
-			superValidatedPart,
+			superValidatedPartWizard,
 			createdPart
 		};
 	}
