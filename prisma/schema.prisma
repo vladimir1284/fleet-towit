@@ -213,8 +213,16 @@ model CustomForm {
   createdAt   DateTime      @default(now())
   // Only show form if is active
   isActive    Boolean       @default(true)
-  fields      CustomField[]
   inspections Inspection[]
+  cards       Card[]
+}
+
+model Card {
+  id     Int           @id @default(autoincrement())
+  name   String
+  formId Int
+  form   CustomForm    @relation(fields: [formId], references: [id], onDelete: Cascade)
+  fields CustomField[]
 }
 
 enum FormFieldType {
@@ -240,19 +248,16 @@ model CustomField {
   name         String
   type         FormFieldType
   required     Boolean?              @default(true)
-  formId       Int
-  form         CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
   checkOptions CheckOption[]
   // tenant user responses
   responses    CustomFieldResponse[]
+  card         Card?                 @relation(fields: [cardId], references: [id])
+  cardId       Int?
 }
 
 model CustomFieldResponse {
   id            Int          @id @default(autoincrement())
-  // if is text , number etc
   content       String?
-  // if is checkbox ,radio
-  checked       Boolean?
   note          String?
   createdAt     DateTime     @default(now())
   tenantUserId  Int
