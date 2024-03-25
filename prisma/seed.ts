@@ -3,7 +3,8 @@ import { bypassPrisma } from '../src/lib/prisma';
 import { Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
 import seedInspection from './seeders/inspections.seed';
-import { seedContracts } from "./seeders/contracts.seed";
+import { seedContracts } from './seeders/contracts.seed';
+import { seedClients } from './seeders/clients.seed';
 const prisma = bypassPrisma;
 
 async function main() {
@@ -14,11 +15,12 @@ async function main() {
 		{ email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'albertolicea00@gmail.com', userRole: Role.ADMIN, is_default: true }
 		// Add more users as needed
 	];
 	const tenantsData = {
 		admin: { name: 'admin', email: 'gissell111284@gmail.com', isAdmin: true },
-		test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false },
+		test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false }
 		// Add more tenants as needed
 	};
 
@@ -73,12 +75,18 @@ async function main() {
 	}
 
 	// Vehicles
-	await seedVehicles(prisma);
+	try {
+		await seedVehicles(prisma);
+	} catch {}
 	// Inspection
-	await seedInspection(prisma, [testTenantId, tenantId]);
+	try {
+		await seedInspection(prisma, [testTenantId, tenantId]);
+	} catch {}
 	// Contracts
-	await seedContracts(prisma);
-
+	try {
+		await seedContracts(prisma);
+	} catch {}
+	await seedClients(prisma);
 }
 
 main()
