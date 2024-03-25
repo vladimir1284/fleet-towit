@@ -12,9 +12,7 @@ import { FormFieldType } from '@prisma/client';
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
@@ -39,11 +37,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
 
 			// generate schema
-			const schema = generateValidationSchema(inspection.customForm.fields);
+			const schema = generateValidationSchema(inspection.customForm.cards);
 
 			const form = await superValidate(schema);
 
-			return { inspection, form, FormFieldType };
+			return { inspection, FormFieldType, form };
 		} catch {
 			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
 		}
@@ -70,7 +68,7 @@ export const actions = {
 			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/register/`);
 
 			// generate schema
-			const schema = generateValidationSchema(inspection.customForm.fields);
+			const schema = generateValidationSchema(inspection.customForm.cards);
 
 			const form = await superValidate(request, schema);
 

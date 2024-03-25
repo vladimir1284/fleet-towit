@@ -1,11 +1,10 @@
 import {
-	addFieldToCustomForm,
-	deleteCustomForm,
-	cloneCustomForm,
 	retrieveCustomFormById,
-	deleteCustomField,
+	deleteCustomForm,
 	renameCustomForm,
-	updateCustomField
+	cloneCustomForm,
+	deleteCard,
+	addCard
 } from '$lib/actions/custom-forms';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
@@ -17,15 +16,11 @@ import {
 	MISSING_SECURITY_HEADER_STATUS
 } from '$lib/shared';
 import { FormFieldType } from '@prisma/client';
-import type { CheckOption } from '@prisma/client';
-
-const cardTypeSchema = z.enum(['text', 'number', 'checkboxes', 'single_check']);
 
 const addCardSchema = z.object({
 	card_name: z.string(),
 	form_id: z.number(),
-	card_type: cardTypeSchema,
-	checkboxes: z.string().optional()
+	fields: z.string()
 });
 
 const deleteFormSchema = z.object({
@@ -40,13 +35,6 @@ const deleteCardSchema = z.object({
 const renameFormSchema = z.object({
 	new_form_name: z.string(),
 	form_id: z.number()
-});
-
-const updateCardSchema = z.object({
-	card_id: z.number(),
-	card_type: cardTypeSchema,
-	new_card_name: z.string(),
-	checkboxes: z.string().optional()
 });
 
 // utils
@@ -85,6 +73,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			if (customForm?.inspections.length) {
 				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenant.id });
 
+				console.log(cloneForm.id);
 				return {
 					redirect_to: cloneForm.id,
 					customForm: cloneForm,
@@ -149,9 +138,9 @@ export const actions = {
 	},
 
 	/*
-	 * action to add field to custom form
+	 *  add card to custom form
 	 */
-	addField: async ({ request, locals }) => {
+	addCard: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
 		const form = await superValidate(request, addCardSchema);
@@ -159,22 +148,15 @@ export const actions = {
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
-
 		// this code is for testing purposes only
 		const tenant = session?.user.tenantUsers[0].tenant;
 
-		let checkboxes: string[] | undefined = undefined;
-		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
-
-		await addFieldToCustomForm({
+		await addCard({
 			tenantId: tenant.id,
-			cardType: form.data.card_type,
-			name: form.data.card_name,
+			cardName: form.data.card_name,
 			formId: form.data.form_id,
-			checkboxes: checkboxes
+			fields: form.data.fields
 		});
-
-		return { form };
 	},
 
 	/*
@@ -192,37 +174,10 @@ export const actions = {
 		// this code is for testing purposes only
 		const tenant = session?.user.tenantUsers[0].tenant;
 
-		await deleteCustomField({
+		await deleteCard({
 			tenantId: tenant.id,
 			formId: form.data.form_id,
-			fieldId: form.data.card_id
-		});
-	},
-
-	/*
-	 * action to update custom field
-	 */
-	updateField: async ({ request, locals }) => {
-		const session = await verifySession(locals);
-
-		const form = await superValidate(request, updateCardSchema);
-
-		if (!form.valid) {
-			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
-		}
-
-		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
-
-		let checkboxes: (CheckOption | string)[] | undefined = undefined;
-		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
-
-		await updateCustomField({
-			tenantId: tenant.id,
-			newName: form.data.new_card_name,
-			cardId: form.data.card_id,
-			cardType: form.data.card_type,
-			checkboxes: checkboxes
+			cardId: form.data.card_id
 		});
 	}
 } satisfies Actions;
