@@ -13,6 +13,7 @@ async function main() {
 		{ email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true },
 		// Add more users as needed
 	];
 	const tenantsData = {
