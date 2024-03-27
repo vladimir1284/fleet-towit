@@ -23,7 +23,9 @@
 			}
 		}
 	});
+
 	$: $form.email = $form.email.trim();
+	
 	if (selectedTenant) {
 		console.log(selectedTenant);
 

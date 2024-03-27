@@ -13,9 +13,9 @@
 		Alert,
 		Badge
 	} from 'flowbite-svelte';
-	import { onMount } from 'svelte';
+	import axios from 'axios';
+	import { onMount, getContext } from 'svelte';
 	import type { PageData } from '../$types';
-	import { getContext } from 'svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
@@ -44,23 +44,50 @@
 	const currentTenant = getContext('currentTenant');
 
 	onMount(async () => {
-		try {
-			const clientsResponse = await fetch(`/api/tenants/${$currentTenant.id}/client`);
-			const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`);
-			const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`);
-			const rentalPlansResponse = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`);
-
-			clients = [...(await clientsResponse.json())];
-			vehicles = [...(await vehiclesResponse.json())];
-			contracts = [...(await contractsResponse.json())];
-			rentalPlans = [...(await rentalPlansResponse.json())];
-
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData(true);
 	});
+
+	async function loadData(initial: boolean = false) {
+		loading = true;
+		if (initial) {
+			await axios
+				.get(`/api/tenants/${$currentTenant.id}/client`)
+				.then((response) => {
+					clients = response.data;
+				})
+				.catch((response) => {
+					throw new Error(`ERROR: ${response}`);
+				});
+
+			await axios
+				.get(`/api/tenants/${$currentTenant.id}/vehicles`)
+				.then((response) => {
+					vehicles = response.data;
+				})
+				.catch((response) => {
+					throw new Error(`ERROR: ${response}`);
+				});
+
+			await axios
+				.get(`/api/tenants/${$currentTenant.id}/rentalPlan`)
+				.then((response) => {
+					rentalPlans = response.data;
+				})
+				.catch((response) => {
+					throw new Error(`ERROR: ${response}`);
+				});
+		}
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/contracts`)
+			.then((response) => {
+				contracts = response.data;
+			})
+			.catch((response) => {
+				throw new Error(`ERROR: ${response}`);
+			});
+
+		loading = false;
+	}
 
 	function handleAlert(text) {
 		showAlert = true;
@@ -73,9 +100,7 @@
 	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
-
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`);
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleEdit(contract) {
@@ -86,9 +111,7 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Contract edited succesfully!');
-
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`);
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleUpdateStage(contract) {
@@ -99,9 +122,7 @@
 	async function handleCloseUpdateModal(event) {
 		updateModal = event.detail;
 		handleAlert('Contract updated succesfully!');
-
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`);
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleDelete(contractId) {
@@ -112,14 +133,17 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Contract deleted succesfully!');
-
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`);
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleDetail(contract) {
-		const request = await fetch(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`);
-		contractStagesList = await request.json();
+		await axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`)
+			.then((response) => {
+				contractStagesList = response.data;
+			})
+			.catch((response) => {
+				throw new Error(`ERROR: ${response}`);
+			});
 		selectedContract = contract;
 		detailModal = true;
 	}
@@ -129,9 +153,7 @@
 
 	async function handleCloseDetailModal() {
 		contractStagesList = [];
-
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`);
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 </script>
 

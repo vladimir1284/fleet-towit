@@ -1,5 +1,6 @@
 <script async lang="ts">
 	//@ts-nocheck
+	import axios from 'axios';
 	import {
 		TruckOutline,
 		DollarOutline,
@@ -34,14 +35,19 @@
 	};
 
 	async function updateContractData() {
-		const contractData = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`
-		);
-		const contractStages = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
-		);
-		selectedContract = await contractData.json();
-		contractStagesList = await contractStages.json();
+		await axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`)
+			.then(
+				(response) => {
+					selectedContract = response.data;
+				}
+			)
+		
+		await axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`)
+			.then(
+				(response) => {
+					contractStagesList = response.data
+				}
+			)
 	}
 
 	async function handleCloseEditModal(event: any) {

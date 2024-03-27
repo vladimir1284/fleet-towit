@@ -14,13 +14,14 @@ const fixSchema = z.object({
 	id: z.number().optional()
 });
 
-export const GET: RequestHandler = async({ locals }) => {
+export const GET: RequestHandler = async({ locals, params }) => {
     const session = await locals.getSession();
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-    const users = await listTenantUsers(locals.inventoryActionObject.currentPrismaClient)
+
+    const users = await listTenantUsers(locals.inventoryActionObject.currentPrismaClient, {tenantId: parseInt(params.tenantId, 10)})
     return new Response(JSON.stringify(users), {status: 200})
 }
 
@@ -76,7 +77,7 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
         {
             id: tenantUserId,
 			//@ts-expect-error currenUserData is not string
-            tenantId: currentUserData.tenant.id,
+            tenantId: currentUserData?.tenant.id,
             isDefault
         }
     )

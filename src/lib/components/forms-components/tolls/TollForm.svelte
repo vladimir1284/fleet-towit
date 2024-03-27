@@ -1,5 +1,6 @@
 <script lang="ts">
 	// @ts-nocheck
+	import axios from 'axios';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
@@ -20,7 +21,6 @@
 
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
-	let headers;
 	let vehicles = [];
 	let attachFile = false;
 	let loading = false;
@@ -47,11 +47,11 @@
 	async function getContractByDate(selectedDate: string, vehiclePlate: string) {
 		let vehicleId = findVehicleID(vehiclePlate);
 		if (vehicleId) {
-			const response = await fetch(
-				`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&vehicle_id=${vehicleId}`
-			);
-
-			selectedContract = await response.json();
+			await axios.get(`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&vehicle_id=${vehicleId}`)
+				.then((response) => {
+						selectedContract = response.data
+					}
+				)
 		} else {
 			selectedContract = undefined;
 		}
@@ -59,17 +59,19 @@
 
 	onMount(async () => {
 		if ($form.invoice) {
-			fetch(
-				`https://minios3.crabdance.com/develop/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}/${selectedToll.invoice}`,
-				{ method: 'HEAD' }
-			).then((r) => {
-				fileSize = parseInt(r.headers.get('Content-Length'));
-			});
-
+			await axios.head(
+				`https://minios3.crabdance.com/develop/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}/${selectedToll.invoice}`
+				).then((r) => {
+					fileSize = parseInt(r.headers.get('Content-Length'));
+						}
+				)
 			attachFile = true;
 		}
-		const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`);
-		vehicles = [...(await vehiclesResponse.json())];
+		await axios.get(`/api/tenants/${$currentTenant.id}/vehicles`)
+			.then((response) => {
+					vehicles = response.data
+				}
+			)
 	});
 
 	let stageSelectorList = [

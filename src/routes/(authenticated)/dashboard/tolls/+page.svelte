@@ -13,16 +13,15 @@
 		Alert,
 		Badge
 	} from 'flowbite-svelte';
-	import {
-		TrashBinSolid,
-		FileEditSolid,
-		ArrowDownToBracketOutline
-	} from 'flowbite-svelte-icons';
+	import { TrashBinSolid, FileEditSolid, ArrowDownToBracketOutline } from 'flowbite-svelte-icons';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
 	import TollForm from '$lib/components/forms-components/tolls/TollForm.svelte';
 	import DeleteTollForm from '$lib/components/forms-components/tolls/DeleteTollForm.svelte';
+	import { createActor } from 'xstate';
+	import axios from 'axios';
+	import { tollsStateMachine } from '$lib/store/tolls-state-machine';
 
 	export let data: PageData;
 
@@ -50,17 +49,6 @@
 		});
 	};
 
-	onMount(async () => {
-		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`);
-			tolls = [...(await response.json())];
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
-	});
-
 	function handleAlert(text) {
 		showAlert = true;
 		message = text;
@@ -69,11 +57,27 @@
 		}, 4000);
 	}
 
+	async function loadData() {
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/contracts/tolls`)
+			.then((response) => {
+				tolls = response.data;
+				tollActor.send({ type: 'success' });
+			})
+			.catch(() => {
+				tollActor.send({ type: 'fail' });
+			})
+			.finally(() => {
+				loading = false;
+			});
+	}
+
 	async function handleCloseModal(event) {
+		console.log('Detail: ', event.detail);
+		tollActor.send({ type: 'ok' });
 		createModal = event.detail;
+		//await loadData();
 		handleAlert('Toll created succesfully!');
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`);
-		tolls = [...(await response.json())];
 	}
 
 	async function handleEdit(toll) {
@@ -99,33 +103,58 @@
 		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`);
 		tolls = [...(await response.json())];
 	}
+
+	const tollActor = createActor(tollsStateMachine).start();
+	tollActor.subscribe((state) => {
+		console.log(state.value);
+		if (state.value == 'Loading') {
+			loadData();
+		}
+	});
+
+	$: if (createModal == false) {
+		tollActor.send({ type: 'onClose' });
+	}
+
+	$: console.log('ACTOR VALUE: ', $tollActor.value);
 </script>
 
-{#if loading}
+{#if $tollActor.value == 'Loading'}
 	<p>Loading...</p>
 {:else}
-	<Modal bind:open={createModal} class="w-fit min-w-[25vw]">
-		<TollForm {data} on:formvalid={handleCloseModal} />
-	</Modal>
-
-	<Modal bind:open={editModal} class="w-fit min-w-[25vw]">
-		<TollForm {data} {selectedToll} on:formvalid={handleCloseEditModal} />
-	</Modal>
-
-	<Modal size="xs" padding="md" bind:open={deleteModal}>
-		<DeleteTollForm
+	{#if $tollActor.value == 'Create'}
+		<Modal bind:open={createModal} outsideclose class="w-fit min-w-[25vw]">
+			<TollForm {data} on:formvalid={handleCloseModal} />
+		</Modal>		
+	{/if}
+	{#if $tollActor.value == 'Edit'}
+		<Modal bind:open={editModal} class="w-fit min-w-[25vw]">
+			<TollForm {data} {selectedToll} on:formvalid={handleCloseEditModal} />
+		</Modal>
+	{/if}
+	{#if $tollActor.value == 'Edit'}
+		<Modal size="xs" padding="md" bind:open={deleteModal}>
+			<DeleteTollForm
 			tollId={selectedToll.id}
 			contractId={selectedToll.contractId}
 			on:formvalid={handleCloseDeleteModal}
-		/>
-	</Modal>
+			/>
+		</Modal>
+	{/if}
 
 	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
 			>
-				<GradientButton shadow color="blue" on:click={() => (createModal = true)}>
+				<GradientButton
+					shadow
+					color="blue"
+					on:click={() => {
+						tollActor.send({ type: 'onCreate' });
+						createModal = true;
+					}}
+				>
 					Create Toll
 				</GradientButton>
 			</caption>

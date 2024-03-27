@@ -1,5 +1,6 @@
 <script>
 	// @ts-nocheck
+	import axios from 'axios';
 	import { createEventDispatcher } from 'svelte';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
@@ -8,22 +9,22 @@
 	let loading = false;
 	const dispatch = createEventDispatcher();
 
+	//TODO: change the logic of deleting a tenant
+	
 	const handleSubmit = async (event) => {
+		loading = true;
+		console.log('THE DATA: ', data)
 		event.preventDefault();
-		const response = await fetch(`/api/tenants/${data}`, {
-			method: 'DELETE'
-		});
-		try{
-			if (!response.ok) {
-				console.error('Failed to delete');
-				return;
-			}else {
-				console.log('Deleted successfully');
-				dispatch('formvalid', false);
-			}
-		}finally{
-			loading = false;
-		}
+		await axios.delete(`/api/tenants/${data}`)
+			.then(() => {
+				dispatch('formvalid', false)
+				})
+			.catch(resp => {
+				console.error('Failed to delete', resp)
+				})
+			.finally(() => {
+					loading = false
+				})
 	};
 </script>
 

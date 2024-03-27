@@ -12,8 +12,8 @@
 		Modal,
 		Alert
 	} from 'flowbite-svelte';
-	import { onMount } from 'svelte';
-	import { getContext } from 'svelte';
+	import axios from 'axios';
+	import { onMount, getContext } from 'svelte';
 	import type { PageData } from '../$types';
 	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
 	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
@@ -30,18 +30,29 @@
 	let selectedId = '';
 	let selectedClient = undefined;
 	let message = '';
-
 	const currentTenant = getContext('currentTenant');
+
+
 	onMount(async () => {
-		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
-			clients = [...(await response.json())];
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
+
+	async function loadData() {
+		loading = true;
+		await axios.get(`/api/tenants/${$currentTenant.id}/client`)
+			.then((response) => {
+					clients = response.data
+				}
+			)
+			.catch((response) => {
+				throw new Error(`ERROR: ${response}`);
+				}
+			)
+			.finally(() => {
+					loading = false
+				}
+			)
+	}
 
 	function handleAlert(text) {
 		showAlert = true;
@@ -54,9 +65,7 @@
 	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Client created succesfully!');
-
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
-		clients = [...(await response.json())];
+		loadData();
 	}
 
 	async function handleEdit(client) {
@@ -67,9 +76,7 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Client edited succesfully!');
-
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
-		clients = [...(await response.json())];
+		loadData();
 	}
 
 	async function handleDelete(clientId) {
@@ -80,9 +87,7 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Client deleted succesfully!');
-
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`);
-		clients = [...(await response.json())];
+		loadData();
 	}
 </script>
 

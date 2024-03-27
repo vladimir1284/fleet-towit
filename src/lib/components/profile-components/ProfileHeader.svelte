@@ -1,5 +1,6 @@
 <script>
 	// @ts-nocheck
+	import axios from 'axios';
 	import { getContext } from 'svelte';
 	import { signOut } from '@auth/sveltekit/client';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
@@ -26,23 +27,24 @@
 		const formData = new FormData();
 		formData.append('tenantUserId', tenantUser.id);
 		formData.append('is_default', true);
-		const response = await fetch(`/api/tenants/${tenantUser.tenant.id}/users/${tenantUser.id}`, {
-			method: 'PATCH',
-			body: formData
-		});
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		} else {
-			location.reload();
-			saveToSessionStorage('currentTenant', {
-				...tenantUser.tenant,
-				currentUserTenant: tenantUser
-			});
-			currentTenant.set({
-				...tenantUser.tenant,
-				currentUserTenant: tenantUser
-			})
-		}
+		console.log('FORM: ', tenantUser)
+		await axios.patch(`/api/tenants/${tenantUser.tenant.id}/users/${tenantUser.id}`, formData)
+			.then(() => {
+					location.reload();
+					saveToSessionStorage('currentTenant', {
+						...tenantUser.tenant,
+						currentUserTenant: tenantUser
+					});
+					currentTenant.set({
+						...tenantUser.tenant,
+						currentUserTenant: tenantUser
+					})
+				}
+			)
+			.catch((response) => {
+					throw new Error(`HTTP error! status: ${response}`);
+				}
+			)
 	}
 </script>
 

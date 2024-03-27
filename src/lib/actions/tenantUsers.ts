@@ -43,14 +43,25 @@ export const deleteTenantUser = async (instance: PrismaClient, { id }: { id: num
     }
 }
 
-export const listTenantUsers = async (instance: PrismaClient) => {
-    const tenantUsers = await instance.tenantUser.findMany({
-        include: {
-            tenant: true,
-            user: true,
-        }
-    })
-    return tenantUsers
+export const listTenantUsers = async (instance: PrismaClient, {tenantId = undefined}:{tenantId: number | undefined}) => {
+    if(tenantId){
+        const tenantUsers = await instance.tenantUser.findMany({
+            where: {tenantId},
+            include: {
+                tenant: true,
+                user: true,
+            }
+        })
+        return tenantUsers
+    } else{
+        const tenantUsers = await instance.tenantUser.findMany({
+            include: {
+                tenant: true,
+                user: true,
+            }
+        })
+        return tenantUsers
+    }
 }
 
 export const updateDefaultTenantUser = async(instance: PrismaClient, { id, tenantId, isDefault}: { id: number, tenantId: number, isDefault: boolean }) => {

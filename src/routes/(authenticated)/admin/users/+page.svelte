@@ -1,12 +1,12 @@
 <script lang="ts">
 	// @ts-nocheck
-	import { Card, GradientButton, Table, Modal, Alert } from 'flowbite-svelte';
-	import DeleteUserForm from '$lib/components/forms-components/users/DeleteUserForm.svelte';
-	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
-	import UserForm from '$lib/components/forms-components/users/UserForm.svelte';
-	import { getContext } from 'svelte';
+	import axios from 'axios';
 	import type { PageData } from '../$types';
-	import { onMount } from 'svelte';
+	import { onMount, getContext } from 'svelte';
+	import { Card, GradientButton, Table, Modal, Alert } from 'flowbite-svelte';
+	import UserForm from '$lib/components/forms-components/users/UserForm.svelte';
+	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
+	import DeleteUserForm from '$lib/components/forms-components/users/DeleteUserForm.svelte';
 
 	export let data: PageData;
 	let tenants = [];
@@ -24,17 +24,30 @@
 	const currentTenant = getContext('currentTenant');
 
 	onMount(async () => {
-		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
-			users = await response.json();
-			const tenantsResponse = await fetch('/api/tenants');
-			tenants = await tenantsResponse.json();
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
+
+	async function loadData() {
+		loading = true;
+		await axios
+			.get('/api/tenants')
+			.then((response) => {
+				tenants = response.data;
+			})
+			.catch((response) => {
+				throw new Error(`ERROR: ${response}`);
+			});
+
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/users`)
+			.then((response) => {
+				users = response.data;
+			})
+			.catch((response) => {
+				throw new Error(`ERROR: ${response}`);
+			});
+		loading = false;
+	}
 
 	function handleAlert(text) {
 		showAlert = true;
@@ -47,11 +60,7 @@
 	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('User created succesfully!');
-
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
-		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants');
-		tenants = await tenantsResponse.json();
+		loadData();
 	}
 
 	async function handleEdit(event) {
@@ -62,11 +71,7 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('User edited succesfully!');
-
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
-		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants');
-		tenants = await tenantsResponse.json();
+		loadData();
 	}
 
 	async function handleDelete(event) {
@@ -77,11 +82,7 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('User deleted succesfully!');
-
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`);
-		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants');
-		tenants = await tenantsResponse.json();
+		loadData();
 	}
 </script>
 

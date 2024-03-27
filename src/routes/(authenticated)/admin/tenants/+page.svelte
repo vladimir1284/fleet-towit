@@ -12,13 +12,13 @@
 		Modal,
 		Alert
 	} from 'flowbite-svelte';
-	import { TrashBinSolid, FileEditSolid, UserGroupSolid } from 'flowbite-svelte-icons';
+	import axios from 'axios';
+	import type { PageData } from '../$types';
+	import { onMount, getContext } from 'svelte';
+	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
 	import TenantForm from '$lib/components/forms-components/tenants/TenantForm.svelte';
 	import DeleteTenantForm from '$lib/components/forms-components/tenants/DeleteTenantForm.svelte';
-	import type { PageData } from '../$types';
-	import { onMount } from 'svelte';
 	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
-	import { getContext } from 'svelte';
 
 	export let data: PageData;
 	let tenants = [];
@@ -33,20 +33,33 @@
 	let selectedTenant = undefined;
 	let selectedTenantUsersList = undefined;
 	let message = '';
-
 	const currentTenant = getContext('currentTenant');
+
 	onMount(async () => {
-		try {
-			const response = await fetch('/api/tenants');
-			const usersResponse = await fetch('/api/tenants/users');
-			tenants = [...(await response.json())];
-			users = [...(await usersResponse.json())];
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
+
+	async function loadData() {
+		loading = true;
+		await axios
+			.get('/api/tenants')
+			.then((response) => {
+				tenants = response.data;
+			})
+			.catch((response) => {
+				throw new Error(`ERROR: ${response}`);
+			});
+
+		await axios
+			.get('/api/tenants/users')
+			.then((response) => {
+				users = response.data;
+			})
+			.catch((response) => {
+				throw new Error(`ERROR: ${response}`);
+			});
+		loading = false;
+	}
 
 	function handleAlert(text) {
 		showAlert = true;
@@ -57,35 +70,31 @@
 	}
 
 	async function handleUsers(tenant) {
-		const tempList = await fetch(`/api/tenants/${tenant.id}/users`);
-		selectedTenantUsersList = await tempList.json();
-		showUsers = true;
+		await axios
+			.get(`/api/tenants/${tenant.id}/users`)
+			.then((response) => {
+				selectedTenantUsersList = response.data;
+			})
+			.finally(() => {
+				showUsers = true;
+			});
 	}
 
 	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Tenant created succesfully!');
-
-		const response = await fetch('/api/tenants');
-		const usersResponse = await fetch('/api/tenants/users');
-		tenants = [...(await response.json())];
-		users = [...(await usersResponse.json())];
+		loadData();
 	}
 
 	async function handleEdit(tenant) {
 		selectedTenant = tenant;
-		console.log('tenant ', selectedTenant);
 		editModal = true;
 	}
 
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Tenant edited succesfully!');
-
-		const response = await fetch('/api/tenants');
-		const usersResponse = await fetch('/api/tenants/users');
-		tenants = [...(await response.json())];
-		users = [...(await usersResponse.json())];
+		loadData();
 	}
 
 	async function handleDelete(tenantId) {
@@ -96,11 +105,7 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Tenant deleted succesfully!');
-
-		const response = await fetch('/api/tenants');
-		const usersResponse = await fetch('/api/tenants/users');
-		tenants = [...(await response.json())];
-		users = [...(await usersResponse.json())];
+		loadData();
 	}
 </script>
 

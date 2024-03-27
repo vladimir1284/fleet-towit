@@ -29,6 +29,7 @@
 			}
 		}
 	});
+	
 	if (selectedPlan) {
 		$form.name = selectedPlan.name;
 		$form.amount = selectedPlan.amount;
