@@ -1,34 +1,56 @@
 <script lang="ts">
-	import { Search, Dropdown, DropdownItem, Button } from 'flowbite-svelte';
+	import { Dropdown, DropdownItem, Button } from 'flowbite-svelte';
 	import { ChevronDownSolid, CirclePlusOutline } from 'flowbite-svelte-icons';
 
-	import {
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell,
-		Checkbox
-	} from 'flowbite-svelte';
-
+	import { PartList } from '$lib/features/list-part/components';
+	import { PartSearch } from '$lib/features/search-part/components';
 	import { PartCreation } from '$lib/features/create-part/components';
 
+	import queryString from 'query-string';
 	import { getContext } from 'svelte';
 
 	import type { Writable } from 'svelte/store';
 	import type { Part } from '@prisma/client';
 
-	let isVisiblePartWizard = false;
-
 	// Retrieve part list context.
 	const writablePartStore: Writable<Part[]> = getContext('PartList');
-	const partTableHeaders = Object.keys($writablePartStore[0]);
+
+	// Component state.
+	let isVisiblePartWizard = false,
+		partSearchPattern = '';
+
+	const searchPartRecords = async (partSearchPattern: string) => {
+		const queryParams = {
+			name: partSearchPattern
+		};
+
+		const parsedQueryParams = queryString.stringifyUrl(
+			{
+				url: '/api/maintenance/inventory/parts',
+				query: queryParams
+			},
+			{
+				// Options if required...
+			}
+		);
+
+		const partRetrievalResponse = await fetch(parsedQueryParams, {
+			method: 'GET'
+		});
+		// Utilize retrieved parts if valid response.
+		if (partRetrievalResponse.ok) {
+			const { data: untainedTenantParts } = await partRetrievalResponse.json();
+			return untainedTenantParts;
+		}
+		return $writablePartStore;
+	};
+
+	$: promise = searchPartRecords(partSearchPattern);
 </script>
 
 <div class="flex justify-end mb-5">
 	<div class="flex flex-column gap-2">
-		<Search size="md" />
+		<PartSearch bind:partSearchPattern />
 		<Button>Actions<ChevronDownSolid class="w-3 h-3 ms-2 text-white dark:text-white" /></Button>
 		<Dropdown>
 			<DropdownItem>Export All</DropdownItem>
@@ -44,25 +66,8 @@
 
 <PartCreation bind:isVisiblePartWizard />
 
-<Table hoverable={true}>
-	<TableHead>
-		<TableHeadCell class="!p-4">
-			<Checkbox />
-		</TableHeadCell>
-		{#each partTableHeaders as header}
-			<TableHeadCell>{header}</TableHeadCell>
-		{/each}
-	</TableHead>
-	<TableBody tableBodyClass="divide-y">
-		{#each $writablePartStore as part}
-			<TableBodyRow>
-				<TableBodyCell class="!p-4">
-					<Checkbox />
-				</TableBodyCell>
-				{#each Object.values(part) as value}
-					<TableBodyCell>{value}</TableBodyCell>
-				{/each}
-			</TableBodyRow>
-		{/each}
-	</TableBody>
-</Table>
+{#await promise}
+	<div>Waiting...</div>
+{:then parts}
+	<PartList {parts} />
+{/await}

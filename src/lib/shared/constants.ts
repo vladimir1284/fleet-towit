@@ -27,15 +27,19 @@ export const // Prisma constants.
 	SKIP_PAGINATION_PARAMETER = 0,
 	TAKE_PAGINATION_PARAMETER = 10,
 	// API-related constants.
-	PART_EXCLUDED_PROPERTIES: (keyof Part)[] = [
+	PART_EXCLUDED_PROPERTIES: (keyof Part)[] = <const>[
 		// Properties to exclude to.
+		'id',
+		'extendedPartData',
+		'image',
+		'tenantId',
 		'createdAt',
 		'updatedAt',
 		'deletedAt',
 		'updatedBy',
 		'createdBy',
 		'deletedBy'
-	] as const;
+	];
 
 export const // SuperForm-zod related constants.
 

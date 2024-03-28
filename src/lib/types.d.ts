@@ -21,3 +21,7 @@ export interface CustomInventoryPart extends Part {
 	locations: Location[];
 	vendors: Vendor[];
 }
+
+export type QueryContraint = {
+	[key: string]: string;
+};
