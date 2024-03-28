@@ -43,6 +43,12 @@ export const generateValidationSchema = (cards: Cards[]) => {
 				// time
 			} else if (field.type === FormFieldType.TIME) {
 				schema = schema.extend({ [name]: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/) });
+
+				// phone
+			} else if (field.type === FormFieldType.PHONE) {
+				schema = schema.extend({
+					[name]: z.string().regex(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/)
+				});
 			}
 		}
 	}

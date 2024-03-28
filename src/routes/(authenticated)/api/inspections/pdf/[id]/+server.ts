@@ -331,6 +331,24 @@ const createPDF = async (inspection: Inspections) => {
 				}
 
 				docDefinition.content.push({ columns });
+			} else if (field.type === FormFieldType.PHONE) {
+				const columns: Column[] = [
+					{
+						text: `${field.name}:`,
+						style: 'content',
+						width: 170
+					}
+				];
+
+				for (const response of field.responses) {
+					columns.push({
+						text: response.content as srting,
+						style: 'content',
+						link: `tel:${response.content}`
+					});
+				}
+
+				docDefinition.content.push({ columns });
 			}
 		}
 	}

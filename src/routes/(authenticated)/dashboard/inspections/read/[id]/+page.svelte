@@ -108,6 +108,12 @@
 									{parseDate(response.content)}
 								{/each}
 							</div>
+						{:else if field.type === data.FormFieldType.PHONE}
+							<div>
+								{#each field.responses as response}
+									<a href={`tel:${response.content}`}>{response.content}</a>
+								{/each}
+							</div>
 						{/if}
 					</div>
 				{/each}

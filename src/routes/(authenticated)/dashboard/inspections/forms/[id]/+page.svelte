@@ -68,6 +68,11 @@
 			value: 'TIME',
 			name: 'Time',
 			description: 'User is able to input time.'
+		},
+		{
+			value: 'PHONE',
+			name: 'Phone',
+			description: 'User is able to input phone.'
 		}
 	];
 
