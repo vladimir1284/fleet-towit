@@ -23,7 +23,4 @@
 			<NavHamburger class="mr-2" />
 		</div>
 	</div>
-	<div class="order-1">
-		<Breadcumb />
-	</div>
 </Navbar>

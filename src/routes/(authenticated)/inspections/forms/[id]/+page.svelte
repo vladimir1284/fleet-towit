@@ -1,8 +1,9 @@
 <script lang="ts">
+	//@ts-nocheck
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { CheckOption } from '@prisma/client';
+	import type { CheckOption } from '@prisma/client';
 	import { Button, Input, Label, Select, Helper } from 'flowbite-svelte';
 	import {
 		TrashBinOutline,
@@ -16,7 +17,7 @@
 
 	export let data: PageData;
 
-	if (data?.redirect_to) goto(`/dashboard/inspections/forms/${data.redirect_to}/`);
+	if (data?.redirect_to) goto(`/inspections/forms/${data.redirect_to}/`);
 
 	const { form, constraints } = superForm(data.form);
 

@@ -58,7 +58,7 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
+const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/inspections/forms/`);
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = await verifySession(locals);
@@ -68,10 +68,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (formId) {
 		try {
 			// this code is for testing purposes only
-			const tenant = session?.user.tenantUsers[0].tenant;
+			const tenantId = session?.user.defaultTenantUser.tenant.id;
 
 			const customForm = await retrieveCustomFormById({
-				tenantId: tenant.id,
+				tenantId: tenantId,
 				formId: formId
 			});
 
@@ -83,7 +83,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// and the user will be redirected to its path
 
 			if (customForm?.inspections.length) {
-				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenant.id });
+				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenantId });
 
 				return {
 					redirect_to: cloneForm.id,
@@ -116,10 +116,10 @@ export const actions = {
 		}
 
 		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantId = session?.user.defaultTenantUser.tenant.id;
 
 		await deleteCustomForm({
-			tenantId: tenant.id,
+			tenantId: tenantId,
 			formId: form.data.form_id
 		});
 
@@ -139,10 +139,11 @@ export const actions = {
 		}
 
 		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantId = session?.user.defaultTenantUser.tenant.id;
+		
 
 		await renameCustomForm({
-			tenantId: tenant.id,
+			tenantId: tenantId,
 			formId: form.data.form_id,
 			newName: form.data.new_form_name
 		});
@@ -161,13 +162,13 @@ export const actions = {
 		}
 
 		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantId = session?.user.defaultTenantUser.tenant.id;
 
 		let checkboxes: string[] | undefined = undefined;
 		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
 
 		await addFieldToCustomForm({
-			tenantId: tenant.id,
+			tenantId: tenantId,
 			cardType: form.data.card_type,
 			name: form.data.card_name,
 			formId: form.data.form_id,
@@ -190,10 +191,10 @@ export const actions = {
 		}
 
 		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantId = session?.user.defaultTenantUser.tenant.id;
 
 		await deleteCustomField({
-			tenantId: tenant.id,
+			tenantId: tenantId,
 			formId: form.data.form_id,
 			fieldId: form.data.card_id
 		});
@@ -212,13 +213,14 @@ export const actions = {
 		}
 
 		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantId = session?.user.defaultTenantUser.tenant.id;
+
 
 		let checkboxes: (CheckOption | string)[] | undefined = undefined;
 		if (form.data.checkboxes) checkboxes = JSON.parse(form.data.checkboxes);
 
 		await updateCustomField({
-			tenantId: tenant.id,
+			tenantId: tenantId,
 			newName: form.data.new_card_name,
 			cardId: form.data.card_id,
 			cardType: form.data.card_type,

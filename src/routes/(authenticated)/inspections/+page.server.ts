@@ -29,12 +29,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const form = await superValidate(createInspectionSchema);
 
 	// // this code is for testing purposes only
-	const tenant = session?.user.tenantUsers[0].tenant;
+	const tenantId = session?.user.defaultTenantUser.tenant.id;
 
-	const inspections = await fetchInspections({ tenantId: tenant.id });
+	const inspections = await fetchInspections({ tenantId: tenantId });
 
 	// list form and vehicles
-	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({ tenantId: tenant.id });
+	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({ tenantId: tenantId });
 
 	return { form, inspections, listCustomForm, listVehicles };
 };
@@ -50,10 +50,11 @@ export const actions = {
 		}
 
 		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantId = session?.user.defaultTenantUser.tenant.id;
+
 
 		const newInspection = await createInspection({
-			tenantId: tenant.id,
+			tenantId: tenantId,
 			userId: session.user.id,
 			vehicleId: form.data.vehicle_id,
 			formId: form.data.form_id

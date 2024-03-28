@@ -8,7 +8,7 @@
 </script>
 
 <NavUl>
-	<NavLi class="cursor-pointer text-lg" href="/dashboard">Home</NavLi>
+	<NavLi class="cursor-pointer text-lg" href="/dashboard">Dashboard</NavLi>
 	{#if $currentTenant.currentUserTenant.role === 'ADMIN' || $currentTenant.currentUserTenant.role === 'OWNER'}
 		<NavLi class="cursor-pointer text-lg" href="/admin/users/">Users</NavLi>
 	{/if}

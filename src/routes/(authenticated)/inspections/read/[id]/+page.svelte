@@ -6,12 +6,12 @@
 
 	const day = data.inspection.createdAt.getDate() + 1;
 	const month = data.inspection.createdAt.getMonth() + 1;
-	const year = data.inspection.createdAt.getFullYear();
+	const year = data.inspection?.createdAt.getFullYear();
 
 	const dateInspections = `${day}/${month}/${year}`;
 
 	const makePdf = async () => {
-		const req = await fetch(`/api/inspections/pdf/${data.inspection.id}`);
+		const req = await fetch(`/api/inspections/pdf/${data.inspection?.id}`);
 		const blob = await req.blob();
 
 		const url = URL.createObjectURL(blob);
@@ -29,13 +29,13 @@
 	<Button class="w-max" on:click={makePdf}>Download pdf</Button>
 	<div class="flex flex-wrap lg:flex-nowrap gap-4">
 		<h2 class="font-semibold">
-			Model: <span class="font-normal">{data.inspection.vehicle.model}</span>
+			Model: <span class="font-normal">{data.inspection?.vehicle.model}</span>
 		</h2>
 		<h2 class="font-semibold">
-			VIN: <span class="font-normal">{data.inspection.vehicle.vin}</span>
+			VIN: <span class="font-normal">{data.inspection?.vehicle.vin}</span>
 		</h2>
 		<h2 class="font-semibold">
-			Plate: <span class="font-normal">{data.inspection.vehicle.plate}</span>
+			Plate: <span class="font-normal">{data.inspection?.vehicle.plate }</span>
 		</h2>
 		<h2 class="font-semibold">
 			Date: <span class="font-normal">
@@ -53,7 +53,7 @@
 		{#each data.inspection.customForm.fields as field}
 			<h2 class="font-semibold">{field.name}:</h2>
 			<!-- checboxes -->
-			{#if field.type === data.FormFieldType.CHECKBOXES}
+			{#if field.type === data.FormFieldType?.CHECKBOXES}
 				<div class="flex gap-4">
 					{#each field.checkOptions as option}
 						{#each field.responses as response}
@@ -72,7 +72,7 @@
 				</div>
 			{/if}
 			<!-- single check -->
-			{#if field.type === data.FormFieldType.SINGLE_CHECK}
+			{#if field.type === data.FormFieldType?.SINGLE_CHECK}
 				<div class="flex gap-4">
 					{#each field.checkOptions as option}
 						{#each field.responses as response}
@@ -93,7 +93,7 @@
 				</div>
 			{/if}
 			<!-- number , text -->
-			{#if field.type === data.FormFieldType.NUMBER || field.type === data.FormFieldType.TEXT}
+			{#if field.type === data.FormFieldType?.NUMBER || field.type === data.FormFieldType?.TEXT}
 				<div>
 					{#each field.responses as response}
 						{response.content}

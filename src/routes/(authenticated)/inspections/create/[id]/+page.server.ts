@@ -26,17 +26,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (inspectionId) {
 		try {
 			// this code is for testing purposes only
-			const tenant = session?.user.tenantUsers[0].tenant;
+			const tenantId = session?.user.defaultTenantUser.tenant.id;
 
 			const inspection = await retrieveInspectionById({
-				tenantId: tenant.id,
+				tenantId: tenantId,
 				id: inspectionId
 			});
 
-			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 			// if inspection have responses redirect
 			if (inspection.responses.length > 0)
-				redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.fields);
@@ -45,11 +45,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 			return { inspection, form, FormFieldType };
 		} catch {
-			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+			redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 		}
 	}
 
-	redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+	redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 };
 
 export const actions = {
@@ -60,14 +60,14 @@ export const actions = {
 
 		if (inspectionId) {
 			// this code is for testing purposes only
-			const tenant = session?.user.tenantUsers[0].tenant;
+			const tenantId = session?.user.defaultTenantUser.tenant.id;
 
 			const inspection = await retrieveInspectionById({
-				tenantId: tenant.id,
+				tenantId: tenantId,
 				id: inspectionId
 			});
 
-			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/register/`);
+			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/register/`);
 
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.fields);
@@ -81,11 +81,11 @@ export const actions = {
 			const response = await createResponseToInspection({
 				form_data: form.data,
 				userId: session.user.id,
-				tenantId: tenant.id,
+				tenantId: tenantId,
 				inspectionId: inspectionId
 			});
 
-			if (response) redirect(PERMANENT_REDIRECT_STATUS, '/dashboard/inspections/');
+			if (response) redirect(PERMANENT_REDIRECT_STATUS, '/inspections/');
 		}
 	}
 } satisfies Actions;

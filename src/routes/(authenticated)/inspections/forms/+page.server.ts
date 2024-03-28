@@ -24,9 +24,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const form = await superValidate(createFormSchema);
 
 	// this code is for testing purposes only
-	const tenant = session?.user.tenantUsers[0].tenant;
+	const tenantId = session?.user.defaultTenantUser.tenant.id;
 
-	const customForms = await fetchCustomFormsByTenant({ tenantId: tenant.id });
+
+	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantId });
 
 	return { form, customForms };
 };
@@ -42,10 +43,11 @@ export const actions = {
 		}
 
 		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantId = session?.user.defaultTenantUser.tenant.id;
+
 
 		const newForm = await createCustomForm({
-			tenantId: tenant.id,
+			tenantId: tenantId,
 			name: form.data.form_name
 		});
 
