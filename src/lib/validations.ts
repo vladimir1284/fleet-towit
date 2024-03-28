@@ -34,6 +34,8 @@ export const generateValidationSchema = (cards: Cards[]) => {
 				// email
 			} else if (field.type === FormFieldType.EMAIL) {
 				schema = schema.extend({ [name]: z.string().email() });
+			} else if (field.type === FormFieldType.DATE) {
+				schema = schema.extend({ [name]: z.date() });
 			}
 		}
 	}

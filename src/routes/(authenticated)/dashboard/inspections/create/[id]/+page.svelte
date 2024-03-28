@@ -64,6 +64,16 @@
 										bind:value={$form[`field_${field.id}`]}
 										{...$constraints[`field_${field.id}`]}
 									/>
+								{:else if field.type == data.FormFieldType.DATE}
+									<Input
+										required
+										placeholder="Type here"
+										type="date"
+										name={`field_${field.id}`}
+										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
+										bind:value={$form[`field_${field.id}`]}
+										{...$constraints[`field_${field.id}`]}
+									/>
 								{/if}
 							</Label>
 							{#if $errors[`field_${field.id}`]}

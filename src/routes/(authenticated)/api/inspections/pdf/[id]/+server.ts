@@ -193,6 +193,16 @@ const createPDF = async (inspection: Inspections) => {
 		}
 	};
 
+	const parseDate = (date: string) => {
+		const dateParsed = new Date(date);
+
+		const day = dateParsed.getDate();
+		const month = dateParsed.getMonth() + 1;
+		const year = dateParsed.getFullYear();
+
+		return `${day} / ${month} / ${year}`;
+	};
+
 	interface Column {
 		text: string | (string | { text: string; style: string })[];
 		style: string;
@@ -283,6 +293,24 @@ const createPDF = async (inspection: Inspections) => {
 						text: response.content as string,
 						style: 'content',
 						link: `mailto:${response.content}`
+					});
+				}
+
+				docDefinition.content.push({ columns });
+			} else if (field.type === FormFieldType.DATE) {
+				const columns: Column[] = [
+					{
+						text: `${field.name}:`,
+						style: 'content',
+						width: 170
+					}
+				];
+
+				// response
+				for (const response of field.responses) {
+					columns.push({
+						text: parseDate(response.content),
+						style: 'content'
 					});
 				}
 

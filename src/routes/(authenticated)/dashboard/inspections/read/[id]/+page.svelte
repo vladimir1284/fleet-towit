@@ -23,6 +23,16 @@
 
 		document.body.removeChild(element);
 	};
+
+	const parseDate = (date: string) => {
+		const dateParsed = new Date(date);
+
+		const day = dateParsed.getDate();
+		const month = dateParsed.getMonth() + 1;
+		const year = dateParsed.getFullYear();
+
+		return `${day} / ${month} / ${year}`;
+	};
 </script>
 
 <section class="bg-white rounded-lg shadow p-4 flex flex-col gap-4 w-2/3">
@@ -90,6 +100,12 @@
 							<div>
 								{#each field.responses as response}
 									<a href={`mailto:${response.content}`}>{response.content}</a>
+								{/each}
+							</div>
+						{:else if field.type === data.FormFieldType.DATE}
+							<div>
+								{#each field.responses as response}
+									{parseDate(response.content)}
 								{/each}
 							</div>
 						{/if}

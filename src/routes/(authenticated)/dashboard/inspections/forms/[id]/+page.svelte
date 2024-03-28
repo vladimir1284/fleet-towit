@@ -58,6 +58,11 @@
 			value: 'EMAIL',
 			name: 'Email',
 			description: 'User is able to input email.'
+		},
+		{
+			value: 'DATE',
+			name: 'Date',
+			description: 'User is able to input date.'
 		}
 	];
 
