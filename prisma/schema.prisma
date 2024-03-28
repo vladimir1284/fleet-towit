@@ -232,6 +232,11 @@ enum FormFieldType {
   SINGLE_CHECK
   MULTI_CHECK
   CHECKBOXES
+  // NEW
+  IMAGE
+  SIGNATURE
+  EMAIL
+  PHONE
   DATE
 }
 

@@ -4,7 +4,7 @@ import {
 	renameCustomForm,
 	cloneCustomForm,
 	deleteCard,
-	addCard
+	addCardToForm
 } from '$lib/actions/custom-forms';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
@@ -73,7 +73,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			if (customForm?.inspections.length) {
 				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenant.id });
 
-				console.log(cloneForm.id);
 				return {
 					redirect_to: cloneForm.id,
 					customForm: cloneForm,
@@ -151,7 +150,7 @@ export const actions = {
 		// this code is for testing purposes only
 		const tenant = session?.user.tenantUsers[0].tenant;
 
-		await addCard({
+		await addCardToForm({
 			tenantId: tenant.id,
 			cardName: form.data.card_name,
 			formId: form.data.form_id,

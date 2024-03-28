@@ -182,7 +182,7 @@ export const renameCustomForm = async ({
 /*
  * add card to custom form
  */
-export const addCard = async ({
+export const addCardToForm = async ({
 	tenantId,
 	cardName,
 	formId,
@@ -212,15 +212,19 @@ export const addCard = async ({
 		createCustomField.push(customField);
 	}
 
-	await tenantPrisma(tenantId).card.create({
-		data: {
-			formId: formId,
-			name: cardName,
-			fields: {
-				create: createCustomField
+	try {
+		await tenantPrisma(tenantId).card.create({
+			data: {
+				formId: formId,
+				name: cardName,
+				fields: {
+					create: createCustomField
+				}
 			}
-		}
-	});
+		});
+	} catch (err) {
+		console.log(err);
+	}
 };
 
 /*

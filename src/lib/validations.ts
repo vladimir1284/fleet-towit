@@ -31,6 +31,9 @@ export const generateValidationSchema = (cards: Cards[]) => {
 					[`${name}_radio`]: z.number(),
 					[`${name}_note`]: z.string().optional()
 				});
+				// email
+			} else if (field.type === FormFieldType.EMAIL) {
+				schema = schema.extend({ [name]: z.string().email() });
 			}
 		}
 	}

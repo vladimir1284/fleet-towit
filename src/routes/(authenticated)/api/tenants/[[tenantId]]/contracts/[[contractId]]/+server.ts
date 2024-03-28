@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z } from "zod";
-import type { RequestHandler } from "@sveltejs/kit";
-import { actionResult, superValidate } from "sveltekit-superforms/server";
-import { getAllContracts, getContract, createContract, updateContract, deleteContract } from "$lib/actions/contracts";
+import { z } from 'zod';
+import type { RequestHandler } from '@sveltejs/kit';
+import { actionResult, superValidate } from 'sveltekit-superforms/server';
+import {
+	getAllContracts,
+	getContract,
+	createContract,
+	updateContract,
+	deleteContract
+} from '$lib/actions/contracts';
 
 const fixSchema = z.object({
 	clientId: z.number(),
@@ -10,7 +16,6 @@ const fixSchema = z.object({
 	vehicleId: z.number(),
 	id: z.number().optional()
 });
-
 
 export const GET: RequestHandler = async ({ locals, params }) => {
 	let response: any;
@@ -24,9 +29,8 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 		response = await getAllContracts();
 	}
 
-	return new Response(JSON.stringify(response), { status: 200 })
-}
-
+	return new Response(JSON.stringify(response), { status: 200 });
+};
 
 export const POST: RequestHandler = async ({ locals, request, params }) => {
 	const session = await locals.getSession();
@@ -46,17 +50,16 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 			clientId: form.data.clientId,
 			rentalPlanId: form.data.rentalPlanId,
 			vehicleId: form.data.vehicleId
-		})
+		});
 	} else {
 		await createContract({
 			clientId: form.data.clientId,
 			rentalPlanId: form.data.rentalPlanId,
 			vehicleId: form.data.vehicleId
-		})
+		});
 	}
 	return actionResult('success', { form }, { status: 200 });
 };
-
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	const session = await locals.getSession();

@@ -53,6 +53,11 @@
 			value: 'SINGLE_CHECK',
 			name: 'Single Check',
 			description: 'User is able to check (pass or fail) a single point.'
+		},
+		{
+			value: 'EMAIL',
+			name: 'Email',
+			description: 'User is able to input email.'
 		}
 	];
 

@@ -197,6 +197,7 @@ const createPDF = async (inspection: Inspections) => {
 		text: string | (string | { text: string; style: string })[];
 		style: string;
 		width?: number;
+		link?: string;
 	}
 
 	for (const card of inspection.customForm.cards) {
@@ -264,6 +265,25 @@ const createPDF = async (inspection: Inspections) => {
 							style: 'content'
 						});
 					}
+				}
+
+				docDefinition.content.push({ columns });
+			} else if (field.type === FormFieldType.EMAIL) {
+				const columns: Column[] = [
+					{
+						text: `${field.name}:`,
+						style: 'content',
+						width: 170
+					}
+				];
+
+				// response
+				for (const response of field.responses) {
+					columns.push({
+						text: response.content as string,
+						style: 'content',
+						link: `mailto:${response.content}`
+					});
 				}
 
 				docDefinition.content.push({ columns });

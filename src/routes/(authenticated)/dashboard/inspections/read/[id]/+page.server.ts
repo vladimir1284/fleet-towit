@@ -36,6 +36,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 
 			return { inspection, FormFieldType };
 		} catch (err) {
+			console.log(err);
 			redirect_to_back();
 		}
 	}

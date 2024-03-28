@@ -86,6 +86,12 @@
 									{response.content}
 								{/each}
 							</div>
+						{:else if field.type === data.FormFieldType.EMAIL}
+							<div>
+								{#each field.responses as response}
+									<a href={`mailto:${response.content}`}>{response.content}</a>
+								{/each}
+							</div>
 						{/if}
 					</div>
 				{/each}
