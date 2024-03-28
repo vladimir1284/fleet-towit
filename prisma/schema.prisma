@@ -228,16 +228,15 @@ model Card {
 enum FormFieldType {
   TEXT
   NUMBER
-  RADIO
   SINGLE_CHECK
-  MULTI_CHECK
-  CHECKBOXES
-  // NEW
+  // MULTI_CHECK
+  // CHECKBOXES
   IMAGE
   SIGNATURE
   EMAIL
   PHONE
   DATE
+  TIME
 }
 
 model CheckOption {

@@ -32,6 +32,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			});
 
 			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+
 			// if inspection have responses redirect
 			if (inspection.responses.length > 0)
 				redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);

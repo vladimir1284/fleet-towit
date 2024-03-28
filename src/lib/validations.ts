@@ -31,11 +31,18 @@ export const generateValidationSchema = (cards: Cards[]) => {
 					[`${name}_radio`]: z.number(),
 					[`${name}_note`]: z.string().optional()
 				});
+
 				// email
 			} else if (field.type === FormFieldType.EMAIL) {
 				schema = schema.extend({ [name]: z.string().email() });
+
+				// date
 			} else if (field.type === FormFieldType.DATE) {
 				schema = schema.extend({ [name]: z.date() });
+
+				// time
+			} else if (field.type === FormFieldType.TIME) {
+				schema = schema.extend({ [name]: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/) });
 			}
 		}
 	}

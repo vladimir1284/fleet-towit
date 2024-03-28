@@ -63,6 +63,11 @@
 			value: 'DATE',
 			name: 'Date',
 			description: 'User is able to input date.'
+		},
+		{
+			value: 'TIME',
+			name: 'Time',
+			description: 'User is able to input time.'
 		}
 	];
 

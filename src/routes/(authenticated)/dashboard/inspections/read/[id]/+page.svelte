@@ -90,7 +90,7 @@
 							</div>
 						{/if}
 						<!-- number , text -->
-						{#if field.type === data.FormFieldType.NUMBER || field.type === data.FormFieldType.TEXT}
+						{#if field.type === data.FormFieldType.NUMBER || field.type === data.FormFieldType.TEXT || field.type === data.FormFieldType.TIME}
 							<div>
 								{#each field.responses as response}
 									{response.content}

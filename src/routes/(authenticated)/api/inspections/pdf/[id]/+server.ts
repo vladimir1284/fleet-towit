@@ -287,7 +287,6 @@ const createPDF = async (inspection: Inspections) => {
 					}
 				];
 
-				// response
 				for (const response of field.responses) {
 					columns.push({
 						text: response.content as string,
@@ -310,6 +309,23 @@ const createPDF = async (inspection: Inspections) => {
 				for (const response of field.responses) {
 					columns.push({
 						text: parseDate(response.content),
+						style: 'content'
+					});
+				}
+
+				docDefinition.content.push({ columns });
+			} else if (field.type === FormFieldType.TIME) {
+				const columns: Column[] = [
+					{
+						text: `${field.name}:`,
+						style: 'content',
+						width: 170
+					}
+				];
+
+				for (const response of field.responses) {
+					columns.push({
+						text: response.content as srting,
 						style: 'content'
 					});
 				}
