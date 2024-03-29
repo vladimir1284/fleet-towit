@@ -13,7 +13,7 @@ export interface FormattedVehicleData {
 	make: string;
 	model: string;
 	trim: string;
-	// plate: string; // Uncomment if you want to include the plate field
+	plate: string; // Uncomment if you want to include the plate field
 	vin: string;
 }
 

@@ -1,20 +1,18 @@
-//import { bypassPrisma } from '$lib/prisma';
-import prisma from "$lib/prisma-client";
+import { bypassPrisma } from '$lib/prisma';
 
 export const getAllVehicles = async () => {
-	//const vehicles = await bypassPrisma.vehicle.findMany({});
-
-	const vehicles = await prisma.vehicle.findMany({
-		select: {
-			id: true,
-			vin: true,
-			nickname: true,
-			type: true,
-			year: true,
-			make: true,
-			model: true,
+	const vehicles = await bypassPrisma.vehicle.findMany({
+		include: {
+			plates: {
+				where: {
+					isActive: true,
+				}
+			},
 		}
 	});
+	const vehiclesWithActualPlate = vehicles.map((v) => {
+		return { ...v, plate: v.plates[0] || undefined }
+	});
 
-	return vehicles;
+	return vehiclesWithActualPlate
 };

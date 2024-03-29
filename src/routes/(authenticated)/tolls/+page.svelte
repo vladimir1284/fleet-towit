@@ -21,8 +21,7 @@
 	import {
 		TrashBinSolid,
 		FileEditSolid,
-		ArrowDownToBracketOutline,
-		RotateOutline
+		ArrowDownToBracketOutline
 	} from 'flowbite-svelte-icons';
 	import TollForm from '$lib/components/forms-components/tolls/TollForm.svelte';
 	import DeleteTollForm from '$lib/components/forms-components/tolls/DeleteTollForm.svelte';
@@ -59,7 +58,6 @@
 				headers
 			});
 			tolls = [...(await response.json())];
-			console.log(tolls);
 			loading = false;
 		} catch (error) {
 			console.error('Error:', error);

@@ -152,12 +152,12 @@ model Vehicle {
   make        String
   model       String
   trim        String
-  plate       String @unique
   vin         String @unique
   odometer    Int
   nickname    String
   spare_tires Int
   extraFields Json?
+  plates      VehiclePlate[]
 
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
@@ -166,6 +166,16 @@ model Vehicle {
   contracts       Contract[]
   tolls           TollDue[]
   inspections     Inspection[]
+}
+
+model VehiclePlate {
+  id         Int      @id @default(autoincrement())
+  plate      String   @unique
+  assignDate DateTime @default(now())
+  isActive   Boolean  @default(false)
+
+  vehicleId  Int
+  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
 }
 
 enum VehicleStatus {
