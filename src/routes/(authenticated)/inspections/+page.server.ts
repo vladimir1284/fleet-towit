@@ -9,6 +9,8 @@ import {
 
 import { z } from 'zod';
 import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
+import { zod } from 'sveltekit-superforms/adapters';
+
 
 const createInspectionSchema = z.object({
 	form_id: z.number(),
@@ -26,7 +28,7 @@ const verifySession = async (locals: any) => {
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await verifySession(locals);
 
-	const form = await superValidate(createInspectionSchema);
+	const form = await superValidate(zod(createInspectionSchema));
 
 	// // this code is for testing purposes only
 	const tenantId = session?.user.defaultTenantUser.tenant.id;
@@ -43,7 +45,7 @@ export const actions = {
 	default: async ({ request, locals, url }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, createInspectionSchema);
+		const form = await superValidate(request, zod(createInspectionSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });

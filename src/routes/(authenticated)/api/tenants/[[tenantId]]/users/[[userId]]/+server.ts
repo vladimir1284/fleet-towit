@@ -3,9 +3,10 @@ import { Role } from '@prisma/client';
 import { bypassPrisma } from '$lib/prisma';
 import type { RequestHandler } from '@sveltejs/kit';
 import { sendWelcomeEmail } from '$lib/actions/emails';
-import { actionResult } from 'sveltekit-superforms/server';
+import { actionResult } from 'sveltekit-superforms';
 import { superValidate } from 'sveltekit-superforms/server';
 import { listTenantUsers, createTenantUser, updateTenantUser, updateDefaultTenantUser, deleteTenantUser } from '$lib/actions/tenantUsers';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const fixSchema = z.object({
 	role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
@@ -32,7 +33,7 @@ export const POST: RequestHandler = async({ locals, params, request }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-    const form = await superValidate(formData, fixSchema);
+    const form = await superValidate(formData, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
 		return actionResult('failure', { form }, { status: 400 });

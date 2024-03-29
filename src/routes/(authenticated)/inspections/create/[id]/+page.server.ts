@@ -9,6 +9,7 @@ import {
 	PERMANENT_REDIRECT_STATUS
 } from '$lib/shared';
 import { FormFieldType } from '@prisma/client';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
@@ -41,7 +42,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.fields);
 
-			const form = await superValidate(schema);
+			const form = await superValidate(zod(schema));
 
 			return { inspection, form, FormFieldType };
 		} catch {
@@ -72,7 +73,7 @@ export const actions = {
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.fields);
 
-			const form = await superValidate(request, schema);
+			const form = await superValidate(request, zod(schema));
 
 			if (!form.valid) {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });

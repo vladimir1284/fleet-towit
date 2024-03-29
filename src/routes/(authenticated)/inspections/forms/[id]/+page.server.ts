@@ -18,6 +18,7 @@ import {
 } from '$lib/shared';
 import { FormFieldType } from '@prisma/client';
 import type { CheckOption } from '@prisma/client';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const cardTypeSchema = z.enum(['text', 'number', 'checkboxes', 'single_check']);
 
@@ -75,7 +76,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				formId: formId
 			});
 
-			const form = await superValidate(addCardSchema);
+			const form = await superValidate(zod(addCardSchema));
 
 			if (!customForm) redirect_to_back();
 
@@ -109,7 +110,7 @@ export const actions = {
 	deleteForm: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, deleteFormSchema);
+		const form = await superValidate(request, zod(deleteFormSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -132,7 +133,7 @@ export const actions = {
 	renameForm: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, renameFormSchema);
+		const form = await superValidate(request, zod(renameFormSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -155,7 +156,7 @@ export const actions = {
 	addField: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, addCardSchema);
+		const form = await superValidate(request, zod(addCardSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -184,7 +185,7 @@ export const actions = {
 	deleteCard: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, deleteCardSchema);
+		const form = await superValidate(request, zod(deleteCardSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -206,7 +207,7 @@ export const actions = {
 	updateField: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, updateCardSchema);
+		const form = await superValidate(request, zod(updateCardSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });

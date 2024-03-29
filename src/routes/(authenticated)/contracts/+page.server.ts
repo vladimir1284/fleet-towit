@@ -1,4 +1,5 @@
 import { superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
 import type { PageServerLoad } from './$types.js';
 import { z } from "zod";
 
@@ -26,9 +27,9 @@ const clientSchema = z.object({
 });
 
 export const load = (async () => {
-    const form = await superValidate(fixSchema);
-    const stageForm = await superValidate(stageSchema);
-    const clientform = await superValidate(clientSchema);
+    const form = await superValidate(zod(fixSchema));
+    const stageForm = await superValidate(zod(stageSchema));
+    const clientform = await superValidate(zod(clientSchema));
 
     return { form: form, stageForm: stageForm, clientForm: clientform };
 }) satisfies PageServerLoad;

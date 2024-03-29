@@ -1,10 +1,12 @@
 import { z } from "zod";
-import type { RequestHandler } from "@sveltejs/kit";
-import { actionResult, setError, superValidate } from "sveltekit-superforms/server";
-import { createToll, deleteToll, listTollsByContractId, updateToll, listTolls } from "$lib/actions/tolls";
-import { getContractByDateRange } from "$lib/actions/contracts";
 import { minioClient } from "$lib/minio";
 import type { $Enums } from "@prisma/client";
+import { zod } from "sveltekit-superforms/adapters";
+import { actionResult } from "sveltekit-superforms";
+import type { RequestHandler } from "@sveltejs/kit";
+import { getContractByDateRange } from "$lib/actions/contracts";
+import { setError, superValidate } from "sveltekit-superforms/server";
+import { createToll, deleteToll, listTollsByContractId, updateToll, listTolls } from "$lib/actions/tolls";
 
 const tollSchema = z.object({
     amount: z.number().gte(0),
@@ -47,7 +49,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
     }
     const formData = await request.formData();
     console.log('FORMDATA', formData)
-    const form = await superValidate(formData, tollSchema);
+    const form = await superValidate(formData, zod(tollSchema));
     const file = formData.get('fileData');
     console.log('FORM', form)
     if (form.valid) {

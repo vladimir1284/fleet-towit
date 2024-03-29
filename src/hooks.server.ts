@@ -108,6 +108,10 @@ const handleAuth = (async (...args) => {
 // }
 
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
+	/*
+	Please decide yourself if this piece of code will be romeved or not.
+
+
 	// Remove the conditional to turn it into a generic handle.
 	if (event.url.pathname.startsWith('/api/maintenance/inventory/parts')) {
 		// Retrieve validation data.
@@ -145,7 +149,7 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 			currentPrismaClient: currentPrismaClient
 		};
 	}
-	//Modified
+	*/
 
 	const session = await event.locals.getSession()
 	//console.log(event.locals)

@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
 import type { RequestHandler } from "@sveltejs/kit";
-import { actionResult, superValidate } from "sveltekit-superforms/server";
+import { zod } from "sveltekit-superforms/adapters";
+import { actionResult } from "sveltekit-superforms";
+import { superValidate } from "sveltekit-superforms/server";
 import { getAllContracts, getContract, createContract, updateContract, deleteContract, getContractByDateRange } from "$lib/actions/contracts";
 
 const fixSchema = z.object({
@@ -54,7 +56,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-	const form = await superValidate(request, fixSchema);
+	const form = await superValidate(request, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
 		return actionResult('failure', { form }, { status: 400 });

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
 import type { PageServerLoad } from './$types';
 import { z } from 'zod';
 
@@ -10,7 +11,7 @@ const fixSchema = z.object({
 });
 
 export const load = (async () => {
-	const form = await superValidate(fixSchema);
+	const form = await superValidate(zod(fixSchema));
 
 	return { form: form };
 }) satisfies PageServerLoad;

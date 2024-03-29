@@ -26,7 +26,6 @@
 	});
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
-		validators: fixSchema,
 		onSubmit: async (event) => {
 			$form.email = $form.email.trim();
 		},
