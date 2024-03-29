@@ -83,7 +83,7 @@ model TenantUser {
   deletedParts Part[] @relation("deletionAuthor")
 
   customFieldResponses CustomFieldResponse[]
-  inspections           Inspection[]
+  inspections          Inspection[]
 }
 
 model Client {
@@ -146,18 +146,18 @@ enum Type {
 }
 
 model Vehicle {
-  id              Int              @id @default(autoincrement())
-  type            Type
-  year            Int
-  make            String
-  model           String
-  trim            String
-  plate           String           @unique
-  vin             String           @unique
-  odometer        Int
-  nickname        String
-  spare_tires     Int
-  extraFields     Json?
+  id          Int    @id @default(autoincrement())
+  type        Type
+  year        Int
+  make        String
+  model       String
+  trim        String
+  plate       String @unique
+  vin         String @unique
+  odometer    Int
+  nickname    String
+  spare_tires Int
+  extraFields Json?
 
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
@@ -401,49 +401,26 @@ model VendorOnParts {
 //          COSTS           //
 // ************************ //
 
-enum CostCategory {
-  // Fixed Costs
-  Purchase
-  Depreciation
-  Financing
-  Insurance
-  Taxes
-  PreventativeMaintenance
-  Storage
-  PermitsAndLicenses
-
-  // Variable costs
-  Fuel
-  Repairs
-  Cleaning
-  TollsAndHighways
-  RoadsideAssistance
-  MarketingAndAdvertising
-  AdministrativeExpenses
-  Commissions
-
-  // Additional costs
-  AdditionalEquipment
-  RentalInsurance
-  Deductible
-  CleaningFee
-  AdditionalMileage
+model CostCategory {
+  id    Int    @id @default(autoincrement())
+  name  String
+  costs Cost[]
 }
 
 model Cost {
-  id        Int            @id @default(autoincrement())
-  value     Float
-  concept   String
-  category  CostCategory[]
-  date      DateTime
-  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  vehicleId Int
+  id         Int          @id @default(autoincrement())
+  value      Float
+  concept    String
+  category   CostCategory @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  date       DateTime
+  vehicle    Vehicle      @relation(fields: [vehicleId], references: [id])
+  vehicleId  Int
 }
 
 // ************************ //
 //        END:COSTS         //
 // ************************ //
-
 
 model RentalPlan {
   id          Int         @id @default(autoincrement())

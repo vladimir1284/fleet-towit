@@ -12,7 +12,8 @@
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
 		"test:unit": "vitest",
-		"migrate": "npx prisma migrate dev --name"
+		"migrate": "npx prisma migrate dev --name",
+		"reseed": "npx prisma generate && npx prisma db push --force-reset && npx prisma db seed"
 	},
 	"devDependencies": {
 		"@fontsource/fira-mono": "^4.5.10",
@@ -69,6 +70,7 @@
 		"aws-sdk": "^2.1543.0",
 		"axios": "^1.6.7",
 		"bcryptjs": "^2.4.3",
+		"file-saver": "^2.0.5",
 		"blob-stream": "^0.1.3",
 		"dotenv-cli": "^7.4.1",
 		"flowbite": "^2.2.1",
