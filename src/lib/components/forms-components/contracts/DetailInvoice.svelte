@@ -9,31 +9,27 @@
 		TableBodyRow,
 		TableHead,
 		TableHeadCell,
-		Modal,
 		Badge
 	} from 'flowbite-svelte';
-	import { onMount } from 'svelte';
-	import type { PageData } from '../$types';
-	import { tenantActor } from '$lib/store/context-store';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
-	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
-	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
-	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
-	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
-	import { getKillBillData } from '@killbill/temp-api-rq';
+	import InvoiceForm from '../invoices/InvoiceForm.svelte';
+	import { reqInvoiceApi } from '@killbill/requests';
+	import { formatStringDate } from '$lib/helpers/dates';
+	import html2pdf from 'html2pdf.js';
 
 	export let data: any;
 	export let currentInvoice: any = undefined;
-	const totalAmount = currentInvoice.items.reduce((total, item) => total + item.amount, 0);
-	let loading = false;
+	let selectedInvoiceItem;
+	// const totalAmount = currentInvoice.items.reduce((total, item) => total + item.amount, 0);
+	let loading: boolean = false;
+	let editModal: boolean = false;
 
-	const editInvoiceDate = () => {};
-	const openInvoiceHtml = () => {
-		getKillBillData(`/invoices/${currentInvoice.invoiceId}/html`, 0, 'txt')
+	const openInvoiceHTML = () => {
+		reqInvoiceApi
+			.getInvoiceAsHTML({ invoiceId: currentInvoice.invoiceId })
 			.then((html) => {
 				const newWindow = window.open('', '_blank');
 				newWindow.document.write(html);
-				newWindow.document.title = `Invoice for client #${currentInvoice.invoiceNumber}`;
+				newWindow.document.title = `Invoice #${currentInvoice.invoiceNumber}`;
 
 				// Agregar un logo
 				// const logo = newWindow.document.createElement('img');
@@ -45,27 +41,75 @@
 				newWindow.document.close();
 			})
 			.catch((error) => {
-				console.error('Error al obtener la factura:', error);
+				console.error('Error getting the invoice:', error);
 			});
 	};
+
+	const openInvoicePDF = () => {
+		reqInvoiceApi
+			.getInvoiceAsHTML({ invoiceId: currentInvoice.invoiceId })
+			.then((html) => {
+				const element = document.createElement('div');
+				element.innerHTML = html;
+
+				const options = {
+					margin: 10,
+					filename: `Invoice #${currentInvoice.invoiceNumber}.pdf`,
+					image: { type: 'jpeg', quality: 0.98 },
+					html2canvas: { scale: 2 },
+					jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+				};
+
+				// Conversión HTML a PDF
+				html2pdf().set(options).from(element).save();
+			})
+			.catch((error) => {
+				console.error('Error getting the invoice:', error);
+			});
+	};
+
+	async function updateInvoiceData() {
+		// currentInvoice = await reqInvoiceApi.getInvoice({ invoiceId: currentInvoice.invoiceId });
+	}
+
+	async function handleCloseEditModal(event: any) {
+		console.log(event.detail);
+		editModal = event.detail;
+	}
 </script>
 
 {#if loading}
 	<p>Loading...</p>
+{:else if editModal}
+	<InvoiceForm
+		data={data?.InvoiceForm}
+		{selectedInvoiceItem}
+		maxAmount={currentInvoice.amount}
+		on:formvalid={handleCloseEditModal}
+	/>
 {:else}
 	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
 			<caption
-				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
+				class="p-5 text-lg text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
 			>
-				Invoice Date: {currentInvoice.invoiceDate}<br />
-				Target Date: {currentInvoice.targetDate}<br />
-				<GradientButton shadow color="green" on:click={openInvoiceHtml}>
-					View Customer Invoice HTML
-				</GradientButton>
-				<GradientButton shadow color="blue" on:click={editInvoiceDate}>
-					Adjust Invoice Item
-				</GradientButton>
+				<div class="pb-4">
+					<strong>INVOICE DATE:</strong>
+					<span class="px-3">{formatStringDate(currentInvoice.invoiceDate)}</span><br />
+					<strong>TARGET DATE:</strong>
+					<span class="px-3">{formatStringDate(currentInvoice.targetDate)}</span><br />
+				</div>
+				<div class="flex justify-between">
+					<div></div>
+					<div>
+						<GradientButton color="green" on:click={openInvoiceHTML}>
+							View Customer Invoice HTML
+						</GradientButton>
+						<GradientButton color="blue" on:click={openInvoicePDF}>
+							Download Customer Invoice PDF
+						</GradientButton>
+					</div>
+				</div>
 			</caption>
 
 			<TableHead>
@@ -75,35 +119,62 @@
 				<TableHeadCell class="text-center">SUBSCRIPTION ID</TableHeadCell>
 				<TableHeadCell class="text-center">AMOUNT</TableHeadCell>
 				<TableHeadCell class="text-center">COMMENTS</TableHeadCell>
-				<!-- <TableHeadCell class="text-center"></TableHeadCell> -->
+				<TableHeadCell class="text-center"></TableHeadCell>
 			</TableHead>
 			<TableBody class="divide-y">
-				{#each currentInvoice?.items as item}
+				{#each currentInvoice?.items as item, index}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">{item.description}</TableBodyCell>
-						<TableBodyCell class="text-center">{item.startDate}</TableBodyCell>
-						<TableBodyCell class="text-center">{item.endDate}</TableBodyCell>
-						<TableBodyCell class="text-center">{item.subscriptionId}</TableBodyCell>
+						<TableBodyCell class="text-center"
+							>{item.itemType === 'RECURRING'
+								? item.description
+								: 'Invoice item adjustment'}</TableBodyCell
+						>
+						<TableBodyCell class="text-center">{formatStringDate(item.startDate)}</TableBodyCell>
+						<TableBodyCell class="text-center">{formatStringDate(item.endDate)}</TableBodyCell>
+						<TableBodyCell class="text-center">{item.subscriptionId || ''}</TableBodyCell>
 						<TableBodyCell class="text-center">
-							<Badge color="green" rounded class="px-2.5 py-0.5">${item.amount}</Badge>
+							<Badge color={item.amount >= 0 ? 'green' : 'red'} rounded class="px-2.5 py-0.5"
+								>${item.amount} ({currentInvoice.currency})</Badge
+							>
 						</TableBodyCell>
-						<TableBodyCell class="text-center">????</TableBodyCell>
+						<TableBodyCell class="text-center">FALTA ESTO</TableBodyCell>
+						<TableBodyCell class="text-center">
+							{#if currentInvoice.amount != 0 && item.itemType === 'RECURRING'}
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<span
+									class="cursor-pointer font-semibold"
+									on:click={() => {
+										selectedInvoiceItem = item;
+										editModal = true;
+									}}
+									>Adjust<span />
+								</span>
+							{/if}
+						</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			</TableBody>
-
-
-
-			<div class="p-5 text-end text-md text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-				<!-- INVOICE TOTAL: ${currentInvoice.amount} ({currentInvoice.currency})<br /> -->
-				<strong>INVOICE TOTAL:</strong> ${totalAmount} ({currentInvoice.currency})<br />
-				<strong>RESULTING AVAILABLE CREDITS:</strong> ${currentInvoice.refundAdj} ({currentInvoice.currency})<br />
-				<strong>REFUNDED:</strong> ${currentInvoice.refundAdj} ({currentInvoice.currency})<br />
-				<strong>BALANCE:</strong> ${currentInvoice.balance} ({currentInvoice.currency})<br />
-
-			</div>
-
 		</Table>
+		<div class="pt-8 text-end text-md text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+			<!-- INVOICE TOTAL: ${currentInvoice.amount} ({currentInvoice.currency})<br /> -->
+			<strong>INVOICE TOTAL:</strong>
+			<span class="px-3 inline-block w-40 text-start"
+				>${currentInvoice.amount} ({currentInvoice.currency})</span
+			><br />
+			<strong>RESULTING AVAILABLE CREDITS:</strong>
+			<span class="px-3 inline-block w-40 text-start"
+				>${currentInvoice.refundAdj} ({currentInvoice.currency})</span
+			><br />
+			<strong>REFUNDED:</strong>
+			<span class="px-3 inline-block w-40 text-start"
+				>${currentInvoice.refundAdj} ({currentInvoice.currency})</span
+			><br />
+			<strong>BALANCE:</strong>
+			<span class="px-3 inline-block w-40 text-start"
+				>${currentInvoice.balance} ({currentInvoice.currency})</span
+			><br />
+		</div>
 	</Card>
 	<!-- {#if showAlert}
 		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
