@@ -75,11 +75,17 @@ async function main() {
 	}
 
 	// Vehicles
-	await seedVehicles(prisma);
+	try {
+		await seedVehicles(prisma);
+	} catch {}
 	// Inspection
-	await seedInspection(prisma, [testTenantId, tenantId]);
+	try {
+		await seedInspection(prisma, [testTenantId, tenantId]);
+	} catch {}
 	// Contracts
-	await seedContracts(prisma);
+	try {
+		await seedContracts(prisma);
+	} catch {}
 	await seedClients(prisma);
 }
 
