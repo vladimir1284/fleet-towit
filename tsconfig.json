@@ -10,7 +10,12 @@
 		"sourceMap": true,
 		"strict": true,
 		"strictNullChecks": true,
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"baseUrl": ".",
+		"paths": {
+			"$lib/*": ["src/lib/*"],
+			"@killbill/*": ["src/killbill/*"]
+		}
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	//
