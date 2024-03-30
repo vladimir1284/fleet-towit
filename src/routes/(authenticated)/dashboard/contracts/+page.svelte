@@ -21,7 +21,7 @@
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
-	import { getKillBillData } from '@killbill/temp-api-rq';
+	import { reqInvoiceApi, reqAccountApi } from '@killbill/requests';
 
 	export let data: PageData;
 	let message = '';
@@ -68,37 +68,6 @@
 			loading = false;
 		}
 	});
-
-	async function getAllInvoices() {
-		// const requestParameters = {
-		// 	offset: 0,
-		// 	limit: 10,
-		// 	audit: false
-		// };
-		// try {
-		// 	const invoices = await invoiceApi.getInvoices(requestParameters);
-		// 	console.log('Facturas:', invoices);
-		// } catch (error) {
-		// 	console.error('Error al obtener las facturas:', error);
-		// }
-		try {
-			const invoices = await getKillBillData('/invoices/pagination', 5);
-
-			contractInvoicesList = await invoices.map((invoice) => ({
-				comments: 'KillBill invoice',
-				date: invoice.invoiceDate, // targetDate
-				invoice_id: invoice.invoiceId,
-				previousStage: null,
-				previousStageId: null,
-				reason: '',
-				stage: invoice.status,
-				amount: invoice.amount,
-				balance: invoice.balance
-			}));
-		} catch (error) {
-			console.error('Error al obtener las facturas:', error);
-		}
-	}
 
 	function handleAlert(text) {
 		showAlert = true;
@@ -166,7 +135,24 @@
 	async function handleDetail(contract) {
 		const request = await fetch(`/api/tenants/${currentTenant.id}/contracts/${contract.id}/stage`);
 		contractStagesList = await request.json();
-		await getAllInvoices();
+
+		try {
+			// !! aqui esta listando todos los invoices en comun para todos los contratos !!
+			const invoices = await reqInvoiceApi.getInvoices();
+			contractInvoicesList = await invoices.map((invoice) => ({
+				comments: 'KillBill invoice',
+				date: invoice.invoiceDate, // targetDate
+				invoice_id: invoice.invoiceId,
+				previousStage: null,
+				previousStageId: null,
+				reason: '',
+				stage: invoice.status,
+				amount: invoice.amount,
+				balance: invoice.balance
+			}));
+		} catch (error) {
+			console.error('Error getting invoices:', error);
+		}
 
 		selectedContract = contract;
 		detailModal = true;

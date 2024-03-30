@@ -1,47 +1,30 @@
 <script async lang="ts">
 	//@ts-nocheck
 	import { Timeline, TimelineItem } from 'flowbite-svelte';
-	import { getKillBillData } from '@killbill/temp-api-rq';
+	import { reqInvoiceApi } from '@killbill/requests';
 	import { Modal } from 'flowbite-svelte';
 	import { FileEditSolid, EyeOutline } from 'flowbite-svelte-icons';
 	import DetailInvoice from '$lib/components/forms-components/contracts/DetailInvoice.svelte';
+	import { formatTimelineDate } from '$lib/helpers/dates';
 
 	export let TimelineData: any = [];
 	let detailModal = false;
-	let editModal = false;
 	let selectedInvoice = undefined;
 	let loading = false;
 
-	const formatDate = (date: Date | string) => {
-		if (!date) {
-			return undefined;
-		}
-		return new Date(date).toLocaleDateString('en-us', {
-			weekday: 'long',
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
-	};
-
 	async function handleDetail(invoice) {
-		selectedInvoice = await getKillBillData(`/invoices/${invoice.invoice_id}`);
+		selectedInvoice = await reqInvoiceApi.getInvoice({
+			invoiceId: invoice.invoice_id,
+			withChildrenItems: true
+		});
 		detailModal = true;
-	}
-
-	async function handleEdit(invoice) {
-		selectedInvoice = invoice;
-		editModal = true;
 	}
 
 	$: if (!detailModal) {
 		handleCloseDetailModal();
 	}
-	$: if (!editModal) {
-		handleCloseDetailModal();
-	}
+
 	async function handleCloseDetailModal() {}
-	async function handleCloseEditModal() {}
 </script>
 
 <Modal
@@ -58,7 +41,7 @@
 {:else}
 	<Timeline>
 		{#each TimelineData as data}
-			<TimelineItem title={data.stage} date={formatDate(data.date)}>
+			<TimelineItem title={data.stage} date={formatTimelineDate(data.date)}>
 				<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
 					{#if data.invoice_id}
 						Amount: {typeof data.amount == 'number' && data.amount == 0
@@ -68,7 +51,6 @@
 							? '$' + data.balance
 							: 'No balance provided'} <br />
 						<EyeOutline class="text-gray-400 inline" on:click={() => handleDetail(data)} />
-						<FileEditSolid class="text-gray-400 inline" on:click={() => handleEdit(data)} />
 					{:else}
 						Reason: {data.reason || 'No reason provided'} <br />
 						Comment: {data.comments || 'No comment provided'}
