@@ -7,10 +7,11 @@ import type { RequestHandler } from "@sveltejs/kit";
 import { getContractByDateRange } from "$lib/actions/contracts";
 import { setError, superValidate } from "sveltekit-superforms/server";
 import { createToll, deleteToll, listTollsByContractId, updateToll, listTolls } from "$lib/actions/tolls";
+import { getPlateById } from "$lib/actions/plates";
 
 const tollSchema = z.object({
     amount: z.number().gte(0),
-    vehicleId: z.number(),
+    plateId: z.number(),
     contractId: z.number(),
     stage: z.enum(['PAID', 'UNPAID']),
     invoice: z.string().optional(),
@@ -53,13 +54,14 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
     const file = formData.get('fileData');
     console.log('FORM', form)
     if (form.valid) {
-        let toll: { contractId: number; id: number; vehicleId: number; note: string | null; amount: number; stage: $Enums.TollDueStage; invoice: string | null; invoiceNumber: string | null; createDate: Date; };
-        const contract = await getContractByDateRange({vehicleId: form.data.vehicleId, date: form.data.createDate})
+        let toll: { contractId: number; id: number; plateId: number; note: string | null; amount: number; stage: $Enums.TollDueStage; invoice: string | null; invoiceNumber: string | null; createDate: Date; };
+        const plate = await getPlateById({id: form.data.plateId});
+        const contract = await getContractByDateRange({vehicleId: plate?.vehicleId || 0, date: form.data.createDate})
         form.data.contractId = contract?.id || NaN
         if (!params.tollId) {
             toll = await createToll({
                 amount: form.data.amount,
-                vehicleId: form.data.vehicleId,
+                plateId: form.data.plateId,
                 contractId: form.data.contractId,
                 stage: form.data.stage,
                 createDate: form.data.createDate,
@@ -72,7 +74,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
             toll = await updateToll({
                 id: parseInt(params.tollId),
                 amount: form.data.amount,
-                vehicleId: form.data.vehicleId,
+                plateId: form.data.plateId,
                 contractId: form.data.contractId,
                 stage: form.data.stage,
                 createDate: form.data.createDate,

@@ -21,7 +21,7 @@
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let headers;
-	let vehicles = [];
+	let plates = [];
 	let attachFile = false;
 	let loading = false;
 	let fileSize = 0;
@@ -46,10 +46,10 @@
 
 	async function getContractByDate(selectedDate: string, vehiclePlate: string) {
 		headers = { 'X-User-Tenant': $currentTenant.id };
-		let vehicleId = findVehicleID(vehiclePlate);
-		if (vehicleId) {
+		let plateId = findPlateID(vehiclePlate);
+		if (plateId) {
 			const response = await fetch(
-				`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&vehicle_id=${vehicleId}`,
+				`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&plate_id=${plateId}`,
 				{ headers }
 			);
 
@@ -71,8 +71,8 @@
 			attachFile = true;
 		}
 		headers = { 'X-User-Tenant': $currentTenant.id };
-		const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, { headers });
-		vehicles = [...(await vehiclesResponse.json())];
+		const platesResponse = await fetch(`/api/tenants/${$currentTenant.id}/plates`, { headers });
+		plates = [...(await platesResponse.json())];
 	});
 
 	let stageSelectorList = [
@@ -84,11 +84,11 @@
 
 	const { form, errors, constraints, enhance, delayed } = superForm(data.form, {
 		onSubmit: async (event) => {
-			event.formData.set('vehicleId', findVehicleID($form.vehicleId));
+			event.formData.set('plateId', findPlateID($form.plateId));
 		},
 		onUpdate: async (event) => {
-			const vehicle = vehicles.filter((_vehicle) => _vehicle.id == event.form.data.vehicleId);
-			event.form.data.vehicleId = vehicle[0].plate;
+			const plate = plates.filter((_plate) => _plate.id == event.form.data.plateId);
+			event.form.data.plateId = plate[0].plate;
 			event.form.data.createDate = event.form.data.createDate
 				.toISOString()
 				.slice(0, 10)
@@ -105,7 +105,7 @@
 
 	if (selectedToll) {
 		$form.amount = selectedToll.amount;
-		$form.vehicleId = selectedToll.vehicle.plate;
+		$form.plateId = selectedToll.plate.plate;
 		$form.stage = selectedToll.stage;
 		$form.invoice = selectedToll.invoice;
 		$form.invoiceNumber = selectedToll.invoiceNumber;
@@ -141,17 +141,17 @@
 	}
 
 
-	function findVehicleID(plate) {
-		let selectedVehicle = vehicles.filter((vehicle) => vehicle['plate'] === plate.toUpperCase());
-		if (selectedVehicle.length) {
-			return selectedVehicle[0].id;
+	function findPlateID(plate) {
+		let selectedPlate = plates.filter((_plate) => _plate['plate'] === plate?.toUpperCase());
+		if (selectedPlate.length) {
+			return selectedPlate[0].id;
 		} else {
 			return undefined;
 		}
 	}
 
-	$: if ($form.vehicleId !== 0 && $form.vehicleId !== undefined && $form.createDate !== undefined) {
-		getContractByDate($form.createDate, $form.vehicleId);
+	$: if ($form.plateId !== 0 && $form.plateId !== undefined && $form.createDate !== undefined) {
+		getContractByDate($form.createDate, $form.plateId);
 	}
 	$: if (selectedContract && selectedContract?.message !== 'no_data') {
 		formDisabled = false;
@@ -182,13 +182,13 @@
 
 		<div class="sm:col-span-2">
 			<AutocompleteInputComponent
-				formPointer="vehicleId"
+				formPointer="plateId"
 				filterCriteria="plate"
 				{form}
 				{errors}
 				{constraints}
 				placeholder="Type vehicle plate"
-				suggestions={vehicles}
+				suggestions={plates}
 			/>
 		</div>
 

@@ -13,6 +13,6 @@ export const getAllVehicles = async () => {
 	const vehiclesWithActualPlate = vehicles.map((v) => {
 		return { ...v, plate: v.plates[0] || undefined }
 	});
-
+	console.log(vehiclesWithActualPlate)
 	return vehiclesWithActualPlate
 };

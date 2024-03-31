@@ -157,25 +157,27 @@ model Vehicle {
   nickname    String
   spare_tires Int
   extraFields Json?
-  plates      VehiclePlate[]
 
+  plates          VehiclePlate[]
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
   documents       Document[]
   costs           Cost[]
   contracts       Contract[]
-  tolls           TollDue[]
   inspections     Inspection[]
 }
 
 model VehiclePlate {
-  id         Int      @id @default(autoincrement())
-  plate      String   @unique
-  assignDate DateTime @default(now())
-  isActive   Boolean  @default(false)
+  id          Int       @id @default(autoincrement())
+  plate       String    @unique
+  assignDate  DateTime  @default(now())
+  dismissDate DateTime?
+  isActive    Boolean   @default(false)
 
   vehicleId  Int
   vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
+
+  tolls      TollDue[]
 }
 
 enum VehicleStatus {
@@ -490,8 +492,8 @@ enum Stage {
 model TollDue {
   id            Int          @id @default(autoincrement())
   amount        Int
-  vehicle       Vehicle      @relation(fields: [vehicleId], references: [id])
-  vehicleId     Int
+  plate       VehiclePlate      @relation(fields: [plateId], references: [id])
+  plateId     Int
   contract      Contract     @relation(fields: [contractId], references: [id])
   contractId    Int
   stage         TollDueStage

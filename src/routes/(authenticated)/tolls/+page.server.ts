@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const fixSchema = z.object({
     amount: z.number().gte(0),
-    vehicleId: z.number(),
+    plateId: z.number(),
     contractId: z.number(),
     stage: z.enum(['PAID', 'UNPAID']).default('UNPAID'),
     invoice: z.string().optional(),

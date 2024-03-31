@@ -26,3 +26,5 @@ src/lib/zod/index.ts
 prisma/migrations/*
 .vscode/settings.json
 yarn.lock
+yarn-error.log
+yarn.lock

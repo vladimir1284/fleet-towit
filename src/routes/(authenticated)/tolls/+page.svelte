@@ -152,7 +152,7 @@
 			<TableBody class="divide-y">
 				{#each tolls as toll}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">{toll.vehicle.plate}</TableBodyCell>
+						<TableBodyCell class="text-center">{toll.plate.plate}</TableBodyCell>
 						<TableBodyCell class="text-center">{toll.contractId}</TableBodyCell>
 						<TableBodyCell class="text-center">{toll.invoiceNumber}</TableBodyCell>
 						<TableBodyCell class="text-center">{formatDate(toll.createDate)}</TableBodyCell>

@@ -38,7 +38,7 @@
 		filterPointer: string,
 		filterCriteria: string
 	): any[] {
-		return suggestions.filter((suggestion) => suggestion[filterCriteria].includes(filterPointer));
+		return suggestions.filter((suggestion) => suggestion[filterCriteria]?.includes(filterPointer));
 	}
 </script>
 
@@ -60,7 +60,7 @@
 	<ul
 		class="flex flex-col overflow-y-scroll w-full max-h-[8rem] mt-1 bg-white border border-gray-300 rounded shadow-lg"
 	>
-		{#each filteredSuggestions as suggestion, index}
+		{#each filteredSuggestions as suggestion, index} 
 			<button
 				class="p-2 hover:bg-gray-100 cursor-pointer {selectedIndex === index ? 'bg-gray-200' : ''}"
 				on:click={() => handleSuggestionClick(suggestion.plate)}

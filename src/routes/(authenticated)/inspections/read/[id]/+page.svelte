@@ -35,7 +35,7 @@
 			VIN: <span class="font-normal">{data.inspection?.vehicle.vin}</span>
 		</h2>
 		<h2 class="font-semibold">
-			Plate: <span class="font-normal">{data.inspection?.vehicle.plate }</span>
+			Plate: <span class="font-normal">{data.inspection?.vehicle.plates[0].plate }</span>
 		</h2>
 		<h2 class="font-semibold">
 			Date: <span class="font-normal">

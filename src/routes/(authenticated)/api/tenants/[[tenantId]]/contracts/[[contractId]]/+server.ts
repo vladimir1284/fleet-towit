@@ -5,6 +5,7 @@ import { zod } from "sveltekit-superforms/adapters";
 import { actionResult } from "sveltekit-superforms";
 import { superValidate } from "sveltekit-superforms/server";
 import { getAllContracts, getContract, createContract, updateContract, deleteContract, getContractByDateRange } from "$lib/actions/contracts";
+import { getPlateById } from "$lib/actions/plates";
 
 const fixSchema = z.object({
 	clientId: z.number(),
@@ -27,15 +28,19 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 	}
 
 	const searchDate = url.searchParams.get('search_date') || 'undefined';
-	const _vehicleId = url.searchParams.get('vehicle_id') || 'undefined';
+	const _plateId = url.searchParams.get('plate_id') || 'undefined';
 
 	if (params.contractId) {
 		response = await getContract({ contractId: parseInt(params.contractId) });
-	} else if (searchDate !== 'undefined' && _vehicleId !== 'undefined' ) {
+	} else if (searchDate !== 'undefined' && _plateId !== 'undefined' ) {
 
         const date = new Date(searchDate);
-        const vehicleId = parseInt(_vehicleId)
-        const contract = await getContractByDateRange({vehicleId, date})
+        const plateId = parseInt(_plateId);
+		const plate = await getPlateById({id: plateId});
+		let contract = null;
+		if (plate) {
+			contract = await getContractByDateRange({vehicleId: plate.vehicle.id, date})
+		}
 
 		if (contract == null){
 			return new Response(JSON.stringify({message: 'no_data'}), {status: 404})
