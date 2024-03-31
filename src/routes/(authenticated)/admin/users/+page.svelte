@@ -4,7 +4,7 @@
 	import DeleteUserForm from '$lib/components/forms-components/users/DeleteUserForm.svelte';
 	import UsersTable from '$lib/components/forms-components/users/UsersTable.svelte';
 	import UserForm from '$lib/components/forms-components/users/UserForm.svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
 
@@ -21,12 +21,12 @@
 
 	let loading = true;
 
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+	const currentTenant = getContext('currentTenant');
+	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	onMount(async () => {
 		try {
-			const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+			const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
 			users = await response.json();
 			const tenantsResponse = await fetch('/api/tenants', { headers });
 			tenants = await tenantsResponse.json();
@@ -49,7 +49,7 @@
 		createModal = event.detail;
 		handleAlert('User created succesfully!');
 
-		const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
 		users = await response.json();
 		const tenantsResponse = await fetch('/api/tenants', { headers });
 		tenants = await tenantsResponse.json();
@@ -64,7 +64,7 @@
 		editModal = event.detail;
 		handleAlert('User edited succesfully!');
 
-		const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
 		users = await response.json();
 		const tenantsResponse = await fetch('/api/tenants', { headers });
 		tenants = await tenantsResponse.json();
@@ -79,7 +79,7 @@
 		deleteModal = event.detail;
 		handleAlert('User deleted succesfully!');
 
-		const response = await fetch(`/api/tenants/${currentTenant.id}/users`, { headers });
+		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
 		users = await response.json();
 		const tenantsResponse = await fetch('/api/tenants', { headers });
 		tenants = await tenantsResponse.json();

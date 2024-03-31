@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { RequestHandler } from "@sveltejs/kit";
-import { actionResult, superValidate } from "sveltekit-superforms/server";
+import { zod } from "sveltekit-superforms/adapters";
+import { actionResult } from "sveltekit-superforms";
+import { superValidate } from "sveltekit-superforms/server";
 import { updateContractStage, getPreviousStage } from "$lib/actions/contracts";
 
 const stageSchema = z.object({
@@ -30,7 +32,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
         return new Response('Forbidden', { status: 403 });
     }
 
-    const form = await superValidate(request, stageSchema);
+    const form = await superValidate(request, zod(stageSchema));
     if (!form.valid) {
         console.log('validation fail', form);
         return actionResult('failure', { form }, { status: 400 });

@@ -1,5 +1,7 @@
 <script async script lang="ts">
 	import { FloatingLabelInput } from 'flowbite-svelte';
+
+	
 	export let placeholder: string;
 	export let formPointer: any | undefined;
 	export let constraints: any | undefined;
@@ -12,12 +14,11 @@
 	type="text"
 	id={formPointer}
 	name={formPointer}
-	required
 	aria-invalid={$errors ? 'true' : undefined}
-	bind:value={form}
-	{...$constraints}
+	bind:value={$form[formPointer]}
+	{...$constraints[formPointer]}
 >
 	<slot />
 	{placeholder}
 </FloatingLabelInput>
-{#if $errors}<span class="text-red-600">{$errors}</span>{/if}
+{#if $errors[formPointer]}<span class="text-red-600">{$errors[formPointer]}</span>{/if}

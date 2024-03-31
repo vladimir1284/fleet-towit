@@ -1,10 +1,12 @@
 <script async script lang="ts">
-	import { FloatingLabelInput } from 'flowbite-svelte';
 	import { PhoneSolid } from 'flowbite-svelte-icons';
+	import { FloatingLabelInput } from 'flowbite-svelte';
+
 	export let placeholder: string = 'Phone Number';
 	export let constraints: any;
 	export let errors: any;
 	export let form: any;
+	
 	$: formattedPhoneNumber = formatPhoneNumber($form.phoneNumber);
 
 	function formatPhoneNumber(phoneNumber: string) {

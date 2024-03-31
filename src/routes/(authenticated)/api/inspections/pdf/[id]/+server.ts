@@ -124,7 +124,7 @@ const createPDF = async (inspection: Inspections) => {
 					{
 						text: [
 							{ text: 'Plate: ', style: 'details' },
-							{ text: inspection.vehicle.plate, style: 'content' }
+							{ text: inspection.vehicle?.plates[0].plate, style: 'content' }
 						]
 					},
 					{

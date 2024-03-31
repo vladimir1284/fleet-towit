@@ -14,21 +14,26 @@
 	} from 'flowbite-svelte';
 	import { transform } from './transformation/transform';
 	import type { TransformRule } from './transformation/types';
-	import * as Icon from 'flowbite-svelte-icons';
+	import TableCellButton from './TableCellButton.svelte';
+	import { goto } from '$app/navigation';
 
 	export let title: string = '';
 	export let data: Object[] = [];
 	export let rules: TransformRule[] = [];
 
-	let headers = data.length ? Object.keys(data[0]) : [];
+	const { vehicles, details } = data;
+
+	let headers = vehicles.length ? Object.keys(vehicles[0]) : [];
 </script>
 
 <div>
-	<Heading tag="h2" class="mb-4">{title}</Heading>
-	<hr />
+	{#if title}
+		<Heading tag="h2" class="mb-4">{title}</Heading>
+		<hr />
+	{/if}
 	<div class="flex justify-end my-4">
 		<Button>
-			<strong class="mx-1">+</strong> New vehicle
+			<strong class="mx-1">+</strong> New cost
 		</Button>
 	</div>
 	<Table>
@@ -40,28 +45,20 @@
 			{/each}
 		</TableHead>
 		<TableBody>
-			{#each data as record}
+			{#each vehicles as vehicle}
 				<TableBodyRow>
-					{#each Object.keys(record) as key}
-						{#if record[key].type === 'simple'}
-							<TableBodyCell><p>{transform(String(record[key].value), rules)}</p></TableBodyCell>
-						{:else}
-							<TableBodyCell>
-								<Button>
-									<div class="flex gap-2">
-										{#if record[key].button.icon === 'TableSolid'}
-											<Icon.TableSolid />
-										{:else if record[key].button.icon === 'ImageSolid'}
-											<Icon.ImageSolid />
-										{:else if record[key].button.icon === 'BookSolid'}
-											<Icon.BookSolid />
-										{:else if record[key].button.icon === 'ChartSolid'}
-											<Icon.ChartSolid />
-										{/if}
-									</div>
-								</Button>
-							</TableBodyCell>
-						{/if}
+					{#each Object.keys(vehicle) as key}
+						<TableBodyCell><p>{transform(String(vehicle[key]), rules)}</p></TableBodyCell>
+					{/each}
+					{#each Object.keys(details) as key}
+						<TableBodyCell>
+							<TableCellButton
+								iconName={details[key].icon}
+								onClick={() => {
+									goto(`/vehicles/${vehicle.vin}/${key}`);
+								}}
+							/>
+						</TableBodyCell>
 					{/each}
 				</TableBodyRow>
 			{/each}
