@@ -13,9 +13,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
@@ -40,11 +38,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 
 			// generate schema
-			const schema = generateValidationSchema(inspection.customForm.fields);
+			const schema = generateValidationSchema(inspection.customForm.cards);
 
 			const form = await superValidate(zod(schema));
 
-			return { inspection, form, FormFieldType };
+			return { inspection, FormFieldType, form };
 		} catch {
 			redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 		}
@@ -71,7 +69,7 @@ export const actions = {
 			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/register/`);
 
 			// generate schema
-			const schema = generateValidationSchema(inspection.customForm.fields);
+			const schema = generateValidationSchema(inspection.customForm.cards);
 
 			const form = await superValidate(request, zod(schema));
 

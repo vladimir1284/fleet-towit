@@ -21,6 +21,10 @@
 	) {
 		goto('/select-tenant');
 	}
+
+	$: {
+		window.user = data.session.user;
+	}
 </script>
 
 <svelte:head>

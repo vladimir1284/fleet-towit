@@ -17,5 +17,10 @@ export default defineConfig({
 	},
 	preview: {
 		port: 5173
+	},
+	resolve: {
+		alias: {
+			'@killbill': '/src/killbill'
+		}
 	}
 });
