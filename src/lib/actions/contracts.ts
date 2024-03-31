@@ -74,7 +74,6 @@ export const getPreviousStage = async ({ contractId }: { contractId: number }) =
         stagesFound.push(stage)
         let lastStageId = stage.previousStageId ? stage.previousStageId : null
         while (lastStageId) {
-            console.log('stage id:', lastStageId)
             const previousStage = await bypassPrisma.stageUpdate.findUnique({
                 where: { id: lastStageId },
             });

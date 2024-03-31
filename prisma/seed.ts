@@ -2,8 +2,10 @@ import { createTenantUser } from '../src/lib/actions/admin';
 import { bypassPrisma } from '../src/lib/prisma';
 import { Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
+import seedClients from './seeders/clients.seed';
 import seedInspection from './seeders/inspections.seed';
-import { seedContracts } from "./seeders/contracts.seed";
+import seedRentalPlans from './seeders/rentalPlan.seed';
+import seedContract from './seeders/contracts.seed';
 const prisma = bypassPrisma;
 
 async function main() {
@@ -18,7 +20,7 @@ async function main() {
 	];
 	const tenantsData = {
 		admin: { name: 'admin', email: 'gissell111284@gmail.com', isAdmin: true },
-		test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false },
+		test: { name: 'test', email: 'gissell111284@gmail.com', isAdmin: false }
 		// Add more tenants as needed
 	};
 
@@ -72,13 +74,16 @@ async function main() {
 		}
 	}
 
+	// Clients
+	const createdClientsIds = await seedClients(prisma, [testTenantId]);
+	// Rental Plans
+	const createdPlansIds = await seedRentalPlans(prisma);
 	// Vehicles
-	await seedVehicles(prisma);
+	const createdVehiclesIds = await seedVehicles(prisma);
 	// Inspection
 	await seedInspection(prisma, [testTenantId, tenantId]);
 	// Contracts
-	await seedContracts(prisma);
-
+	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
 }
 
 main()

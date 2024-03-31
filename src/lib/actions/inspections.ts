@@ -110,8 +110,6 @@ export const retrieveInspectionById = async ({
 		}
 	});
 
-	console.log(inspection);
-	console.log(inspection.vehicle?.plates[0].plate);
 	return inspection;
 };
 
