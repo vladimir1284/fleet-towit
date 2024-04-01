@@ -1,9 +1,10 @@
 <script async lang="ts">
+	//@ts-nocheck
+	import { getContext } from 'svelte';
 	import { Select } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
 	export let clients: [];
@@ -15,9 +16,8 @@
 	let vehiclesSelector: any = [];
 	let rentalPlansSelector: any = [];
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	//@ts-expect-error Fix error on type string
-	let actionURL = `/api/tenants/${currentTenant?.id}/contracts`;
+	const currentTenant = getContext('currentTenant');
+	let actionURL = `/api/tenants/${$currentTenant.id}/contracts`;
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
@@ -106,7 +106,7 @@
 		</div>
 		<div class="flex sm:col-span-2 justify-center items-center">
 			<SubmitButtonComponent
-				placeholder={!selectedContract ? 'Create plan' : 'Update plan'}
+				placeholder={!selectedContract ? 'Create contract' : 'Update contract'}
 				styles="w-40"
 			/>
 		</div>

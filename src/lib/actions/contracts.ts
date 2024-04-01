@@ -12,8 +12,16 @@ type updateContractStageType = {
     stage: Stage;
 };
 
-export const getAllContracts = async () => {
+export const getAllContracts = async (isAdminUser = false) => {
+    const _stage = isAdminUser ? undefined : 'DISMISS'
     const contracts = await bypassPrisma.contract.findMany({
+        where: {
+            NOT: {
+                stage: {
+                    stage: _stage
+                }
+            }
+        },
         include: {
             client: true,
             rentalPlan: true,
@@ -66,7 +74,6 @@ export const getPreviousStage = async ({ contractId }: { contractId: number }) =
         stagesFound.push(stage);
         let lastStageId = stage.previousStageId ? stage.previousStageId : null;
         while (lastStageId) {
-            console.log('stage id:', lastStageId);
             const previousStage = await bypassPrisma.stageUpdate.findUnique({
                 where: { id: lastStageId }
             });
@@ -120,7 +127,7 @@ export const updateContractStage = async ({
 }: updateContractStageType) => {
     const contract = await bypassPrisma.contract.findUnique({
         where: { id },
-        select: { stage: true }
+        include: { stage: true }
     });
     const newStage = await bypassPrisma.stageUpdate.create({
         data: {
@@ -131,12 +138,45 @@ export const updateContractStage = async ({
             previousStageId: contract?.stage.id
         }
     });
+    let endDate = contract?.endDate
+    let activeDate = contract?.activeDate
+    if (newStage.stage === Stage.ENDED) {
+        endDate = new Date(Date.now())
+        endDate.setHours(0, 0, 0, 0)
+    } else if (newStage.stage === Stage.ACTIVE) {
+        activeDate = new Date(Date.now())
+        activeDate.setHours(0, 0, 0, 0)
+    }
     await bypassPrisma.contract.update({
         where: { id },
-        data: { stageId: newStage.id }
+        data: { stageId: newStage.id, endDate, activeDate}
     });
 };
 
 export const deleteContract = async ({ id }: { id: number }) => {
     await bypassPrisma.contract.delete({ where: { id } });
 };
+
+export const getContractByDateRange = async({vehicleId, date}: {vehicleId: number, date: Date}) => {
+    const contract = await bypassPrisma.contract.findFirst({
+        where:{
+            vehicleId,
+            activeDate: { lte: date },
+            OR: [
+                {endDate: {gte: date}},
+                {endDate: null}
+            ],
+            NOT: {
+                stage: {
+                    stage: 'DISMISS'
+                }
+            }
+        },
+        include: {
+            stage: true,
+            client: true,
+            vehicle: true
+        }
+    })
+    return contract
+}

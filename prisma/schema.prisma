@@ -153,20 +153,32 @@ model Vehicle {
   make        String
   model       String
   trim        String
-  plate       String @unique
   vin         String @unique
   odometer    Int
   nickname    String
   spare_tires Int
   extraFields Json?
 
+  plates          VehiclePlate[]
   status          VehicleStatus
   vehiclePictures VehiclePicture[]
   documents       Document[]
   costs           Cost[]
   contracts       Contract[]
-  tolls           TollDue[]
   inspections     Inspection[]
+}
+
+model VehiclePlate {
+  id          Int       @id @default(autoincrement())
+  plate       String    @unique
+  assignDate  DateTime  @default(now())
+  dismissDate DateTime?
+  isActive    Boolean   @default(false)
+
+  vehicleId  Int
+  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
+
+  tolls      TollDue[]
 }
 
 enum VehicleStatus {
@@ -407,43 +419,21 @@ model VendorOnParts {
 //          COSTS           //
 // ************************ //
 
-enum CostCategory {
-  // Fixed Costs
-  Purchase
-  Depreciation
-  Financing
-  Insurance
-  Taxes
-  PreventativeMaintenance
-  Storage
-  PermitsAndLicenses
-
-  // Variable costs
-  Fuel
-  Repairs
-  Cleaning
-  TollsAndHighways
-  RoadsideAssistance
-  MarketingAndAdvertising
-  AdministrativeExpenses
-  Commissions
-
-  // Additional costs
-  AdditionalEquipment
-  RentalInsurance
-  Deductible
-  CleaningFee
-  AdditionalMileage
+model CostCategory {
+  id    Int    @id @default(autoincrement())
+  name  String
+  costs Cost[]
 }
 
 model Cost {
-  id        Int            @id @default(autoincrement())
-  value     Float
-  concept   String
-  category  CostCategory[]
-  date      DateTime
-  vehicle   Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  vehicleId Int
+  id         Int          @id @default(autoincrement())
+  value      Float
+  concept    String
+  category   CostCategory @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  date       DateTime
+  vehicle    Vehicle      @relation(fields: [vehicleId], references: [id])
+  vehicleId  Int
 }
 
 // ************************ //
@@ -477,6 +467,9 @@ model Contract {
   vehicleId    Int
   stage        StageUpdate @relation(fields: [stageId], references: [id])
   stageId      Int
+  creationDate DateTime    @default(now())
+  activeDate   DateTime?
+  endDate      DateTime?   
   //inspections    Inspection[]  --- doesn't exists yet
   tolls        TollDue[]
   notes        Note[]
@@ -506,8 +499,8 @@ enum Stage {
 model TollDue {
   id            Int          @id @default(autoincrement())
   amount        Int
-  vehicle       Vehicle      @relation(fields: [vehicleId], references: [id])
-  vehicleId     Int
+  plate       VehiclePlate      @relation(fields: [plateId], references: [id])
+  plateId     Int
   contract      Contract     @relation(fields: [contractId], references: [id])
   contractId    Int
   stage         TollDueStage

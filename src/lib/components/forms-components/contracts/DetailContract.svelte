@@ -1,48 +1,50 @@
 <script async lang="ts">
 	//@ts-nocheck
-	import { tenantActor } from '$lib/store/context-store';
-	import { Badge, Label } from 'flowbite-svelte';
-	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import {
 		TruckOutline,
 		DollarOutline,
 		UserOutline,
 		ClipboardListOutline
 	} from 'flowbite-svelte-icons';
-	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
-	import ClientForm from '../clients/ClientForm.svelte';
+	import { getContext } from 'svelte';
 	import UpdateStage from './UpdateStage.svelte';
-	import ContractTimeline from './ContractTimeline.svelte';
+	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
+	import { Badge, Label, Timeline, TimelineItem } from 'flowbite-svelte';
+	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
 	export let data: any;
 	export let selectedContract: any = undefined;
 	export let contractStagesList: any = undefined;
-	export let contractInvoicesList: any = undefined;
-	let TimelineData = [];
-	let loading = false;
+
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
+	const currentTenant = getContext('currentTenant');
+	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
-	const relistTimeline = (data: Array) => {
-		// ordenar el array TimelineData según su fecha
-		// console.log(contractStagesList);
-		// console.log(contractInvoicesList);
-		TimelineData = [...contractStagesList, ...contractInvoicesList];
-		TimelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
+	const formatDate = (date: Date | string) => {
+		if (!date) {
+			return undefined;
+		}
+		return new Date(date).toLocaleDateString('en-us', {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
 	};
+
 	async function updateContractData() {
-		const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-		const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
 		const contractData = await fetch(
-			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}`,
+			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`,
 			{ headers }
 		);
 		const contractStages = await fetch(
-			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}/stage`
+			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`,
+			{ headers }
 		);
 		selectedContract = await contractData.json();
 		contractStagesList = await contractStages.json();
-		relistTimeline();
 	}
 
 	async function handleCloseEditModal(event: any) {
@@ -54,8 +56,6 @@
 		updateContractData();
 		updateStage = event.detail;
 	}
-
-	relistTimeline();
 </script>
 
 {#if editClient}
@@ -147,11 +147,15 @@
 			</FeatureDefault>
 		</div>
 
-		<ContractTimeline {TimelineData} />
+		<Timeline>
+			{#each contractStagesList as stage}
+				<TimelineItem title={stage.stage} date={formatDate(stage.date)}>
+					<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
+						Reason: {stage.reason || 'No reason provided'} <br />
+						Comment: {stage.comments || 'No comment provided'}
+					</p>
+				</TimelineItem>
+			{/each}
+		</Timeline>
 	</div>
-	<!-- {#if showAlert}
-		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
-			{message}
-		</Alert>
-	{/if} -->
 {/if}

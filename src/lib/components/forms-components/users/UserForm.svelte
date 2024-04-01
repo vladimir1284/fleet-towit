@@ -1,18 +1,22 @@
 <script lang="ts">
 	// @ts-nocheck
-	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { tenantActor } from '$lib/store/context-store';
-	import { Select } from 'flowbite-svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { z } from 'zod';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import { Select } from 'flowbite-svelte';
+	import { superForm } from 'sveltekit-superforms/client';
+	import { createEventDispatcher, getContext } from 'svelte';
+	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
+
+
 	export let data;
 	export let selectedUser;
 	export let tenantsList = [];
+
+	
+	let loading = false;
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	let actionURL = `/api/tenants/${currentTenant.currentUserTenant.tenantId}/users`;
+	const currentTenant = getContext('currentTenant');
+	let actionURL = `/api/tenants/${$currentTenant.currentUserTenant.tenantId}/users`;
 
 	const fixSchema = z.object({
 		role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
@@ -22,8 +26,9 @@
 	});
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
-		SPA: true,
-		validators: fixSchema,
+		onSubmit: async (event) => {
+			$form.email = $form.email.trim();
+		},
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -48,27 +53,8 @@
 		actionURL = actionURL + `/${selectedUser.id}`;
 	}
 
-	$: if (!currentTenant.isAdmin) {
-		$form.tenantId = currentTenant.id;
-	}
-
-	async function handleSubmit(event) {
-		event.preventDefault();
-		$form.email = $form.email.trim();
-		const formData = new FormData(event.target);
-		const headers = {
-			'X-User-Tenant': currentTenant.currentUserTenant.id
-		};
-		const response = await fetch(actionURL, {
-			method: 'POST',
-			headers: headers,
-			body: formData
-		});
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		} else {
-			console.log('Form submitted successfully');
-		}
+	$: if (!$currentTenant.isAdmin) {
+		$form.tenantId = $currentTenant.id;
 	}
 </script>
 
@@ -76,7 +62,7 @@
 	class="flex flex-col justify-center align-center space-y-6"
 	method="POST"
 	enctype="multipart/form-data"
-	on:submit={handleSubmit}
+	action={actionURL}
 	use:enhance
 >
 	<input hidden name="id" bind:value={$form.id} />
@@ -90,7 +76,7 @@
 		placeholder="Select a role..."
 		bind:value={$form.role}
 	/>
-	{#if currentTenant.isAdmin}
+	{#if $currentTenant.isAdmin}
 		<Select
 			class="mt-2"
 			items={tenantsSelector}
@@ -104,5 +90,6 @@
 	<SubmitButtonComponent
 		placeholder={!selectedUser ? 'Create user' : 'Update user'}
 		styles="w-[50%] mx-auto block"
+		{loading}
 	/>
 </form>

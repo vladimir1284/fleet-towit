@@ -1,49 +1,27 @@
-import { Stage } from '@prisma/client'
+import { faker } from '@faker-js/faker';
 
-export const seedClients = async (prisma) => {
-    const tenant = await prisma.tenant.create({
-        data: {
-            name: 'seedExample2',
-            email: 'example2@example.com'
-        }
-    })
+const seedClients = async (prisma, tenantsId: number[]) => {
+	console.log('Seeding clients data...');
+	const createdClientsIds = [];
 
-    const vehicle = await prisma.vehicle.findFirstOrThrow()
-    const rentalPlan = await prisma.rentalPlan.findFirstOrThrow()
+	const generateClient = () => ({
+		name: faker.person.fullName(),
+		email: faker.internet.email(),
+		phoneNumber: faker.phone.number(),
+		avatar: faker.image.avatar(),
+		tenantId: faker.helpers.arrayElement(tenantsId)
+	});
 
-    const newClient = await prisma.client.create({
-        data: {
-            // id: '492',       // external-id for http://kaui.towithouston.com/home
-            name: 'NotNewClient4KillBill',
-            email: 'emial2@example.com',
-            phoneNumber: '+1(222)2222-2222',
-            tenantId: tenant.id ,
-        }
-    })
+	const numberOfClients = 50;
+	for (let i = 0; i < numberOfClients; i++) {
+		const createdClient = await prisma.client.create({
+			data: generateClient()
+		});
+		createdClientsIds.push(createdClient.id)
+	}
 
-    await prisma.contract.create({
-        data: {
-            client: {
-                connect: {
-                    id: newClient.id 
-                },
-            },
-            stage: {
-                create: {
-                    stage: Stage.PENDING,
-                    date: new Date(Date.now())
-                }
-            },
-            rentalPlan: {
-                connect: {
-                    id: rentalPlan.id 
-                }
-            },
-            vehicle: {
-                connect: {
-                    id: vehicle.id 
-                }
-            }
-        }
-    })
-}
+	console.log('Seeding complete!');
+	return createdClientsIds
+};
+
+export default seedClients;

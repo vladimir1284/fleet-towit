@@ -1,11 +1,15 @@
 <script async script lang="ts">
-	import { FloatingLabelInput } from 'flowbite-svelte';
 	import { CashSolid } from 'flowbite-svelte-icons';
+	import { FloatingLabelInput } from 'flowbite-svelte';
 
 	export let placeholder: string;
 	export let constraints: any;
 	export let errors: any;
 	export let form: any;
+
+	$: if ($form.amount == 0) {
+		$form.amount = undefined;
+	}
 </script>
 
 <FloatingLabelInput
