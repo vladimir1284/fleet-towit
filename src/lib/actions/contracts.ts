@@ -26,7 +26,6 @@ export const getAllContracts = async (isAdminUser = false) => {
             client: true,
             rentalPlan: true,
             vehicle: true,
-            notes: true,
             stage: {
                 include: {
                     previousStage: true
@@ -34,8 +33,9 @@ export const getAllContracts = async (isAdminUser = false) => {
             }
         }
     });
-    return contracts;
-};
+    return contracts
+}
+
 
 export const getContract = async ({ contractId }: { contractId: number }) => {
     const contract = await bypassPrisma.contract.findUnique({
@@ -51,8 +51,8 @@ export const getContract = async ({ contractId }: { contractId: number }) => {
             }
         }
     });
-    return contract;
-};
+    return contract
+}
 
 export const getPreviousStage = async ({ contractId }: { contractId: number }) => {
     // Find the stage by its ID
@@ -64,27 +64,28 @@ export const getPreviousStage = async ({ contractId }: { contractId: number }) =
                     previousStage: true
                 }
             }
-        }
+        },
     });
 
-    const stage = contract?.stage;
+    const stage = contract?.stage
 
     if (stage) {
-        const stagesFound: (typeof stage.previousStage)[] = [];
-        stagesFound.push(stage);
-        let lastStageId = stage.previousStageId ? stage.previousStageId : null;
+        const stagesFound: typeof stage.previousStage[] = [];
+        stagesFound.push(stage)
+        let lastStageId = stage.previousStageId ? stage.previousStageId : null
         while (lastStageId) {
             const previousStage = await bypassPrisma.stageUpdate.findUnique({
-                where: { id: lastStageId }
+                where: { id: lastStageId },
             });
-            stagesFound.push(previousStage);
-            lastStageId = previousStage?.previousStageId ? previousStage.previousStageId : null;
+            stagesFound.push(previousStage)
+            lastStageId = previousStage?.previousStageId ? previousStage.previousStageId : null
         }
         return stagesFound;
     } else {
-        return [];
+        return []
     }
-};
+}
+
 
 export const createContract = async ({ clientId, rentalPlanId, vehicleId }: createContracType) => {
     const initial = await bypassPrisma.stageUpdate.create({
