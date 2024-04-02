@@ -45,11 +45,11 @@
 			{#each filteredForms as form}
 				<TableBodyRow>
 					<TableBodyCell>{form.name}</TableBodyCell>
-					<TableBodyCell>{form.cards.length}</TableBodyCell>
+					<TableBodyCell>{form.fields.length}</TableBodyCell>
 					<TableBodyCell>
 						{form.createdAt.getDate() + 1} /
 						{form.createdAt.getMonth() + 1} /
-						{form.createdAt.getFullYear()}
+						{form.createdAt.getFullYear() + 1}
 					</TableBodyCell>
 					<TableBodyCell><a href={`${$page.url.href}/${form.id}`}>Edit</a></TableBodyCell>
 				</TableBodyRow>

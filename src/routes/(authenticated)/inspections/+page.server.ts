@@ -19,7 +19,9 @@ const createInspectionSchema = z.object({
 
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
+
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
+
 	return session;
 };
 

@@ -5,34 +5,7 @@ import PdfPrinter from 'pdfmake';
 import blobStream, { type IBlobStream } from 'blob-stream';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FormFieldType } from '@prisma/client';
-import type {
-	Inspection,
-	Vehicle,
-	CustomForm,
-	CustomField,
-	CustomFieldResponse,
-	CheckOption,
-	Card
-} from '@prisma/client';
 import { retrieveInspectionById } from '$lib/actions/inspections';
-
-interface CustomFields extends CustomField {
-	responses: CustomFieldResponse[];
-	checkOptions: CheckOption[];
-}
-
-interface Cards extends Card {
-	fields: CustomFields[];
-}
-
-interface CustomForms extends CustomForm {
-	cards: Cards[];
-}
-
-interface Inspections extends Inspection {
-	vehicle: Vehicle;
-	customForm: CustomForms;
-}
 
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const session = await locals.getSession();
@@ -57,18 +30,18 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	// this code is for testing purposes only
 	const tenant = session?.user.tenantUsers[0].tenant;
 
-	const inspection = (await retrieveInspectionById({
+	const inspection = await retrieveInspectionById({
 		tenantId: tenant.id,
 		id: inspectionId
-	})) as Inspections;
+	});
 
 	const pdf = await createPDF(inspection);
 
 	return new Response(pdf);
 };
 
-const createPDF = async (inspection: Inspections) => {
-	const day = inspection.createdAt.getDate();
+const createPDF = async (inspection: any) => {
+	const day = inspection.createdAt.getDate() + 1;
 	const month = inspection.createdAt.getMonth() + 1;
 	const year = inspection.createdAt.getFullYear();
 
@@ -86,7 +59,7 @@ const createPDF = async (inspection: Inspections) => {
 		}
 	};
 
-	const docDefinition = {
+	const docDefinition: TDocumentDefinitions = {
 		content: [
 			{
 				columns: [
@@ -109,24 +82,28 @@ const createPDF = async (inspection: Inspections) => {
 			{
 				alignment: 'justify',
 				columns: [
+					// model
 					{
 						text: [
 							{ text: 'Modelo: ', style: 'details' },
 							{ text: inspection.vehicle.model, style: 'content' }
 						]
 					},
+					// VIN
 					{
 						text: [
 							{ text: 'VIN: ', style: 'details' },
 							{ text: inspection.vehicle.vin, style: 'content' }
 						]
 					},
+					// plate
 					{
 						text: [
 							{ text: 'Plate: ', style: 'details' },
 							{ text: inspection.vehicle?.plates[0].plate, style: 'content' }
 						]
 					},
+					// Date
 					{
 						text: [
 							{ text: 'Date: ', style: 'details' },
@@ -135,6 +112,7 @@ const createPDF = async (inspection: Inspections) => {
 					}
 				]
 			},
+			'\n',
 			{
 				alignment: 'justify',
 				columns: [
@@ -155,7 +133,8 @@ const createPDF = async (inspection: Inspections) => {
 						style: 'details'
 					}
 				]
-			}
+			},
+			'\n'
 		],
 
 		images: {
@@ -178,103 +157,84 @@ const createPDF = async (inspection: Inspections) => {
 			content: {
 				fontSize: 9
 			},
-			card_name: {
-				fontSize: 9,
-				bold: true,
-				decoration: 'underline'
-			},
 			icon: {
 				font: 'Fontello'
 			}
-		},
-
-		defaultStyle: {
-			lineHeight: 1.5
 		}
 	};
 
-	interface Column {
-		text: string | (string | { text: string; style: string })[];
-		style: string;
-		width?: number;
-	}
-
-	for (const card of inspection.customForm.cards) {
-		docDefinition.content.push({
-			text: `\n${card.name}:`,
-			style: 'card_name'
-		});
-
-		for (const field of card.fields) {
-			// text , number
-			if (field.type === FormFieldType.NUMBER || field.type === FormFieldType.TEXT) {
-				const columns: Column[] = [
-					{
-						text: `${field.name}:`,
-						style: 'content',
-						width: 170
-					}
-				];
-
-				// response
-				for (const response of field.responses) {
-					columns.push({
-						text: response.content as string,
-						style: 'content'
-					});
+	for (const field of inspection.customForm.fields) {
+		// text , number
+		if (field.type === FormFieldType.NUMBER || field.type === FormFieldType.TEXT) {
+			const columns: any = [
+				{
+					text: `${field.name}:`,
+					style: 'content',
+					width: 170
 				}
+			];
 
-				docDefinition.content.push({ columns });
-			} else if (field.type === FormFieldType.SINGLE_CHECK) {
-				const columns: Column[] = [
-					{
-						text: `${field.name}:`,
-						style: 'content',
-						width: 170
-					}
-				];
+			// response
+			for (const response of field.responses) {
+				columns.push({
+					text: response.content,
+					style: 'content'
+				});
+			}
 
-				for (const option of field.checkOptions) {
-					for (const response of field.responses) {
-						if (option.id === response.checkOptionId) {
-							columns.push({
-								text: [{ text: '', style: 'icon' }, `  ${option.name}`],
-								style: 'content',
-								width: 80
-							});
-						} else {
-							columns.push({
-								text: [{ text: '', style: 'icon' }, `  ${option.name}`],
-								style: 'content',
-								width: 80
-							});
-						}
-					}
+			docDefinition.content.push({ columns });
+			docDefinition.content.push('\n');
+			// single ckeck
+		} else if (field.type === FormFieldType.SINGLE_CHECK) {
+			const columns: any = [
+				{
+					text: `${field.name}:`,
+					style: 'content',
+					width: 170
 				}
+			];
 
+			for (const option of field.checkOptions) {
 				for (const response of field.responses) {
-					if (response.note) {
+					if (option.id === response.checkOptionId) {
 						columns.push({
-							text: `Note: ${response.note}`,
-							style: 'content'
+							text: [{ text: '', style: 'icon' }, `  ${option.name}`],
+							style: 'content',
+							width: 80
 						});
 					} else {
 						columns.push({
-							text: ``,
-							style: 'content'
+							text: [{ text: '', style: 'icon' }, `  ${option.name}`],
+							style: 'content',
+							width: 80
 						});
 					}
 				}
-
-				docDefinition.content.push({ columns });
 			}
+
+			for (const response of field.responses) {
+				if (response.note) {
+					columns.push({
+						text: `Note: ${response.note}`,
+						style: 'content'
+					});
+				} else {
+					columns.push({
+						text: ``,
+						style: 'content'
+					});
+				}
+			}
+
+			docDefinition.content.push({ columns });
+			docDefinition.content.push('\n');
 		}
 	}
 
 	const printer = new PdfPrinter(fonts);
 
 	return new Promise((resolve, reject) => {
-		const pdf = printer.createPdfKitDocument(docDefinition as TDocumentDefinitions);
+		const pdf = printer.createPdfKitDocument(docDefinition);
 
 		pdf
 			.pipe(blobStream())
