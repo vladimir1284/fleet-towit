@@ -11,7 +11,7 @@
 		TableHeadCell,
 		Badge
 	} from 'flowbite-svelte';
-	import InvoiceForm from '../invoices/InvoiceForm.svelte';
+	import InvoiceForm from './InvoiceForm.svelte';
 	import { reqInvoiceApi } from '@killbill/requests';
 	import { formatStringDate } from '$lib/helpers/dates';
 	import html2pdf from 'html2pdf.js';

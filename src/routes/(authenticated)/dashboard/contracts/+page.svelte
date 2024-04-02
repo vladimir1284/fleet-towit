@@ -30,7 +30,7 @@
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
 	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
-	import { reqInvoiceApi, reqAccountApi } from '@killbill/requests';
+	import { reqInvoiceApi, reqPaymentApi, reqAccountApi } from '@killbill/requests';
 
 	export let data: PageData;
 	let message = '';
@@ -57,6 +57,7 @@
 
 	let contractStagesList = [];
 	let contractInvoicesList = [];
+	let contractPaymentsList = [];
 
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
@@ -148,27 +149,68 @@
 		contracts = [...(await contractsResponse.json())];
 	}
 
+	async function getInvoicesList(contract, limit = 10) {
+		try {
+			const invoices = await reqInvoiceApi.getInvoices({ limit: limit });
+			contractInvoicesList = invoices.map(
+				({ invoiceId, invoiceDate, status, amount, balance, ...rest }) => ({
+					// ...rest,
+					type: 'invoice',
+					comments: 'KillBill invoice',
+					reason: '',
+					invoice_id: invoiceId,
+					date: invoiceDate, // targetDate
+					stage: status,
+					amount,
+					balance
+				})
+			);
+		} catch (error) {
+			console.error('Error getting invoices:', error);
+		}
+	}
+	async function getPaymentsList(contract, limit = 10) {
+		try {
+			const payments = await reqPaymentApi.getPayments({ limit: limit });
+			contractPaymentsList = await payments.map(
+				({
+					paymentId,
+					authAmount,
+					purchasedAmount,
+					refundedAmount,
+					creditedAmount,
+					transactions,
+					...rest
+				}) => {
+					const lastTransaction =
+						transactions.length > 0 ? transactions[transactions.length - 1] : {};
+					return {
+						// ...rest,
+						payment_id: paymentId,
+						type: 'payment',
+						comments: 'KillBill payment',
+						reason: '',
+						date: lastTransaction.effectiveDate || null,
+						stage: lastTransaction.status || null,
+						auth_amount: authAmount,
+						purchased_amount: purchasedAmount,
+						refunded_amount: refundedAmount
+					};
+				}
+			);
+		} catch (error) {
+			console.error('Error getting payments:', error);
+		}
+		``;
+	}
+
 	async function handleDetail(contract) {
 		const request = await fetch(`/api/tenants/${currentTenant.id}/contracts/${contract.id}/stage`);
 		contractStagesList = await request.json();
 
-		try {
-			// !! aqui esta listando todos los invoices en comun para todos los contratos !!
-			const invoices = await reqInvoiceApi.getInvoices();
-			contractInvoicesList = await invoices.map((invoice) => ({
-				comments: 'KillBill invoice',
-				date: invoice.invoiceDate, // targetDate
-				invoice_id: invoice.invoiceId,
-				previousStage: null,
-				previousStageId: null,
-				reason: '',
-				stage: invoice.status,
-				amount: invoice.amount,
-				balance: invoice.balance
-			}));
-		} catch (error) {
-			console.error('Error getting invoices:', error);
-		}
+		// !! aqui esta listando todos los invoices y los payments en común para todos los contratos !!
+		await getInvoicesList(contract, 10);
+		await getPaymentsList(contract, 10);
 
 		selectedContract = contract;
 		detailModal = true;
@@ -180,6 +222,7 @@
 	async function handleCloseDetailModal() {
 		contractStagesList = [];
 		contractInvoicesList = [];
+		contractPaymentsList = [];
 
 		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 			headers
@@ -225,6 +268,7 @@
 			{selectedContract}
 			{contractStagesList}
 			{contractInvoicesList}
+			{contractPaymentsList}
 			on:formvalid={handleCloseDetailModal}
 		/>
 	</Modal>

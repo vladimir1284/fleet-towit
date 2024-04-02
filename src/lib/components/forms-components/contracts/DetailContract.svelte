@@ -18,6 +18,7 @@
 	export let selectedContract: any = undefined;
 	export let contractStagesList: any = undefined;
 	export let contractInvoicesList: any = undefined;
+	export let contractPaymentsList: any = undefined;
 	let TimelineData = [];
 	let loading = false;
 	let editClient: boolean = false;
@@ -27,7 +28,9 @@
 		// ordenar el array TimelineData según su fecha
 		// console.log(contractStagesList);
 		// console.log(contractInvoicesList);
-		TimelineData = [...contractStagesList, ...contractInvoicesList];
+		// console.log(contractPaymentsList);
+
+		TimelineData = [...contractStagesList, ...contractInvoicesList, ...contractPaymentsList];
 		TimelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
 	};
 	async function updateContractData() {
