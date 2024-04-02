@@ -49,6 +49,25 @@ export const generateValidationSchema = (cards: Cards[]) => {
 				schema = schema.extend({
 					[name]: z.string().regex(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/)
 				});
+				// image
+			} else if (field.type === FormFieldType.IMAGE) {
+				// const MAX_UPLOAD_SIZE = 1024 * 1024 * 3;
+				// const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+				// schema = schema.extend({
+				// 	[name]: z
+				// 		.instanceof(File)
+				// 		.refine((file) => {
+				// 			return !file || file.size <= MAX_UPLOAD_SIZE;
+				// 		}, 'File size must be less than 3MB')
+				// 		.refine((file) => {
+				// 			return ACCEPTED_FILE_TYPES.includes(file.type);
+				// 		}, 'File must be a image')
+				// });
+
+				schema = schema.extend({
+					[name]: z.any()
+				});
 			}
 		}
 	}

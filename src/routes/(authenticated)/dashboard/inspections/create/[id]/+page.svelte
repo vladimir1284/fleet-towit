@@ -12,6 +12,7 @@
 		class="flex flex-col gap-4 bg-white rounded-lg shadow p-4 min-w-72"
 		method="post"
 		action="?/createResponse"
+		enctype="multipart/form-data"
 	>
 		<div class="flex flex-col gap-4">
 			{#each data.inspection.customForm.cards as card}
@@ -92,6 +93,18 @@
 										name={`field_${field.id}`}
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
 										bind:value={$form[`field_${field.id}`]}
+										{...$constraints[`field_${field.id}`]}
+									/>
+								{:else if field.type == data.FormFieldType.IMAGE}
+									<input
+										type="file"
+										required
+										name={`field_${field.id}`}
+										accept="image/*"
+										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
+										on:input={(e) => {
+											$form[`field_${field.id}`] = e.currentTarget.files?.item(0);
+										}}
 										{...$constraints[`field_${field.id}`]}
 									/>
 								{/if}

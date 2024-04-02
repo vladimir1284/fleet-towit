@@ -1,5 +1,6 @@
 import { tenantPrisma } from '$lib/prisma';
 import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
+import { minioClient } from '$lib/minio';
 
 /*
  *	Get all inspections
@@ -153,6 +154,18 @@ export const createResponseToInspection = async ({
 			// add note to response
 		} else if (key.includes('note')) {
 			data.map((el) => (el.fieldId === fieldId ? (el.note = value) : el));
+
+			// upload file to minio
+		} else if (value instanceof File) {
+			const buff = Buffer.from(await value.arrayBuffer());
+
+			await minioClient.putObject('develop', `/inspections/${inspectionId}/${value.name}`, buff);
+
+			data.push({
+				fieldId: fieldId,
+				content: value.name,
+				tenantUserId: tenantUser.id
+			});
 		} else {
 			data.push({
 				fieldId: fieldId,

@@ -73,6 +73,11 @@
 			value: 'PHONE',
 			name: 'Phone',
 			description: 'User is able to input phone.'
+		},
+		{
+			value: 'IMAGE',
+			name: 'Image',
+			description: 'User is able to input image.'
 		}
 	];
 
