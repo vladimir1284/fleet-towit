@@ -84,7 +84,7 @@ async function main() {
 	// Vehicles
 	const createdVehiclesIds = await seedVehicles(prisma);
 	// Inspection
-	// await seedInspection(prisma, [testTenantId, tenantId]);
+	await seedInspection(prisma, [testTenantId, tenantId]);
 	// Contracts
 	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
 }
