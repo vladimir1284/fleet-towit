@@ -29,8 +29,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	console.log("actual tenant" , tenantUserId)
-
 	const inspections = await fetchInspections({ tenantId: tenantUserId });
 
 	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({

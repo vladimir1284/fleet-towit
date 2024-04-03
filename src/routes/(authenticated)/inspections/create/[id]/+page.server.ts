@@ -74,38 +74,6 @@ export const actions = {
 
 			const form = await superValidate(formData, zod(schema));
 
-			// Validating image type fields manually
-			// since the validation done with superform and zod does not work
-
-			const MAX_UPLOAD_SIZE = 1024 * 1024 * 3;
-			const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-
-			for (const field in form.data) {
-				// @ts-expect-error: get value
-				const value = form.data[field];
-
-				// In the case of zod files
-				// gives the default value of undefined
-				if (value === undefined) {
-					const file = formData.get(field);
-
-					if (file instanceof File) {
-						if (file.size >= MAX_UPLOAD_SIZE) {
-							form.valid = false;
-							// @ts-expect-error:  Set error message
-							form.errors[field] = 'File size must be less than 3MB';
-						} else if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
-							form.valid = false;
-							// @ts-expect-error:  Set error message
-							form.errors[field] = 'File must be a image';
-						} else {
-							// @ts-expect-error:  Set file
-							form.data[field] = file;
-						}
-					}
-				}
-			}
-
 			if (!form.valid) {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 			}

@@ -40,44 +40,49 @@
 	//
 	let cardTypes = [
 		{
-			value: 'NUMBER',
+			value: data.FormFieldType.NUMBER,
 			name: 'Data Entry Numeric',
 			description: 'User is able to input numeric data.'
 		},
 		{
-			value: 'TEXT',
+			value: data.FormFieldType.TEXT,
 			name: 'Data Entry Alphanumeric',
 			description: 'User is able to input alphanumeric data.'
 		},
 		{
-			value: 'SINGLE_CHECK',
+			value: data.FormFieldType.SINGLE_CHECK,
 			name: 'Single Check',
 			description: 'User is able to check (pass or fail) a single point.'
 		},
 		{
-			value: 'EMAIL',
-			name: 'Email',
+			value: data.FormFieldType.EMAIL,
+			name: 'Email Entry',
 			description: 'User is able to input email.'
 		},
 		{
-			value: 'DATE',
-			name: 'Date',
+			value: data.FormFieldType.DATE,
+			name: 'Date Entry',
 			description: 'User is able to input date.'
 		},
 		{
-			value: 'TIME',
-			name: 'Time',
+			value: data.FormFieldType.TIME,
+			name: 'Time Entry',
 			description: 'User is able to input time.'
 		},
 		{
-			value: 'PHONE',
-			name: 'Phone',
-			description: 'User is able to input phone.'
+			value: data.FormFieldType.PHONE,
+			name: 'Phone Number Entry',
+			description: 'User is able to input a phone number.'
 		},
 		{
-			value: 'IMAGE',
-			name: 'Image',
-			description: 'User is able to input image.'
+			value: data.FormFieldType.IMAGE,
+			name: 'Upload image',
+			description: 'User can enter select an image from their device.'
+		},
+		{
+			value: data.FormFieldType.SIGNATURE,
+			name: 'Signature Entry',
+			description: 'User is able to register his signature.'
 		}
 	];
 

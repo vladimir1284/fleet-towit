@@ -30,8 +30,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			if (!inspection) redirect_to_back();
 
 			// if inspection not have responses
-			if (!inspection?.responses.length)
-				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/create/${inspection.id}`);
+			if (!inspection?.responses.length) return redirect(PERMANENT_REDIRECT_STATUS, `/inspections/create/${inspection?.id}`);
 
 			return { inspection, FormFieldType };
 		} catch (err) {
