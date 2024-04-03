@@ -12,6 +12,7 @@
 		Badge
 	} from 'flowbite-svelte';
 	import InvoiceForm from './InvoiceForm.svelte';
+	import PaymentInvoiceForm from '../payments/PaymentInvoiceForm.svelte';
 	import { reqInvoiceApi } from '@killbill/requests';
 	import { formatStringDate } from '$lib/helpers/dates';
 	import html2pdf from 'html2pdf.js';
@@ -22,6 +23,7 @@
 	// const totalAmount = currentInvoice.items.reduce((total, item) => total + item.amount, 0);
 	let loading: boolean = false;
 	let editModal: boolean = false;
+	let makePaymentModal: boolean = false;
 
 	const openInvoiceHTML = () => {
 		reqInvoiceApi
@@ -72,6 +74,10 @@
 		// currentInvoice = await reqInvoiceApi.getInvoice({ invoiceId: currentInvoice.invoiceId });
 	}
 
+	async function handleCloseMakePaymentModal(event: any) {
+		console.log(event.detail);
+		makePaymentModal = event.detail;
+	}
 	async function handleCloseEditModal(event: any) {
 		console.log(event.detail);
 		editModal = event.detail;
@@ -87,6 +93,13 @@
 		maxAmount={currentInvoice.amount}
 		on:formvalid={handleCloseEditModal}
 	/>
+{:else if makePaymentModal}
+	<PaymentInvoiceForm
+		data={data?.PaymentInvoiceForm}
+		selectedInvoice={currentInvoice}
+		maxAmount={currentInvoice.amount}
+		on:formvalid={handleCloseMakePaymentModal}
+	/>
 {:else}
 	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
@@ -100,7 +113,14 @@
 					<span class="px-3">{formatStringDate(currentInvoice.targetDate)}</span><br />
 				</div>
 				<div class="flex justify-between">
-					<div></div>
+					<div>
+						<GradientButton
+							color="purple"
+							on:click={() => {
+								makePaymentModal = true;
+							}}>Make Payment</GradientButton
+						>
+					</div>
 					<div>
 						<GradientButton color="green" on:click={openInvoiceHTML}>
 							View Customer Invoice HTML

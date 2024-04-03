@@ -2,6 +2,7 @@
 	// @ts-nocheck
 	import {
 		Card,
+		GradientButton,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -10,6 +11,7 @@
 		TableHeadCell,
 		Badge
 	} from 'flowbite-svelte';
+	import PaymentRefundForm from './PaymentRefundForm.svelte';
 	import { formatStringDate } from '$lib/helpers/dates';
 
 	export let data: any;
@@ -21,12 +23,24 @@
 		currentPayment.paymentAttempts[0].pluginProperties &&
 		currentPayment.paymentAttempts[0].pluginProperties[0]
 			? currentPayment.paymentAttempts[0].pluginProperties[0].value
-			: 'nada';
+			: 'error fetching invoice id';
 	let loading: boolean = false;
+	let refundModal: boolean = false;
+
+	async function handleCloseRefundModal(event: any) {
+		console.log(event.detail);
+		refundModal = event.detail;
+	}
 </script>
 
 {#if loading}
 	<p>Loading...</p>
+{:else if refundModal}
+	<PaymentRefundForm
+		data={data?.PaymentRefundForm}
+		selectedPayment={currentPayment}
+		on:formvalid={handleCloseRefundModal}
+	/>
 {:else}
 	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
 		<Table>
@@ -42,7 +56,16 @@
 					<span class="px-3">{currentPayment.paymentExternalKey}</span><br />
 				</div>
 				<div class="flex justify-between">
-					<div></div>
+					<div>
+						<GradientButton
+							color="purple"
+							on:click={() => {
+								refundModal = true;
+							}}
+						>
+							Make Refund
+						</GradientButton>
+					</div>
 					<div></div>
 				</div>
 			</caption>

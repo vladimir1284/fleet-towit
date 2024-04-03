@@ -4,16 +4,19 @@
 	import { createEventDispatcher } from 'svelte';
 	import { tenantActor } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
+	import { Radio } from 'flowbite-svelte';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
-	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
+	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
+	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import PhoneNumberInputComponent from '$lib/components/inputs/PhoneNumberInputComponent.svelte';
 	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
-	import { reqInvoiceApi } from '@killbill/requests';
+	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
+	import { reqInvoiceApi, reqPaymentApi } from '@killbill/requests';
 	import { AnnotationSolid } from 'flowbite-svelte-icons';
-	// import { InvoiceItem } from '@killbill/api/models/InvoiceItem';
-
+	// import { Invoice } from '@killbill/api/models/Invoice';
 	export let data;
-	export let selectedInvoiceItem;
-	export let maxAmount;
+	export let selectedInvoice: any = null;
+	export let maxAmount; // aun no lo tengo
 	export let minAmount = 0;
 	const dispatch = createEventDispatcher();
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
@@ -42,31 +45,31 @@
 		}
 	});
 
-	if (selectedInvoiceItem) {
-		$form.amount = selectedInvoiceItem.amount;
-		$form.comment = selectedInvoiceItem.comment;
+	if (selectedInvoice) {
+		$form.external_payment = false;
+		$form.amount = selectedInvoice.amount;
+		$form.comment = selectedInvoice.comment;
+	} else {
+		// buscar el primer invoice a pagar
+		// selectedInvoice = await
+		$form.external_payment = false;
+		// $form.amount = selectedInvoice.amount;
+		// $form.comment = selectedInvoice.comment;
 	}
 
 	async function handleSubmit(event) {
 		event.preventDefault();
 
 		// const formData = new FormData(event.target);
-		const invoiceItem: InvoiceItem = {
-			...selectedInvoiceItem,
+		const invoice: Invoice = {
+			...selectedInvoice,
 			amount: $form.amount
 		};
 		try {
-			const res = await reqInvoiceApi.adjustInvoiceItem({
-				body: invoiceItem,
-				invoiceId: selectedInvoiceItem.invoiceId,
-				xKillbillCreatedBy: 'admin',
-				requestedDate: new Date(),
-				xKillbillReason: 'Contract-Timeline',
-				xKillbillComment: $form.comment
-			});
+			const res = 'response';
 			console.info(res);
 		} catch (error) {
-			console.error('Adjusting invoice item error:', error);
+			console.error('Payment invoice error :', error);
 		}
 	}
 </script>
@@ -80,14 +83,12 @@
 >
 	<input hidden name="id" bind:value={$form.id} />
 	<!-- <input hidden name="tenantId" bind:value={$form.tenantId} /> -->
+	<div class="sm:col-span-2 px-2 pb-2">
+		<Radio name="invoice_adjustment" class="pb-2">No Invoice Adjustment</Radio>
+		<Radio name="invoice_adjustment">Invoice Item Adjustment</Radio>
+	</div>
 	<div class="sm:col-span-2">
-		<AmountInputComponent
-			formPointer="amount"
-			{form}
-			{errors}
-			{constraints}
-			placeholder="Item amount"
-		/>
+		<AmountInputComponent formPointer="amount" {form} {errors} {constraints} placeholder="Amount" />
 	</div>
 	<div class="sm:col-span-2">
 		<TextInputComponent
@@ -98,8 +99,5 @@
 			placeholder="Comment"><AnnotationSolid class="w-6 h-6 inline" /></TextInputComponent
 		>
 	</div>
-	<SubmitButtonComponent
-		placeholder={!selectedInvoiceItem ? 'Create invoice' : 'Adjust invoice'}
-		styles="w-[50%] mx-auto block"
-	/>
+	<SubmitButtonComponent placeholder="Refund" styles="w-[50%] mx-auto block" />
 </form>

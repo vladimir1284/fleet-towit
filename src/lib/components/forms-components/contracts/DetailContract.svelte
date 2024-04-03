@@ -3,6 +3,7 @@
 	import { tenantActor } from '$lib/store/context-store';
 	import { Badge, Label, GradientButton } from 'flowbite-svelte';
 	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
+	import { Modal } from 'flowbite-svelte';
 	import {
 		TruckOutline,
 		DollarOutline,
@@ -13,6 +14,7 @@
 	import ClientForm from '../clients/ClientForm.svelte';
 	import UpdateStage from './UpdateStage.svelte';
 	import ContractTimeline from './ContractTimeline.svelte';
+	import PaymentInvoiceForm from '../payments/PaymentInvoiceForm.svelte';
 
 	export let data: any;
 	export let selectedContract: any = undefined;
@@ -23,6 +25,7 @@
 	let loading = false;
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
+	let makingPayment: boolean = false;
 
 	const relistTimeline = (data: Array) => {
 		// ordenar el array TimelineData según su fecha
@@ -58,6 +61,11 @@
 		updateStage = event.detail;
 	}
 
+	async function handleCloseMakePaymentModal(event: any) {
+		updateContractData();
+		editClient = event.detail;
+	}
+
 	relistTimeline();
 </script>
 
@@ -69,11 +77,18 @@
 	/>
 {:else if updateStage}
 	<UpdateStage data={data?.stageForm} {selectedContract} on:formvalid={handleCloseUpdateModal} />
+{:else if makingPayment}
+	<PaymentInvoiceForm data={data?.PaymentInvoiceForm} on:formvalid={handleCloseMakePaymentModal} />
 {:else}
 	<div>
 		<div class="flex flex-row mb-5">
 			<div class="min-w-[77%]">
-				<GradientButton color="green">Make New Payment</GradientButton>
+				<GradientButton
+					color="green"
+					on:click={() => {
+						makingPayment = true;
+					}}>Make New Payment</GradientButton
+				>
 			</div>
 			<div class="pl-5 hidden lg:block">
 				<Badge class="my-1" color="gray">payments</Badge>
