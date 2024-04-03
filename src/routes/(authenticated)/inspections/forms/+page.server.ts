@@ -1,21 +1,19 @@
-import { createCustomForm, fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
+import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
 import { zod } from 'sveltekit-superforms/adapters';
-import type { Actions, PageServerLoad } from './$types';
+import { z } from 'zod';
+import { createCustomForm, fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
 import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 
 const createFormSchema = z.object({
 	form_name: z.string()
 });
 
-const verifySession = async (locals: unknown) => {
-	//@ts-expect-error Error type on locals
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
@@ -24,10 +22,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const form = await superValidate(zod(createFormSchema));
 
-	// this code is for testing purposes only
-	const tenant = session?.user.tenantUsers[0].tenant;
+	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const customForms = await fetchCustomFormsByTenant({ tenantId: tenant.id });
+	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantUserId });
 
 	return { form, customForms };
 };
@@ -42,11 +39,10 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		const newForm = await createCustomForm({
-			tenantId: tenant.id,
+			tenantId: tenantUserId,
 			name: form.data.form_name
 		});
 

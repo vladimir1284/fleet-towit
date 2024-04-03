@@ -1,3 +1,9 @@
+import type { Actions, PageServerLoad } from './$types';
+import { fail, redirect } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
+import { z } from 'zod';
+import { FormFieldType } from '@prisma/client';
 import {
 	retrieveCustomFormById,
 	deleteCustomForm,
@@ -6,17 +12,11 @@ import {
 	deleteCard,
 	addCardToForm
 } from '$lib/actions/custom-forms';
-import { fail, redirect } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
-import { zod } from 'sveltekit-superforms/adapters';
-import type { Actions, PageServerLoad } from './$types';
 import {
 	PERMANENT_REDIRECT_STATUS,
 	TEMPORARY_REDIRECT_STATUS,
 	MISSING_SECURITY_HEADER_STATUS
 } from '$lib/shared';
-import { FormFieldType } from '@prisma/client';
 
 const addCardSchema = z.object({
 	card_name: z.string(),
@@ -41,9 +41,7 @@ const renameFormSchema = z.object({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
@@ -56,11 +54,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (formId) {
 		try {
-			// this code is for testing purposes only
-			const tenant = session?.user.tenantUsers[0].tenant;
+			const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 			const customForm = await retrieveCustomFormById({
-				tenantId: tenant.id,
+				tenantId: tenantUserId,
 				formId: formId
 			});
 
@@ -104,11 +101,10 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		await deleteCustomForm({
-			tenantId: tenant.id,
+			tenantId: tenantUserId,
 			formId: form.data.form_id
 		});
 
@@ -127,11 +123,10 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		await renameCustomForm({
-			tenantId: tenant.id,
+			tenantId: tenantUserId,
 			formId: form.data.form_id,
 			newName: form.data.new_form_name
 		});
@@ -148,11 +143,10 @@ export const actions = {
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
-		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		await addCardToForm({
-			tenantId: tenant.id,
+			tenantId: tenantUserId,
 			cardName: form.data.card_name,
 			formId: form.data.form_id,
 			fields: form.data.fields
@@ -171,11 +165,10 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		await deleteCard({
-			tenantId: tenant.id,
+			tenantId: tenantUserId,
 			formId: form.data.form_id,
 			cardId: form.data.card_id
 		});

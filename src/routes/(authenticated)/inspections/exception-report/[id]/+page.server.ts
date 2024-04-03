@@ -4,15 +4,14 @@ import { retrieveInspectionById } from '$lib/actions/inspections';
 import { TEMPORARY_REDIRECT_STATUS, PERMANENT_REDIRECT_STATUS } from '$lib/shared';
 import { FormFieldType } from '@prisma/client';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
-export const load: PageServerLoad = async ({ params, locals, url }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = await verifySession(locals);
 
 	const inspectionId = Number(params.id);
@@ -21,18 +20,18 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 
 	if (inspectionId) {
 		try {
-			// this code is for testing purposes only
-			const tenant = session?.user.tenantUsers[0].tenant;
+			const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 			const inspection = await retrieveInspectionById({
-				tenantId: tenant.id,
+				tenantId: tenantUserId,
 				id: inspectionId
 			});
 
 			if (!inspection) redirect_to_back();
 
 			// if inspection not have responses
-			if (!inspection?.responses.length) redirect_to_back();
+			if (!inspection?.responses.length)
+				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/create/${inspection.id}`);
 
 			return { inspection, FormFieldType };
 		} catch (err) {

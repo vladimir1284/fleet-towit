@@ -1,15 +1,14 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
+import { z } from 'zod';
+import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 import {
 	fetchInspections,
 	createInspection,
 	fetchListFormsAndVehicles
 } from '$lib/actions/inspections';
-
-import { z } from 'zod';
-import { zod } from 'sveltekit-superforms/adapters';
-import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 
 const createInspectionSchema = z.object({
 	form_id: z.number(),
@@ -28,13 +27,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const form = await superValidate(zod(createInspectionSchema));
 
-	// // this code is for testing purposes only
-	const tenant = session?.user.tenantUsers[0].tenant;
+	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const inspections = await fetchInspections({ tenantId: tenant.id });
+	console.log("actual tenant" , tenantUserId)
 
-	// list form and vehicles
-	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({ tenantId: tenant.id });
+	const inspections = await fetchInspections({ tenantId: tenantUserId });
+
+	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({
+		tenantId: tenantUserId
+	});
 
 	return { form, inspections, listCustomForm, listVehicles };
 };
@@ -49,11 +50,10 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		// this code is for testing purposes only
-		const tenant = session?.user.tenantUsers[0].tenant;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		const newInspection = await createInspection({
-			tenantId: tenant.id,
+			tenantId: tenantUserId,
 			userId: session.user.id,
 			vehicleId: form.data.vehicle_id,
 			formId: form.data.form_id

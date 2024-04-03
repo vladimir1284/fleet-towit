@@ -2,6 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { redirect, fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
+import { FormFieldType } from '@prisma/client';
 import { generateValidationSchema } from '$lib/validations';
 import { retrieveInspectionById, createResponseToInspection } from '$lib/actions/inspections';
 import {
@@ -9,7 +10,6 @@ import {
 	MISSING_SECURITY_HEADER_STATUS,
 	PERMANENT_REDIRECT_STATUS
 } from '$lib/shared';
-import { FormFieldType } from '@prisma/client';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
@@ -25,11 +25,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (inspectionId) {
 		try {
-			// this code is for testing purposes only
-			const tenant = session?.user.tenantUsers[0].tenant;
+			const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 			const inspection = await retrieveInspectionById({
-				tenantId: tenant.id,
+				tenantId: tenantUserId,
 				id: inspectionId
 			});
 
@@ -59,11 +58,10 @@ export const actions = {
 		const inspectionId = Number(params.id);
 
 		if (inspectionId) {
-			// this code is for testing purposes only
-			const tenant = session?.user.tenantUsers[0].tenant;
+			const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 			const inspection = await retrieveInspectionById({
-				tenantId: tenant.id,
+				tenantId: tenantUserId,
 				id: inspectionId
 			});
 
@@ -108,8 +106,6 @@ export const actions = {
 				}
 			}
 
-			console.log(form);
-
 			if (!form.valid) {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 			}
@@ -117,11 +113,9 @@ export const actions = {
 			const response = await createResponseToInspection({
 				form_data: form.data,
 				userId: session.user.id,
-				tenantId: tenant.id,
+				tenantId: tenantUserId,
 				inspectionId: inspectionId
 			});
-
-			console.log(response);
 
 			if (response) redirect(PERMANENT_REDIRECT_STATUS, '/inspections/');
 		}
