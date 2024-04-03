@@ -18,7 +18,7 @@ async function main() {
 		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'towithouston@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'albertolicea00@icloud.com', userRole: Role.ADMIN, is_default: true },
-		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true }
 		// Add more users as needed
 	];
 	const tenantsData = {
@@ -84,7 +84,7 @@ async function main() {
 	// Vehicles
 	const createdVehiclesIds = await seedVehicles(prisma);
 	// Inspection
-	await seedInspection(prisma, [testTenantId, tenantId]);
+	// await seedInspection(prisma, [testTenantId, tenantId]);
 	// Contracts
 	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
 }

@@ -16,7 +16,7 @@
 		goto('/select-tenant');
 	} else if (
 		!data.session.user?.tenantUsers.some(
-	 		(tenantUser: { tenantId: any }) => tenantUser.tenantId == $currentTenant.id
+			(tenantUser: { tenantId: any }) => tenantUser.tenantId == $currentTenant.id
 		)
 	) {
 		goto('/select-tenant');

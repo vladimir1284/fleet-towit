@@ -9,12 +9,10 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import PhoneNumberInputComponent from '$lib/components/inputs/PhoneNumberInputComponent.svelte';
 
-
 	export let data;
 	export let selectedClient;
 	import { getContext } from 'svelte';
 
-	
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant.id}/client`;

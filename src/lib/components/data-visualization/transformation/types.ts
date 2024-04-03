@@ -1,1 +1,6 @@
-export type TransformRule = "lowercase" | "uppercase" | "capitalize" | "wordify" | "simple-datetime"
+export type TransformRule =
+	| 'lowercase'
+	| 'uppercase'
+	| 'capitalize'
+	| 'wordify'
+	| 'simple-datetime';

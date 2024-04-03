@@ -1,6 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 import { redirect, fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
 import { generateValidationSchema } from '$lib/validations';
 import { retrieveInspectionById, createResponseToInspection } from '$lib/actions/inspections';
 import {
@@ -10,6 +11,7 @@ import {
 } from '$lib/shared';
 import { FormFieldType } from '@prisma/client';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
@@ -31,24 +33,23 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				id: inspectionId
 			});
 
-			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 
 			// if inspection have responses redirect
-			if (inspection.responses.length > 0)
-				redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+			if (inspection.responses.length > 0) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.cards);
 
-			const form = await superValidate(schema);
+			const form = await superValidate(zod(schema));
 
 			return { inspection, FormFieldType, form };
 		} catch {
-			redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+			redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 		}
 	}
 
-	redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+	redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 };
 
 export const actions = {
@@ -66,14 +67,14 @@ export const actions = {
 				id: inspectionId
 			});
 
-			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/register/`);
+			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/register/`);
 
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.cards);
 
 			const formData = await request.formData();
 
-			const form = await superValidate(formData, schema);
+			const form = await superValidate(formData, zod(schema));
 
 			// Validating image type fields manually
 			// since the validation done with superform and zod does not work
@@ -107,6 +108,8 @@ export const actions = {
 				}
 			}
 
+			console.log(form);
+
 			if (!form.valid) {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 			}
@@ -118,7 +121,9 @@ export const actions = {
 				inspectionId: inspectionId
 			});
 
-			if (response) redirect(PERMANENT_REDIRECT_STATUS, '/dashboard/inspections/');
+			console.log(response);
+
+			if (response) redirect(PERMANENT_REDIRECT_STATUS, '/inspections/');
 		}
 	}
 } satisfies Actions;

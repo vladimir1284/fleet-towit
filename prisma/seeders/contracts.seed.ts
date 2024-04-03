@@ -35,7 +35,6 @@ const seedContract = async (
 		endDate: faker.date.future()
 	});
 
-
 	const numberOfContracts = 50;
 	for (let i = 0; i < numberOfContracts; i++) {
 		await prisma.contract.create({

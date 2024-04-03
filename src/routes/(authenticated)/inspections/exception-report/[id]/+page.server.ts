@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 
 	const inspectionId = Number(params.id);
 
-	const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/`);
+	const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 
 	if (inspectionId) {
 		try {

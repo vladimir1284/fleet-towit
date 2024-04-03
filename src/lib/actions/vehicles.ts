@@ -5,14 +5,14 @@ export const getAllVehicles = async () => {
 		include: {
 			plates: {
 				where: {
-					isActive: true,
+					isActive: true
 				}
-			},
+			}
 		}
 	});
 	const vehiclesWithActualPlate = vehicles.map((v) => {
-		return { ...v, plate: v.plates[0] || undefined }
+		return { ...v, plate: v.plates[0] || undefined };
 	});
-	console.log(vehiclesWithActualPlate)
-	return vehiclesWithActualPlate
+	console.log(vehiclesWithActualPlate);
+	return vehiclesWithActualPlate;
 };

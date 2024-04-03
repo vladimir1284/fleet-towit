@@ -2,6 +2,7 @@ import { createCustomForm, fetchCustomFormsByTenant } from '$lib/actions/custom-
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
+import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 
@@ -21,7 +22,7 @@ const verifySession = async (locals: unknown) => {
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await verifySession(locals);
 
-	const form = await superValidate(createFormSchema);
+	const form = await superValidate(zod(createFormSchema));
 
 	// this code is for testing purposes only
 	const tenant = session?.user.tenantUsers[0].tenant;
@@ -35,7 +36,7 @@ export const actions = {
 	default: async ({ request, url, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, createFormSchema);
+		const form = await superValidate(request, zod(createFormSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });

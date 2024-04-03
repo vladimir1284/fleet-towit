@@ -12,7 +12,7 @@
 
 	export let users;
 	export let showOptions = false;
-	
+
 	const dispatch = createEventDispatcher();
 </script>
 

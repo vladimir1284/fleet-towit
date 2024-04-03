@@ -86,12 +86,16 @@ export const retrieveInspectionById = async ({
 		include: {
 			customForm: {
 				include: {
-					fields: {
+					cards: {
 						include: {
-							checkOptions: true,
-							responses: {
-								where: {
-									inspectionId: id
+							fields: {
+								include: {
+									checkOptions: true,
+									responses: {
+										where: {
+											inspectionId: id
+										}
+									}
 								}
 							}
 						}
@@ -99,15 +103,7 @@ export const retrieveInspectionById = async ({
 				}
 			},
 			responses: true,
-			vehicle: {
-				include: {
-					plates: {
-						where: {
-							isActive: true
-						}
-					}
-				}
-			}
+			vehicle: true
 		}
 	});
 
@@ -141,29 +137,18 @@ export const createResponseToInspection = async ({
 		tenantUserId: number;
 		checkOptionId?: number;
 		content?: string;
-		checked?: boolean;
 		note?: string;
 	}[] = [];
 
 	for (const [key, value] of Object.entries(form_data)) {
 		const fieldId = Number(key.split('_')[1]);
 
-		// if checkbox
-		if (key.includes('checkbox')) {
-			const checkboxId = Number(key.split('_')[3]);
-
-			data.push({
-				fieldId: fieldId,
-				checkOptionId: checkboxId,
-				checked: value as boolean,
-				tenantUserId: tenantUser.id
-			});
-			// in radio (single check) only check 1 field from all fields
-		} else if (key.includes('radio')) {
+		// in radio (single check) only check 1 field from all fields
+		if (key.includes('radio')) {
 			data.push({
 				fieldId: fieldId,
 				checkOptionId: value as number,
-				checked: true,
+				content: 'checked',
 				tenantUserId: tenantUser.id
 			});
 			// add note to response
@@ -200,5 +185,6 @@ export const createResponseToInspection = async ({
 			}
 		}
 	});
+
 	return response;
 };

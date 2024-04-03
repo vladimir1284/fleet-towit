@@ -45,7 +45,8 @@
 						{inspection.createdAt.getFullYear()}
 					</TableBodyCell>
 					<TableBodyCell
-						><a href={`${$page.url.pathname}/read/${inspection.id}`}>Read</a></TableBodyCell
+						><a href={`${$page.url.pathname}/exception-report/${inspection.id}`}>Read</a
+						></TableBodyCell
 					>
 				</TableBodyRow>
 			{/each}

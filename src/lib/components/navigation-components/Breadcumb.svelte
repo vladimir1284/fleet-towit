@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
-	
+
 	/**
 	 * @type {any[]}
 	 */

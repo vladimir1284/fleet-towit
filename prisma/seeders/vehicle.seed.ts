@@ -87,14 +87,14 @@ const seedVehicles = async (prisma) => {
 
 	const numberOfVehicles = 50;
 	for (let i = 0; i < numberOfVehicles; i++) {
-		const createdVehicle  = await prisma.vehicle.create({
+		const createdVehicle = await prisma.vehicle.create({
 			data: generateVehicle()
 		});
-		createdVehiclesIds.push(createdVehicle.id)
+		createdVehiclesIds.push(createdVehicle.id);
 	}
 
 	console.log('Seeding complete!');
-	return createdVehiclesIds
+	return createdVehiclesIds;
 };
 
 export default seedVehicles;

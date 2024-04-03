@@ -8,6 +8,7 @@ import {
 } from '$lib/actions/inspections';
 
 import { z } from 'zod';
+import { zod } from 'sveltekit-superforms/adapters';
 import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 
 const createInspectionSchema = z.object({
@@ -15,6 +16,7 @@ const createInspectionSchema = z.object({
 	vehicle_id: z.number()
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
@@ -24,7 +26,7 @@ const verifySession = async (locals: any) => {
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await verifySession(locals);
 
-	const form = await superValidate(createInspectionSchema);
+	const form = await superValidate(zod(createInspectionSchema));
 
 	// // this code is for testing purposes only
 	const tenant = session?.user.tenantUsers[0].tenant;
@@ -41,7 +43,7 @@ export const actions = {
 	default: async ({ request, locals, url }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, createInspectionSchema);
+		const form = await superValidate(request, zod(createInspectionSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });

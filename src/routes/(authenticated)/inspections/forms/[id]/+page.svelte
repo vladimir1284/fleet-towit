@@ -16,7 +16,7 @@
 
 	export let data: PageData;
 
-	if (data?.redirect_to) goto(`/dashboard/inspections/forms/${data.redirect_to}/`);
+	if (data?.redirect_to) goto(`/inspections/forms/${data.redirect_to}/`);
 
 	const { form, constraints } = superForm(data.form);
 

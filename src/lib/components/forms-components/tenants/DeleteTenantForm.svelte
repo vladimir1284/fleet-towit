@@ -4,7 +4,7 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
-	
+
 	let loading = false;
 	const dispatch = createEventDispatcher();
 
@@ -13,15 +13,15 @@
 		const response = await fetch(`/api/tenants/${data}`, {
 			method: 'DELETE'
 		});
-		try{
+		try {
 			if (!response.ok) {
 				console.error('Failed to delete');
 				return;
-			}else {
+			} else {
 				console.log('Deleted successfully');
 				dispatch('formvalid', false);
 			}
-		}finally{
+		} finally {
 			loading = false;
 		}
 	};

@@ -9,6 +9,7 @@ import {
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
+import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import {
 	PERMANENT_REDIRECT_STATUS,
@@ -37,7 +38,7 @@ const renameFormSchema = z.object({
 	form_id: z.number()
 });
 
-// utils
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
 
@@ -46,7 +47,7 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/dashboard/inspections/forms/`);
+const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/inspections/forms/`);
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = await verifySession(locals);
@@ -63,7 +64,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				formId: formId
 			});
 
-			const form = await superValidate(addCardSchema);
+			const form = await superValidate(zod(addCardSchema));
 
 			if (!customForm) redirect_to_back();
 
@@ -97,7 +98,7 @@ export const actions = {
 	deleteForm: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, deleteFormSchema);
+		const form = await superValidate(request, zod(deleteFormSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -120,7 +121,7 @@ export const actions = {
 	renameForm: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, renameFormSchema);
+		const form = await superValidate(request, zod(renameFormSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -142,7 +143,7 @@ export const actions = {
 	addCard: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, addCardSchema);
+		const form = await superValidate(request, zod(addCardSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -164,7 +165,7 @@ export const actions = {
 	deleteCard: async ({ request, locals }) => {
 		const session = await verifySession(locals);
 
-		const form = await superValidate(request, deleteCardSchema);
+		const form = await superValidate(request, zod(deleteCardSchema));
 
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
