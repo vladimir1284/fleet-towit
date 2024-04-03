@@ -2,9 +2,10 @@ import { createTenantUser } from '../src/lib/actions/admin';
 import { bypassPrisma } from '../src/lib/prisma';
 import { Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
+import seedClients from './seeders/clients.seed';
 import seedInspection from './seeders/inspections.seed';
-import { seedContracts } from './seeders/contracts.seed';
-import { seedClients } from './seeders/clients.seed';
+import seedRentalPlans from './seeders/rentalPlan.seed';
+import seedContract from './seeders/contracts.seed';
 const prisma = bypassPrisma;
 
 async function main() {
@@ -15,7 +16,9 @@ async function main() {
 		{ email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true },
-		{ email: 'albertolicea00@gmail.com', userRole: Role.ADMIN, is_default: true }
+		{ email: 'towithouston@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'albertolicea00@icloud.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true },
 		// Add more users as needed
 	];
 	const tenantsData = {
@@ -74,19 +77,16 @@ async function main() {
 		}
 	}
 
+	// Clients
+	const createdClientsIds = await seedClients(prisma, [testTenantId]);
+	// Rental Plans
+	const createdPlansIds = await seedRentalPlans(prisma);
 	// Vehicles
-	try {
-		await seedVehicles(prisma);
-	} catch {}
+	const createdVehiclesIds = await seedVehicles(prisma);
 	// Inspection
-	try {
-		await seedInspection(prisma, [testTenantId, tenantId]);
-	} catch {}
+	await seedInspection(prisma, [testTenantId, tenantId]);
 	// Contracts
-	try {
-		await seedContracts(prisma);
-	} catch {}
-	await seedClients(prisma);
+	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
 }
 
 main()

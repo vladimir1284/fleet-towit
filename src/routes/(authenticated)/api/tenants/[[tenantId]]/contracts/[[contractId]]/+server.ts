@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z } from 'zod';
-import type { RequestHandler } from '@sveltejs/kit';
-import { actionResult, superValidate } from 'sveltekit-superforms/server';
-import {
-	getAllContracts,
-	getContract,
-	createContract,
-	updateContract,
-	deleteContract
-} from '$lib/actions/contracts';
+import { z } from "zod";
+import type { RequestHandler } from "@sveltejs/kit";
+import { zod } from "sveltekit-superforms/adapters";
+import { actionResult } from "sveltekit-superforms";
+import { superValidate } from "sveltekit-superforms/server";
+import { getAllContracts, getContract, createContract, updateContract, deleteContract, getContractByDateRange } from "$lib/actions/contracts";
+import { getPlateById } from "$lib/actions/plates";
 
 const fixSchema = z.object({
 	clientId: z.number(),
@@ -17,20 +14,46 @@ const fixSchema = z.object({
 	id: z.number().optional()
 });
 
-export const GET: RequestHandler = async ({ locals, params }) => {
+
+export const GET: RequestHandler = async ({ locals, params, url }) => {
 	let response: any;
+	let isAdmin: boolean = false;
 	const session = await locals.getSession();
+
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-	if (params.contractId) {
-		response = await getContract({ contractId: parseInt(params.contractId) });
-	} else {
-		response = await getAllContracts();
+	if ((session?.user as any)?.defaultTenantUser?.role == 'ADMIN') {
+		isAdmin = true
 	}
 
-	return new Response(JSON.stringify(response), { status: 200 });
-};
+	const searchDate = url.searchParams.get('search_date') || 'undefined';
+	const _plateId = url.searchParams.get('plate_id') || 'undefined';
+
+	if (params.contractId) {
+		response = await getContract({ contractId: parseInt(params.contractId) });
+	} else if (searchDate !== 'undefined' && _plateId !== 'undefined' ) {
+
+        const date = new Date(searchDate);
+        const plateId = parseInt(_plateId);
+		const plate = await getPlateById({id: plateId});
+		let contract = null;
+		if (plate) {
+			contract = await getContractByDateRange({vehicleId: plate.vehicle.id, date})
+		}
+
+		if (contract == null){
+			return new Response(JSON.stringify({message: 'no_data'}), {status: 404})
+		}else{
+			return new Response(JSON.stringify(contract), {status: 200})
+		}
+	} else {
+		response = await getAllContracts(isAdmin);
+	}
+
+	return new Response(JSON.stringify(response), { status: 200 })
+}
+
 
 export const POST: RequestHandler = async ({ locals, request, params }) => {
 	const session = await locals.getSession();
@@ -38,7 +61,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-	const form = await superValidate(request, fixSchema);
+	const form = await superValidate(request, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
 		return actionResult('failure', { form }, { status: 400 });
@@ -50,16 +73,17 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 			clientId: form.data.clientId,
 			rentalPlanId: form.data.rentalPlanId,
 			vehicleId: form.data.vehicleId
-		});
+		})
 	} else {
 		await createContract({
 			clientId: form.data.clientId,
 			rentalPlanId: form.data.rentalPlanId,
 			vehicleId: form.data.vehicleId
-		});
+		})
 	}
 	return actionResult('success', { form }, { status: 200 });
 };
+
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	const session = await locals.getSession();
