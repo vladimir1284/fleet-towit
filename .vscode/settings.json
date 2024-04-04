@@ -10,7 +10,7 @@
 		"editor.defaultFormatter": "svelte.svelte-vscode"
 	},
 	"[typescript]": {
-		"editor.defaultFormatter": "ms-vsliveshare.vsliveshare"
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[json]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
