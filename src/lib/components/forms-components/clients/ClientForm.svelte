@@ -1,6 +1,7 @@
 <script lang="ts">
 	// @ts-nocheck
 	import { z } from 'zod';
+	import { zod } from 'sveltekit-superforms/adapters';
 	import { createEventDispatcher } from 'svelte';
 	import { UserSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
@@ -9,12 +10,10 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import PhoneNumberInputComponent from '$lib/components/inputs/PhoneNumberInputComponent.svelte';
 
-
 	export let data;
 	export let selectedClient;
 	import { getContext } from 'svelte';
 
-	
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant.id}/client`;
@@ -31,7 +30,7 @@
 	});
 
 	const { form, errors, constraints, enhance } = superForm(data, {
-		validators: fixSchema,
+		validators: zod(fixSchema),
 		onSubmit: async (event) => {
 			$form.email = $form.email.trim();
 		},
