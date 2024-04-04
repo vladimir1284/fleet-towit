@@ -31,7 +31,7 @@ import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } f
 import { building } from '$app/environment';
 import { syncKillBill } from './killbill/killbill';
 
-if (KILLBILL) {
+if (KILLBILL === true) {
 	console.log('Kill Bill initial sync!');
 	if (!building) {
 		syncKillBill();
@@ -151,11 +151,10 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 	}
 	*/
 
-	const session = await event.locals.getSession()
+	const session = await event.locals.getSession();
 	//console.log(event.locals)
 	if (session) {
-
-		const currentUserData = session?.user.defaultTenantUser
+		const currentUserData = session?.user.defaultTenantUser;
 		const adminTenant = await getAdminTenant();
 		const currentPrismaClient =
 			currentUserData?.tenantId == adminTenant?.id // currentUserData.TenantId is also correct.
@@ -166,7 +165,6 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 			currentTenantUser: currentUserData,
 			currentPrismaClient: currentPrismaClient
 		};
-		
 	}
 	const response = await resolve(event);
 	return response;
