@@ -60,6 +60,11 @@ export const generateValidationSchema = (cards: Cards[]) => {
 							}, 'File must be a image')
 					});
 					break;
+				case 'SIGNATURE':
+					schema = schema.extend({
+						[name]: z.string().regex(/^data:image\/png;base64,([A-Za-z0-9+/=])+$/)
+					});
+					break;
 			}
 		}
 	}

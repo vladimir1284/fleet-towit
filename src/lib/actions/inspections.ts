@@ -166,6 +166,29 @@ export const createResponseToInspection = async ({
 				content: value.name,
 				tenantUserId: tenantUser.id
 			});
+		} else if (/^data:image\/png;base64,([A-Za-z0-9+/=])+$/.test(value)) {
+			const urltoFile = async (url: string, filename: string) => {
+				const mimeType = (url.match(/^data:([^;]+);/) || '')[1];
+				const req = await fetch(url);
+				const buff = await req.arrayBuffer();
+				return new File([buff], filename, { type: mimeType });
+			};
+
+			const signature = await urltoFile(value, `signature-${fieldId}.png`);
+
+			const buff = Buffer.from(await signature.arrayBuffer());
+
+			await minioClient.putObject(
+				'develop',
+				`/inspections/${inspectionId}/${signature.name}`,
+				buff
+			);
+
+			data.push({
+				fieldId: fieldId,
+				content: signature.name,
+				tenantUserId: tenantUser.id
+			});
 		} else {
 			data.push({
 				fieldId: fieldId,

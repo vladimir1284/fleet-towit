@@ -1,8 +1,48 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button, Input, Label, Checkbox, Radio, Textarea } from 'flowbite-svelte';
+	import { Button, Input, Label, Checkbox, Radio, Textarea, Modal } from 'flowbite-svelte';
+	import * as signaturePad from 'signature_pad';
 	export let data: PageData;
+
+	let openSignModal = false;
+	let pad;
+	let fieldId: number;
+
+	const openModalToSign = (field_id: number) => {
+		openSignModal = true;
+		fieldId = field_id;
+
+		setTimeout(() => {
+			const canvas = document.querySelector('canvas');
+			pad = new signaturePad.default(canvas);
+			resizeCanvas();
+		}, 1);
+	};
+
+	function resizeCanvas() {
+		const canvas = document.querySelector('canvas');
+		if (canvas) {
+			const ratio = Math.max(window.devicePixelRatio || 1, 1);
+			canvas.width = canvas.offsetWidth * ratio;
+			canvas.height = canvas.offsetHeight * ratio;
+			canvas.getContext('2d').scale(ratio, ratio);
+			if (pad) pad.clear(); // otherwise isEmpty() might return incorrect value
+		}
+	}
+
+	window.addEventListener('resize', resizeCanvas);
+
+	const getSignature = async () => {
+		if (!pad.isEmpty()) {
+			openSignModal = false;
+			const url = pad.toDataURL();
+			const input = document.getElementById(`field_${fieldId}`);
+			input.value = url;
+			$form[`field_${fieldId}`] = url;
+		}
+	};
 
 	const { form, constraints, errors } = superForm(data.form);
 </script>
@@ -108,18 +148,21 @@
 										{...$constraints[`field_${field.id}`]}
 									/>
 								{:else if field.type == data.FormFieldType.SIGNATURE}
-									<!-- <input
-										type="file"
+									<input
+										type="text"
 										required
+										class="hidden"
 										name={`field_${field.id}`}
-										accept="image/*"
+										id={`field_${field.id}`}
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
-										on:input={(e) => {
-											$form[`field_${field.id}`] = e.currentTarget.files?.item(0);
-										}}
+										bind:value={$form[`field_${field.id}`]}
 										{...$constraints[`field_${field.id}`]}
-									/> -->
-									dfdfdfdf
+									/>
+
+									<Button
+										color={$form[`field_${fieldId}`] && !pad.isEmpty() ? 'green' : 'blue'}
+										on:click={() => openModalToSign(field.id)}>Touch to sign</Button
+									>
 								{/if}
 							</Label>
 							{#if $errors[`field_${field.id}`]}
@@ -133,4 +176,12 @@
 
 		<Button type="submit">Create</Button>
 	</form>
+	<Modal title="Sign here" bind:open={openSignModal}>
+		<canvas class="border w-full"></canvas>
+		<Button color="light" on:click={() => pad.clear()}>Clear</Button>
+		<svelte:fragment slot="footer">
+			<Button on:click={getSignature}>I accept</Button>
+			<Button on:click={() => (openSignModal = false)} color="alternative">Decline</Button>
+		</svelte:fragment>
+	</Modal>
 </section>

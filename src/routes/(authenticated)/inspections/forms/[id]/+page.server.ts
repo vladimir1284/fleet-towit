@@ -69,7 +69,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// and the user will be redirected to its path
 
 			if (customForm?.inspections.length) {
-				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenant.id });
+				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenantUserId });
 
 				return {
 					redirect_to: cloneForm.id,
@@ -80,7 +80,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			}
 
 			return { customForm, form, FormFieldType };
-		} catch {
+		} catch (error) {
+			console.log(error);
 			redirect_to_back();
 		}
 	}

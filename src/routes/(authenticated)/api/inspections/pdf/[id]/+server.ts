@@ -1,6 +1,5 @@
 import { error } from '@sveltejs/kit';
 import path from 'node:path';
-import fs from 'node:fs';
 import type { RequestHandler } from './$types';
 import PdfPrinter from 'pdfmake';
 import blobStream, { type IBlobStream } from 'blob-stream';
@@ -56,11 +55,10 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 		});
 	}
 
-	// this code is for testing purposes only
-	const tenant = session?.user.tenantUsers[0].tenant;
+	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 	const inspection = (await retrieveInspectionById({
-		tenantId: tenant.id,
+		tenantId: tenantUserId,
 		id: inspectionId
 	})) as Inspections;
 
@@ -321,7 +319,7 @@ const createPDF = async (inspection: Inspections) => {
 				}
 				// @ts-expect-error: pass
 				docDefinition.content.push({ columns });
-			} else if (field.type === FormFieldType.IMAGE) {
+			} else if (field.type === FormFieldType.IMAGE || field.type === FormFieldType.SIGNATURE) {
 				for (const response of field.responses) {
 					const file_url = await minioClient.presignedGetObject(
 						'develop',

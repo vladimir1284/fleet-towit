@@ -38,7 +38,10 @@
 	const presignedGetObject = async (file_name: string) => {
 		for (const cards of data.inspection.customForm.cards) {
 			for (const field of cards.fields) {
-				if (field.type === data.FormFieldType.IMAGE) {
+				if (
+					field.type === data.FormFieldType.IMAGE ||
+					field.type === data.FormFieldType.SIGNATURE
+				) {
 					const req = await fetch(
 						`/api/inspections/presignedGetObject/${field.responses[0].content}?inspection=${data.inspection.id}`
 					);
@@ -138,7 +141,7 @@
 								{/each}
 							</div>
 							<!-- image -->
-						{:else if field.type === data.FormFieldType.IMAGE}
+						{:else if field.type === data.FormFieldType.IMAGE || field.type === data.FormFieldType.SIGNATURE}
 							<div>
 								{#each field.responses as response}
 									<img id={field.id} alt="Preview image" class="w-64" />
