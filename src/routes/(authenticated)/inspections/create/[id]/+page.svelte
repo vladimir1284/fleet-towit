@@ -36,7 +36,7 @@
 								{:else if field.type == data.FormFieldType.NUMBER}
 									<Input
 										required
-										placeholder="Type here"
+										placeholder="123..."
 										type="number"
 										name={`field_${field.id}`}
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
@@ -58,7 +58,7 @@
 								{:else if field.type == data.FormFieldType.EMAIL}
 									<Input
 										required
-										placeholder="Type here"
+										placeholder="email@example.com"
 										type="email"
 										name={`field_${field.id}`}
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
@@ -88,7 +88,7 @@
 								{:else if field.type == data.FormFieldType.PHONE}
 									<Input
 										required
-										placeholder="Type here"
+										placeholder="(123) 456-7890"
 										type="tel"
 										name={`field_${field.id}`}
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
@@ -107,6 +107,19 @@
 										}}
 										{...$constraints[`field_${field.id}`]}
 									/>
+								{:else if field.type == data.FormFieldType.SIGNATURE}
+									<!-- <input
+										type="file"
+										required
+										name={`field_${field.id}`}
+										accept="image/*"
+										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
+										on:input={(e) => {
+											$form[`field_${field.id}`] = e.currentTarget.files?.item(0);
+										}}
+										{...$constraints[`field_${field.id}`]}
+									/> -->
+									dfdfdfdf
 								{/if}
 							</Label>
 							{#if $errors[`field_${field.id}`]}

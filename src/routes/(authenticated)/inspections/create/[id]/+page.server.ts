@@ -43,7 +43,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			const form = await superValidate(zod(schema));
 
 			return { inspection, FormFieldType, form };
-		} catch {
+		} catch (error) {
+			console.log(error);
 			redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 		}
 	}
