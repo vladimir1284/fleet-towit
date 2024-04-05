@@ -31,7 +31,6 @@ import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } f
 import { building } from '$app/environment';
 import { syncKillBill } from './killbill/killbill';
 
-
 if (KILLBILL === true) {
 	console.log('Kill Bill initial sync!');
 	if (!building) {

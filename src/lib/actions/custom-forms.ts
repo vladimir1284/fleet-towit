@@ -1,6 +1,7 @@
 import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
 import type { CustomForm } from '@prisma/client';
+import { Page } from '$lib/pagination';
 
 /*
  * Create new custom form
@@ -39,26 +40,35 @@ export const deleteCustomForm = async ({
 /*
  *  Return all custom forms
  */
-export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: number }) => {
-	const tenant = await tenantPrisma(tenantId).tenant.findFirst({
+export const fetchCustomFormsByTenant = async ({
+	tenantId,
+	page_number,
+	results = 5
+}: {
+	tenantId: number;
+	page_number: number;
+	results?: number;
+}) => {
+	const customForms = await tenantPrisma(tenantId).customForm.findMany({
+		skip: (page_number - 1) * results,
+		take: results,
 		where: {
-			id: tenantId
+			tenantId: tenantId,
+			isActive: true
 		},
-
 		include: {
-			customForms: {
-				include: {
-					cards: true
-				},
-
-				where: {
-					isActive: true
-				}
-			}
+			cards: true
 		}
 	});
 
-	return tenant?.customForms || [];
+	const count = await tenantPrisma(tenantId).customForm.count({
+		where: {
+			tenantId: tenantId,
+			isActive: true
+		}
+	});
+
+	return new Page(customForms, count, results, page_number).toJSON();
 };
 
 /*

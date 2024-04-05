@@ -1,12 +1,23 @@
 import { tenantPrisma } from '$lib/prisma';
 import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
 import { minioClient } from '$lib/minio';
+import { Page } from '$lib/pagination';
 
 /*
  *	Get all inspections
  */
-export const fetchInspections = async ({ tenantId }: { tenantId: number }) => {
+export const fetchInspections = async ({
+	tenantId,
+	page_number,
+	results = 5
+}: {
+	tenantId: number;
+	page_number: number;
+	results?: number;
+}) => {
 	const inspections = await tenantPrisma(tenantId).inspection.findMany({
+		skip: (page_number - 1) * results,
+		take: results,
 		where: {
 			tenantId: tenantId
 		},
@@ -19,14 +30,25 @@ export const fetchInspections = async ({ tenantId }: { tenantId: number }) => {
 		}
 	});
 
-	return inspections;
+	const count = await tenantPrisma(tenantId).inspection.count({
+		where: {
+			tenantId: tenantId
+		}
+	});
+
+	return new Page(inspections, count, results, page_number).toJSON();
 };
 
 /*
  *  Helper
  */
 export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: number }) => {
-	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantId });
+	const customForms = await tenantPrisma(tenantId).customForm.findMany({
+		where: {
+			tenantId: tenantId,
+			isActive: true
+		}
+	});
 	const listCustomForm = customForms.map((el) => ({ value: el.id, name: el.name }));
 
 	const vehicles = await tenantPrisma(tenantId).vehicle.findMany();

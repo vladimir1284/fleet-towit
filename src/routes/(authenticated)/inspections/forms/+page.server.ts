@@ -17,16 +17,28 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const session = await verifySession(locals);
 
 	const form = await superValidate(zod(createFormSchema));
 
 	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantUserId });
+	const results = await fetchCustomFormsByTenant({
+		tenantId: tenantUserId,
+		page_number: Number(url.searchParams.get('page')) || 1
+	});
 
-	return { form, customForms };
+	const customForms = results.data;
+
+	const pagination = {
+		has_next_page: results.has_next_page,
+		has_prev_page: results.has_prev_page,
+		next_page: results.next_page,
+		prev_page: results.prev_page
+	};
+
+	return { form, customForms, pagination };
 };
 
 export const actions = {
