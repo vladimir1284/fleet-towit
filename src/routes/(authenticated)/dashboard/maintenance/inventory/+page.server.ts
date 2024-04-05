@@ -14,14 +14,21 @@ import { PartCustomizationSchema } from '$lib/features/create-part/zod';
 import type { RequestEvent } from './$types';
 import type { Category, Location, Vendor } from '@prisma/client';
 
-export async function load(event) {
+import { bypassPrisma } from '$lib/prisma';
+import { prismaHelpers } from '$lib/shared';
+import { PART_EXCLUDED_PROPERTIES } from '$lib/shared';
+
+export async function load() {
 	// Create the form with the last step, to get all default values.
 	const superValidatedPartWizard = await superValidate(zod(PartCustomizationSchema));
 
 	// Part retrieval management.
-	const partRetrievalResponse = await event.fetch(PART_SCHEMA_RETRIEVAL_ACTION_ROUTE);
+	const currentPrismaClient = bypassPrisma;
+	const tainedTenantParts = await currentPrismaClient.part.findMany({});
 
-	const { data: initialParts } = await partRetrievalResponse.json();
+	const initialParts = tainedTenantParts.map((tainedTenantPart) =>
+		prismaHelpers.exclude(tainedTenantPart, PART_EXCLUDED_PROPERTIES)
+	);
 
 	// Build categories, vendors and locations via part retrieval data.
 	const initialVendors: Vendor[] = [];
