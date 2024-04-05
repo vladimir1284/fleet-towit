@@ -12,7 +12,6 @@ const getVehicle = async (vin: string) => {
 				documents: true,
 				costs: true,
 				contracts: true,
-				tolls: true,
 				inspections: true
 			}
 		});

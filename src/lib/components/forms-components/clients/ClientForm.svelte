@@ -1,6 +1,7 @@
 <script lang="ts">
 	// @ts-nocheck
 	import { z } from 'zod';
+	import { zod } from 'sveltekit-superforms/adapters';
 	import { createEventDispatcher } from 'svelte';
 	import { UserSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
@@ -29,7 +30,7 @@
 	});
 
 	const { form, errors, constraints, enhance } = superForm(data, {
-		validators: fixSchema,
+		validators: zod(fixSchema),
 		onSubmit: async (event) => {
 			$form.email = $form.email.trim();
 		},
