@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-const seedVehicles = async (prisma) => {
+const seedVehicles = async (prisma: ExtendedBypassPrismaClient) => {
 	console.log('Seeding vehicles data...');
 	const vehicleTypes = [
 		'ATV',

@@ -1,7 +1,11 @@
+import type { Part } from '@prisma/client';
+import type { QueryStringifyContraint } from '../types';
+
 export const // HTTP request constants.
 
 	USER_TENANT_HEADER = 'X-User-Tenant',
 	// Status.
+	INTERNAL_ERROR_STATUS = 500,
 	FORBIDDEN_ACCESS_STATUS = 403,
 	INVALID_FORM_DATA_STATUS = 400,
 	SUCCESSFUL_REQUEST_STATUS = 200,
@@ -21,4 +25,52 @@ export const // HTTP request constants.
 export const // Prisma constants.
 
 	SKIP_PAGINATION_PARAMETER = 0,
-	TAKE_PAGINATION_PARAMETER = 10;
+	TAKE_PAGINATION_PARAMETER = 10,
+	// API-related constants.
+	PART_EXCLUDED_PROPERTIES: (keyof Part)[] = <const>[
+		// Properties to exclude to.
+		'id',
+		'extendedPartData',
+		'image',
+		'tenantId',
+		'createdAt',
+		'updatedAt',
+		'deletedAt',
+		'updatedBy',
+		'createdBy',
+		'deletedBy'
+	];
+
+export const // SuperForm-zod related constants.
+
+	ZOD_EXCLUDED_VALIDATION_PROPERTIES = {
+		// CUID property.
+		id: true,
+
+		// Timestamp properties.
+		createdAt: true,
+		updatedAt: true,
+		deletedAt: true,
+
+		// Action-control properties.
+		createdBy: true,
+		updatedBy: true,
+		deletedBy: true
+	} as const,
+	//  Part-related custom messages.
+	FAILED_PART_RECORD_CREATION = 'PART_REGISTER_FAILED',
+	INVALID_PART_SCHEMA_VALIDATION_MESSAGE = 'INVALID_PART_FORM_DATA';
+
+export const // Actions related constants.
+
+	PART_SCHEMA_CREATION_ACTION_ROUTE = '/api/maintenance/inventory/parts',
+	PART_SCHEMA_RETRIEVAL_ACTION_ROUTE = '/api/maintenance/inventory/parts',
+	PART_SCHEMA_UPDATE_ACTION_ROUTE = '/api/maintenance/inventory/parts',
+	PART_SCHEMA_DELETION_ACTION_ROUTE = '/api/maintenance/inventory/parts';
+
+export const PART_RETRIEVAL_CONSTRAINTS: QueryStringifyContraint = {
+	// Workaround to retrieve it once the query paramers are used.
+	deletedAt: JSON.stringify({
+		not: null
+	})
+} as const;

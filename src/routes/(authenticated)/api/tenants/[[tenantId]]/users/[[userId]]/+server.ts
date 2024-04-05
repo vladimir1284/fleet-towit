@@ -69,7 +69,7 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
     ///////TODO     Migrando logica para actions
-	const currentUserData = locals.inventoryActionObject.currentTenantUser
+	const currentUserData = locals.inventoryActionObject?.currentTenantUser
 	const tenantUserId = parseInt(formData.get('tenantUserId') as string, 10);
 	const isDefault = formData.get('is_default') === 'true';
     
