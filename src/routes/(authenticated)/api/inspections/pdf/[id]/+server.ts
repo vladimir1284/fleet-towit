@@ -233,7 +233,7 @@ const createPDF = async (inspection: Inspections) => {
 				// response
 				for (const response of field.responses) {
 					columns.push({
-						text: response.content as string,
+						text: response.content ? (response.content as string) : '-',
 						style: 'content'
 					});
 				}
@@ -280,7 +280,7 @@ const createPDF = async (inspection: Inspections) => {
 			} else if (field.type === FormFieldType.EMAIL) {
 				for (const response of field.responses) {
 					columns.push({
-						text: response.content as string,
+						text: response.content ? (response.content as string) : '-',
 						style: 'content',
 						link: `mailto:${response.content}`
 					});
@@ -292,7 +292,7 @@ const createPDF = async (inspection: Inspections) => {
 				// response
 				for (const response of field.responses) {
 					columns.push({
-						text: parseDate(String(response.content)),
+						text: response.content ? parseDate(String(response.content)) : '-',
 						style: 'content'
 					});
 				}
@@ -302,7 +302,7 @@ const createPDF = async (inspection: Inspections) => {
 			} else if (field.type === FormFieldType.TIME) {
 				for (const response of field.responses) {
 					columns.push({
-						text: String(response.content),
+						text: response.content ? String(response.content) : '-',
 						style: 'content'
 					});
 				}
@@ -312,7 +312,7 @@ const createPDF = async (inspection: Inspections) => {
 			} else if (field.type === FormFieldType.PHONE) {
 				for (const response of field.responses) {
 					columns.push({
-						text: String(response.content),
+						text: response.content ? String(response.content) : '-',
 						style: 'content',
 						link: `tel:${response.content}`
 					});
@@ -321,17 +321,24 @@ const createPDF = async (inspection: Inspections) => {
 				docDefinition.content.push({ columns });
 			} else if (field.type === FormFieldType.IMAGE || field.type === FormFieldType.SIGNATURE) {
 				for (const response of field.responses) {
-					const file_url = await minioClient.presignedGetObject(
-						'develop',
-						`inspections/${inspection.id}/${response.content}`
-					);
+					if (response.content) {
+						const file_url = await minioClient.presignedGetObject(
+							'develop',
+							`inspections/${inspection.id}/${response.content}`
+						);
 
-					const imgBase64 = await toBase64(file_url);
+						const imgBase64 = await toBase64(file_url);
 
-					columns.push({
-						image: imgBase64,
-						width: 200
-					});
+						columns.push({
+							image: imgBase64,
+							width: 200
+						});
+					} else {
+						columns.push({
+							text: '-',
+							style: 'content'
+						});
+					}
 				}
 				// @ts-expect-error: pass
 				docDefinition.content.push({ columns });

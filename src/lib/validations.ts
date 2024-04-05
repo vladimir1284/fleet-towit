@@ -12,6 +12,19 @@ interface Cards extends Card {
 export const generateValidationSchema = (cards: Cards[]) => {
 	let schema = z.object({});
 
+	const fileSchema = z
+		.instanceof(File)
+		.refine((file) => {
+			return !file || file.size <= MAX_UPLOAD_SIZE;
+		}, 'File size must be less than 3MB')
+		.refine((file) => {
+			return ACCEPTED_FILE_TYPES.includes(file.type);
+		}, 'File must be a image');
+
+	const timeSchema = z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/);
+	const phoneSchema = z.string().regex(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/);
+	const base64Schema = z.string().regex(/^data:image\/png;base64,([A-Za-z0-9+/=])+$/);
+
 	const MAX_UPLOAD_SIZE = 1024 * 1024 * 3;
 	const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
@@ -21,48 +34,45 @@ export const generateValidationSchema = (cards: Cards[]) => {
 
 			switch (field.type) {
 				case 'TEXT':
-					schema = schema.extend({ [name]: z.string() });
+					schema = schema.extend({ [name]: field.required ? z.string() : z.string().optional() });
 					break;
+
 				case 'NUMBER':
-					schema = schema.extend({ [name]: z.number() });
+					schema = schema.extend({ [name]: field.required ? z.number() : z.number().optional() });
 					break;
+
 				case 'SINGLE_CHECK':
 					schema = schema.extend({
-						[`${name}_radio`]: z.number(),
+						[`${name}_radio`]: field.required ? z.number() : z.number().optional(),
 						[`${name}_note`]: z.string().optional()
 					});
 					break;
 				case 'EMAIL':
-					schema = schema.extend({ [name]: z.string().email() });
+					schema = schema.extend({
+						[name]: field.required ? z.string().email() : z.string().email().optional()
+					});
 					break;
 				case 'DATE':
-					schema = schema.extend({ [name]: z.date() });
+					schema = schema.extend({ [name]: field.required ? z.date() : z.date().optional() });
 					break;
 				case 'TIME':
 					schema = schema.extend({
-						[name]: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/)
+						[name]: field.required ? timeSchema : timeSchema.optional()
 					});
 					break;
 				case 'PHONE':
 					schema = schema.extend({
-						[name]: z.string().regex(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/)
+						[name]: field.required ? phoneSchema : phoneSchema.optional()
 					});
 					break;
 				case 'IMAGE':
 					schema = schema.extend({
-						[name]: z
-							.instanceof(File)
-							.refine((file) => {
-								return !file || file.size <= MAX_UPLOAD_SIZE;
-							}, 'File size must be less than 3MB')
-							.refine((file) => {
-								return ACCEPTED_FILE_TYPES.includes(file.type);
-							}, 'File must be a image')
+						[name]: field.required ? fileSchema : fileSchema.optional()
 					});
 					break;
 				case 'SIGNATURE':
 					schema = schema.extend({
-						[name]: z.string().regex(/^data:image\/png;base64,([A-Za-z0-9+/=])+$/)
+						[name]: field.required ? base64Schema : base64Schema.optional()
 					});
 					break;
 			}

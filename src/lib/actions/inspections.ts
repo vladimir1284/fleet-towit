@@ -188,6 +188,7 @@ export const createResponseToInspection = async ({
 				content: value.name,
 				tenantUserId: tenantUser.id
 			});
+			// convert from base 64 to file then upload image to minio
 		} else if (/^data:image\/png;base64,([A-Za-z0-9+/=])+$/.test(value)) {
 			const urltoFile = async (url: string, filename: string) => {
 				const mimeType = (url.match(/^data:([^;]+);/) || '')[1];
@@ -214,7 +215,7 @@ export const createResponseToInspection = async ({
 		} else {
 			data.push({
 				fieldId: fieldId,
-				content: value.toString(),
+				content: value ? value.toString() : value,
 				tenantUserId: tenantUser.id
 			});
 		}

@@ -3,7 +3,6 @@
 	import { goto } from '$app/navigation';
 	import type { CustomForm } from '@prisma/client';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { page } from '$app/stores';
 
 	export let data: PageData;
 
@@ -66,11 +65,11 @@
 					<TableBodyCell>{form.name}</TableBodyCell>
 					<TableBodyCell>{form.cards.length}</TableBodyCell>
 					<TableBodyCell>
-						{form.createdAt.getDate() } /
+						{form.createdAt.getDate()} /
 						{form.createdAt.getMonth() + 1} /
 						{form.createdAt.getFullYear()}
 					</TableBodyCell>
-					<TableBodyCell><a href={`${$page.url.href}/${form.id}`}>Edit</a></TableBodyCell>
+					<TableBodyCell><a href={`forms/${form.id}`}>Edit</a></TableBodyCell>
 				</TableBodyRow>
 			{/each}
 		</TableBody>

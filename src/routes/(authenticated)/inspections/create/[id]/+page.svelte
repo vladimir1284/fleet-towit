@@ -47,7 +47,7 @@
 	const { form, constraints, errors } = superForm(data.form);
 </script>
 
-<section class="w-1/3">
+<section class="w-2/4 p-4">
 	<form
 		class="flex flex-col gap-4 bg-white rounded-lg shadow p-4 min-w-72"
 		method="post"
@@ -67,7 +67,7 @@
 								{#if field.type == data.FormFieldType.TEXT}
 									<Input
 										placeholder="Type here"
-										required
+										required={field.required}
 										type="text"
 										name={`field_${field.id}`}
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
@@ -75,7 +75,7 @@
 									/>
 								{:else if field.type == data.FormFieldType.NUMBER}
 									<Input
-										required
+										required={field.required}
 										placeholder="123..."
 										type="number"
 										name={`field_${field.id}`}
@@ -86,7 +86,7 @@
 								{:else if field.type == data.FormFieldType.SINGLE_CHECK}
 									{#each field.checkOptions as checkOptions}
 										<Radio
-											required
+											required={field.required}
 											name={`field_${field.id}_radio`}
 											value={checkOptions.id}
 											{...$constraints[`field_${field.id}_radio`]}
@@ -97,7 +97,7 @@
 									<Textarea name={`field_${field.id}_note`} placeholder="Note" />
 								{:else if field.type == data.FormFieldType.EMAIL}
 									<Input
-										required
+										required={field.required}
 										placeholder="email@example.com"
 										type="email"
 										name={`field_${field.id}`}
@@ -107,7 +107,7 @@
 									/>
 								{:else if field.type == data.FormFieldType.DATE}
 									<Input
-										required
+										required={field.required}
 										placeholder="Type here"
 										type="date"
 										name={`field_${field.id}`}
@@ -117,7 +117,7 @@
 									/>
 								{:else if field.type == data.FormFieldType.TIME}
 									<Input
-										required
+										required={field.required}
 										placeholder="Type here"
 										type="time"
 										name={`field_${field.id}`}
@@ -127,7 +127,7 @@
 									/>
 								{:else if field.type == data.FormFieldType.PHONE}
 									<Input
-										required
+										required={field.required}
 										placeholder="(123) 456-7890"
 										type="tel"
 										name={`field_${field.id}`}
@@ -138,7 +138,7 @@
 								{:else if field.type == data.FormFieldType.IMAGE}
 									<input
 										type="file"
-										required
+										required={field.required}
 										name={`field_${field.id}`}
 										accept="image/*"
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
@@ -150,7 +150,7 @@
 								{:else if field.type == data.FormFieldType.SIGNATURE}
 									<input
 										type="text"
-										required
+										required={field.required}
 										class="hidden"
 										name={`field_${field.id}`}
 										id={`field_${field.id}`}

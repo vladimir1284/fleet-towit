@@ -1,7 +1,15 @@
 import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
-import type { CustomForm } from '@prisma/client';
+import type { Card, CustomForm, CustomField, CheckOption } from '@prisma/client';
 import { Page } from '$lib/pagination';
+
+interface CustomFields extends CustomField {
+	checkOptions: CheckOption[];
+}
+
+interface Cards extends Card {
+	fields: CustomFields[];
+}
 
 /*
  * Create new custom form
@@ -124,7 +132,7 @@ export const cloneCustomForm = async ({
 	// copy data
 	const cloneCustomForm = JSON.parse(JSON.stringify(form));
 
-	const cloneCards = cloneCustomForm.cards.map((card) => {
+	const cloneCards = cloneCustomForm.cards.map((card: Cards) => {
 		return {
 			name: card.name,
 			fields: {
@@ -210,7 +218,8 @@ export const addCardToForm = async ({
 	for (const field of parseFields) {
 		const customField = {
 			name: field.labelName,
-			type: field.type
+			type: field.type,
+			required: field.required
 		};
 
 		if (field.type === FormFieldType.SINGLE_CHECK) {

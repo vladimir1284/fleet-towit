@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button, Input, Label, Select, Helper, Modal } from 'flowbite-svelte';
+	import { Button, Input, Label, Select, Helper, Modal, Checkbox } from 'flowbite-svelte';
 	import {
 		TrashBinOutline,
 		PenOutline,
@@ -91,6 +91,7 @@
 		type: data.FormFieldType;
 		pointPass?: string;
 		pointFail?: string;
+		required: boolean;
 	}
 
 	let fields: Field[] = [];
@@ -98,6 +99,7 @@
 	let labelName: string;
 	let pointPass: string;
 	let pointFail: string;
+	let required: boolean = true;
 
 	$: stringifyFields = JSON.stringify(fields);
 
@@ -108,17 +110,19 @@
 				labelName: labelName,
 				type: cardTypeSelect,
 				pointPass,
-				pointFail
+				pointFail,
+				required
 			}
 		];
 
 		labelName = '';
 		pointPass = undefined;
 		pointFail = undefined;
+		required = true;
 	};
 </script>
 
-<section class="flex flex-col gap-4 w-full sm:w-2/3 pb-10 p-1">
+<section class="flex flex-col gap-4 w-full sm:w-2/3 pb-10 p-4">
 	<!-- nombre del formulario -->
 	<div class="flex justify-between gap-4 shadow bg-white p-6 rounded-lg">
 		{#if isEditFormName}
@@ -228,6 +232,8 @@
 							</Label>
 						</div>
 					{/if}
+
+					<Checkbox checked={required} on:change={() => (required = !required)}>Required</Checkbox>
 
 					<div class="inline-flex gap-4">
 						<Button on:click={() => (cardTypeSelect = '')} outline color="red">Cancel</Button>
