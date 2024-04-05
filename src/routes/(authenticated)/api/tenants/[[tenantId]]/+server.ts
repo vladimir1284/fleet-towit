@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { actionResult } from 'sveltekit-superforms/server';
+import { actionResult } from 'sveltekit-superforms';
 import {
 	listTenants,
 	deleteTenant,
@@ -13,8 +13,9 @@ import {
 	getTenantOwner
 } from '$lib/actions/admin';
 import { superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
+import { zod } from 'sveltekit-superforms/adapters';
 import { Role } from '@prisma/client';
+import { z } from 'zod';
 
 const fixSchema = z.object({
 	ownerId: z.number().optional(),
@@ -41,7 +42,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-	const form = await superValidate(request, fixSchema);
+	const form = await superValidate(request, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
 		return actionResult('failure', { form }, { status: 400 });
@@ -57,16 +58,18 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 		const tenantUserToBeOwner = await getTenantUser({ tenantUserId: form.data.ownerId });
 		console.log(oldOwner)
 		if (oldOwner?.id !== tenantUserToBeOwner?.id) {
-			//@ts-expect-error It's detecting it as undefined
 			await updateTenantUser({
+				//@ts-expect-error It's detecting it as undefined
 				tenantUserId: oldOwner?.id,
+				//@ts-expect-error It's detecting it as undefined
 				email: oldOwner?.user.email,
 				userRole: Role.ADMIN
 			});
 		}
-		//@ts-expect-error It's detecting it as undefined
 		await updateTenantUser({
+			//@ts-expect-error It's detecting it as undefined
 			tenantUserId: tenantUserToBeOwner?.id,
+			//@ts-expect-error It's detecting it as undefined
 			email: tenantUserToBeOwner?.user.email,
 			userRole: Role.OWNER
 		});

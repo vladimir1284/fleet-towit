@@ -150,7 +150,6 @@ export const listAllTenantUsers = async () => {
 			tenant: true
 		}
 	});
-	console.log('listAllTenantUsers', users);
 	return users;
 };
 

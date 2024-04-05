@@ -1,19 +1,15 @@
 <script lang="ts">
-	import { tenantActor } from '$lib/store/context-store';
+	// @ts-nocheck
+	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	let currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	tenantActor.subscribe((state) => {
-		currentTenant = state.context.currentTenant;
-	});
-	if (currentTenant === 'initial') {
-		tenantActor.send({ type: 'tenant.init', value: 'currentTenant' });
-	}
-
-	//@ts-expect-error it throws that currentUserTenant is a number due to the initial data of currentTenant which is a number
-	if (currentTenant.currentUserTenant.role === 'STAFF') {
+	const currentTenant = getContext('currentTenant');
+	console.log($currentTenant)
+	
+	if ($currentTenant.currentUserTenant.role === 'STAFF') {
 		goto('/dashboard');
 	}
+
 </script>
 
 <slot />

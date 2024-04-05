@@ -11,6 +11,8 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+src/upload/*
+
 # Sentry Config File
 .sentryclirc
 prisma/dev.db
@@ -25,4 +27,6 @@ prisma/dbml/schema.dbml
 src/lib/zod/index.ts
 prisma/migrations/*
 .vscode/settings.json
+yarn.lock
+yarn-error.log
 yarn.lock

@@ -287,6 +287,11 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
+"@faker-js/faker@^8.4.1":
+  version "8.4.1"
+  resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-8.4.1.tgz#5d5e8aee8fce48f5e189bf730ebd1f758f491451"
+  integrity sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==
+
 "@fastify/busboy@^2.0.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.0.tgz#0709e9f4cb252351c609c6e6d8d6779a8d25edff"
@@ -371,10 +376,10 @@
     iconify-icon "^1.0.8"
     lowlight "^2.9.0"
 
-"@gcornut/valibot-json-schema@^0.0.25":
-  version "0.0.25"
-  resolved "https://registry.yarnpkg.com/@gcornut/valibot-json-schema/-/valibot-json-schema-0.0.25.tgz#b03c7b52e0cc20eeccd7d968382c44c938cd7429"
-  integrity sha512-JlOmghA8OMM8B+3lLSWrZqce4FM5SrCO/bmYGZQz3ZYPja/mXhLYa2qEOFUsBaz24prv04un3zXIUpJzgglAkw==
+"@gcornut/valibot-json-schema@^0.0.27":
+  version "0.0.27"
+  resolved "https://registry.yarnpkg.com/@gcornut/valibot-json-schema/-/valibot-json-schema-0.0.27.tgz#b1617897a2cdb9a03a1d706ba25b24065323ebf0"
+  integrity sha512-xcMaUStVgQzPrK3d7PuLFbQ+3qSp6LzaLExAm52E3FKmUfjQa7Sw5cDK6Hfu/8WT0yfGsuSCuJ5uT1sosjR9Qg==
 
 "@hapi/hoek@^9.0.0", "@hapi/hoek@^9.3.0":
   version "9.3.0"
@@ -588,9 +593,9 @@
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
 "@poppinss/macroable@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@poppinss/macroable/-/macroable-1.0.1.tgz#288c8f93d15bdae3634e82f8581932f45e34d86d"
-  integrity sha512-bO3+rnqGhE+gdx4DOyYjY9jCm2+c5Ncyl2Gmst0w271rIFnsB00btonpdmAqvFNzS8rcas+APGm+47fYMmkpQA==
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@poppinss/macroable/-/macroable-1.0.2.tgz#bdf2fb8648334410a1a53173e5b2d1995d3848af"
+  integrity sha512-xhhEcEvhQC8mP5oOr5hbE4CmUgmw/IPV1jhpGg2xSkzoFrt9i8YVqBQt9744EFesi5F7pBheWozg63RUBM/5JA==
 
 "@prisma/client@^5.7.1":
   version "5.7.1"
@@ -1116,10 +1121,10 @@
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.27.8.tgz#6667fac16c436b5434a387a34dedb013198f6e6e"
   integrity sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==
 
-"@sinclair/typebox@^0.32.15":
-  version "0.32.15"
-  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.32.15.tgz#92dcdc12907f7c0f6d954ba3700b5bb888d2eb34"
-  integrity sha512-5Lrwo7VOiWEBJBhHmqNmf3TPB9ll8gcEshvYJyAIJyCZ2PF48MFOtiDHJNj8+FsNcqImaQYmxVkKBCBlyAa/wg==
+"@sinclair/typebox@^0.32.20":
+  version "0.32.20"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.32.20.tgz#32bdeb6b185188622f965ebbc88e1a6d5127d88a"
+  integrity sha512-ziK497ILSIYMxD/thl496idIb03IZPlha04itLQu1xAFQbumWZ+Dj4PMMCkDRpAYhvVSdmRlTjGu2B2MA5RplQ==
 
 "@sodaru/yup-to-json-schema@^2.0.1":
   version "2.0.1"
@@ -2080,11 +2085,11 @@
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
 "@vinejs/compiler@^2.4.1":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@vinejs/compiler/-/compiler-2.4.1.tgz#dbde3d81edaad68e18099c5925bad821835c4092"
-  integrity sha512-WZqCZEQBvuPEghAxnpvNLclyyfqkmU+2V2K4zoZhOUJRD9KRJ+hCNQQ6LSzt7ZwSh+wwxq0r9FpAfeC3tswB8Q==
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@vinejs/compiler/-/compiler-2.5.0.tgz#a4297687cd1c61fd14de35f452045a324e5bd084"
+  integrity sha512-hg4ekaB5Y2zh+IWzBiC/WCDWrIfpVnKu/ubUvelKlidc/VbulsexoFRw5kJGHZenPVI5YzNnDeTdYSALkTV7jQ==
 
-"@vinejs/vine@^1.7.1":
+"@vinejs/vine@^1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@vinejs/vine/-/vine-1.8.0.tgz#789b837c5a2f94e67127087f2edf8df6c6541b4f"
   integrity sha512-Qq3XxbA26jzqS9ICifkqzT399lMQZ2fWtqeV3luI2as+UIK7qDifJFU2Q4W3q3IB5VXoWxgwAZSZEO0em9I/qQ==
@@ -3492,6 +3497,11 @@ expand-template@^2.0.3:
   resolved "https://registry.yarnpkg.com/expand-template/-/expand-template-2.0.3.tgz#6e14b3fcee0f3a6340ecb57d2e8918692052a47c"
   integrity sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==
 
+faker@^6.6.6:
+  version "6.6.6"
+  resolved "https://registry.yarnpkg.com/faker/-/faker-6.6.6.tgz#e9529da0109dca4c7c5dbfeaadbd9234af943033"
+  integrity sha512-9tCqYEDHI5RYFQigXFwF1hnCwcWCOJl/hmll0lr5D2Ljjb0o4wphb69wikeJDz5qCEzXCoPvG6ss5SDP6IfOdg==
+
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
@@ -3562,6 +3572,11 @@ file-entry-cache@^6.0.1:
   integrity sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==
   dependencies:
     flat-cache "^3.0.4"
+
+file-saver@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/file-saver/-/file-saver-2.0.5.tgz#d61cfe2ce059f414d899e9dd6d4107ee25670c38"
+  integrity sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==
 
 fill-range@^7.0.1:
   version "7.0.1"
@@ -6706,7 +6721,7 @@ sucrase@^3.32.0:
     pirates "^4.0.1"
     ts-interface-checker "^0.1.9"
 
-superstruct@^1.0.3:
+superstruct@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-1.0.4.tgz#0adb99a7578bd2f1c526220da6571b2d485d91ca"
   integrity sha512-7JpaAoX2NGyoFlI9NBh66BQXGONc+uE+MRS5i2iOBKuS4e+ccgMDjATgZldkah+33DakBxDHiss9kvUcGAO8UQ==
@@ -6820,26 +6835,26 @@ sveltekit-i18n@^2.4.2:
     "@sveltekit-i18n/parser-default" "~1.1.0"
 
 sveltekit-superforms@^2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/sveltekit-superforms/-/sveltekit-superforms-2.9.0.tgz#e602daf196917b326bbb8b416b4be7ef2bd965a7"
-  integrity sha512-sF/8nlFmyTcxtoFmIsudNV03O0GS1nB/y1U8L0CM0xY4yfcDeL7KvqqvtEWOA3xW01LSZz5pbvf1UYrrt1nuxw==
+  version "2.12.2"
+  resolved "https://registry.yarnpkg.com/sveltekit-superforms/-/sveltekit-superforms-2.12.2.tgz#a857d5ed748526437fa7c0aa6a3875ca91bf441a"
+  integrity sha512-fFOXaluP1os/Tamx7gzwhT3tXPAfqZ8KYRC0UfXdXeUtlUIUfiGrIifDJ26/9uePmF8Zhqy2M0XjG8W9kQnJpg==
   dependencies:
     devalue "^4.3.2"
     just-clone "^6.2.0"
     memoize-weak "^1.0.2"
     ts-deepmerge "^7.0.0"
   optionalDependencies:
-    "@gcornut/valibot-json-schema" "^0.0.25"
-    "@sinclair/typebox" "^0.32.15"
+    "@gcornut/valibot-json-schema" "^0.0.27"
+    "@sinclair/typebox" "^0.32.20"
     "@sodaru/yup-to-json-schema" "^2.0.1"
-    "@vinejs/vine" "^1.7.1"
+    "@vinejs/vine" "^1.8.0"
     arktype "1.0.29-alpha"
     joi "^17.12.2"
-    superstruct "^1.0.3"
-    valibot "^0.29.0"
+    superstruct "^1.0.4"
+    valibot "^0.30.0"
     yup "^1.4.0"
     zod "^3.22.4"
-    zod-to-json-schema "^3.22.4"
+    zod-to-json-schema "^3.22.5"
 
 svg.draggable.js@^2.2.2:
   version "2.2.2"
@@ -7474,10 +7489,10 @@ v8-compile-cache-lib@^3.0.1:
   resolved "https://registry.yarnpkg.com/v8-compile-cache-lib/-/v8-compile-cache-lib-3.0.1.tgz#6336e8d71965cb3d35a1bbb7868445a7c05264bf"
   integrity sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==
 
-valibot@^0.29.0:
-  version "0.29.0"
-  resolved "https://registry.yarnpkg.com/valibot/-/valibot-0.29.0.tgz#16c8e1924e522c5feace728aac2d9ab0da626000"
-  integrity sha512-JhZn08lwZPhAamOCfBwBkv/btQt4KeQhekULPH8crH053zUCLSOGEF2zKExu3bFf245tsj6J1dY0ysd/jUiMIQ==
+valibot@^0.30.0:
+  version "0.30.0"
+  resolved "https://registry.yarnpkg.com/valibot/-/valibot-0.30.0.tgz#6b90386a04d2c281cdc5dc6ad33bd3d2d7ea13b5"
+  integrity sha512-5POBdbSkM+3nvJ6ZlyQHsggisfRtyT4tVTo1EIIShs6qCdXJnyWU5TJ68vr8iTg5zpOLjXLRiBqNx+9zwZz/rA==
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
@@ -7810,10 +7825,10 @@ zod-prisma-types@^3.1.6:
     lodash "^4.17.21"
     zod "^3.22.4"
 
-zod-to-json-schema@^3.22.4:
-  version "3.22.4"
-  resolved "https://registry.yarnpkg.com/zod-to-json-schema/-/zod-to-json-schema-3.22.4.tgz#f8cc691f6043e9084375e85fb1f76ebafe253d70"
-  integrity sha512-2Ed5dJ+n/O3cU383xSY28cuVi0BCQhF8nYqWU5paEpl7fVdqdAmiLdqLyfblbNdfOFwFfi/mqU4O1pwc60iBhQ==
+zod-to-json-schema@^3.22.5:
+  version "3.22.5"
+  resolved "https://registry.yarnpkg.com/zod-to-json-schema/-/zod-to-json-schema-3.22.5.tgz#3646e81cfc318dbad2a22519e5ce661615418673"
+  integrity sha512-+akaPo6a0zpVCCseDed504KBJUQpEW5QZw7RMneNmKw+fGaML1Z9tUNLnHHAC8x6dzVRO1eB2oEMyZRnuBZg7Q==
 
 zod@^3.22.4:
   version "3.22.4"

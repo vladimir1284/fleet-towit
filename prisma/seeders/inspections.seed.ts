@@ -1,176 +1,29 @@
-import type { ExtendedBypassPrismaClient } from '../../src/lib/prisma';
+import { faker } from '@faker-js/faker';
 
-const seedInspection = async (prisma: ExtendedBypassPrismaClient, tenantsId: number[]) => {
+const seedInspection = async (prisma, tenantsId: number[]) => {
 	console.log('Seeding inspections data...');
 
-	for (const tenantId of tenantsId) {
-		await prisma.customForm.create({
-			data: {
-				name: 'Custom Form',
-				tenantId: tenantId,
-				fields: {
-					create: [
-						{
-							name: 'Control de respuesto',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Si' }, { name: 'No' }]
-							}
-						},
-						{
-							name: 'Control regular',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Si' }, { name: 'No' }]
-							}
-						},
-
-						{
-							name: 'Carga desde el camión',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Si' }, { name: 'No' }]
-							}
-						},
-
-						{
-							name: 'Condiciones del cable y el winch',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Adaptador',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Condiciones del pasador',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Tornillo',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Soldadura',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Cadena',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-
-						{
-							name: 'Sticker',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Cable 7 vías',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'interruptor del winch',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Si' }, { name: 'No' }]
-							}
-						},
-
-						{
-							name: 'Sistema de gravedad',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Si' }, { name: 'No' }]
-							}
-						},
-						{
-							name: 'Funcionamiento',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Instalación eléctrica',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Capacidad del líquido hidraulico',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'Requiere rellenar' }]
-							}
-						},
-						{
-							name: 'Sujecion del PTO',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Caja del PTO Seguridad',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Si' }, { name: 'No' }]
-							}
-						},
-						{
-							name: 'Pistones sellos',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Manguera de los pistones',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Rampas de extensión hacia delante',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						},
-						{
-							name: 'Rampas de extensión hacia atras',
-							type: 'SINGLE_CHECK',
-							checkOptions: {
-								create: [{ name: 'Bueno' }, { name: 'R.R' }]
-							}
-						}
-					]
+	const generateCustomForm = () => ({
+		name: faker.commerce.productName(),
+		tenantId: faker.helpers.arrayElement(tenantsId),
+		fields: {
+			create: [
+				{
+					name: faker.commerce.productAdjective(),
+					type: 'SINGLE_CHECK', // Example type, adjust according to your schema
+					checkOptions: {
+						create: [{ name: 'Yes' }, { name: 'No' }]
+					}
 				}
-			}
+				// Add more fields as needed
+			]
+		}
+	});
+
+	const numberOfForms = 50;
+	for (let i = 0; i < numberOfForms; i++) {
+		await prisma.customForm.create({
+			data: generateCustomForm()
 		});
 	}
 

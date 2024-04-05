@@ -1,25 +1,25 @@
 <script async lang="ts">
+	//@ts-nocheck
 	import { Select } from 'flowbite-svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { FileSolid } from 'flowbite-svelte-icons';
-	import { tenantActor } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import { createEventDispatcher, getContext } from 'svelte';
 	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
 	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
 	export let selectedPlan: any;
+
+
 	let periodicityList = [
 		{ value: 'WEEKLY', name: 'WEEKLY' },
 		{ value: 'BIWEEKLY', name: 'BIWEEKLY' },
 		{ value: 'MONTHLY', name: 'MONTHLY' }
 	];
-
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	//@ts-expect-error Fix error on type string
-	let actionURL = `/api/tenants/${currentTenant?.id}/rentalPlan`;
+	const currentTenant = getContext('currentTenant');
+	let actionURL = `/api/tenants/${$currentTenant?.id}/rentalPlan`;
 	console.log('actionURL  ', actionURL);
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {

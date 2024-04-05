@@ -21,7 +21,7 @@ import {
 import EmailProvider from '@auth/core/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
-import { getTenantUsers } from '$lib/actions/user';
+import { getTenantUsers } from '$lib/actions/tenantUsers';
 const prisma = new PrismaClient();
 
 import bcrypt from 'bcryptjs';
@@ -31,7 +31,7 @@ import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } f
 import { building } from '$app/environment';
 import { syncKillBill } from './killbill/killbill';
 
-if (KILLBILL) {
+if (KILLBILL === true) {
 	console.log('Kill Bill initial sync!');
 	if (!building) {
 		syncKillBill();
@@ -54,7 +54,7 @@ const handleAuth = (async (...args) => {
 				}
 			},
 			async session({ session, user }) {
-				const tenantUsers = await getTenantUsers({ userId: user.id });
+				const tenantUsers = await getTenantUsers({ id: user.id });
 				const defaultTenantUser = tenantUsers.find((tenantUser) => tenantUser.is_default);
 				session.user = {
 					id: user.id,
@@ -108,6 +108,10 @@ const handleAuth = (async (...args) => {
 // }
 
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
+	/*
+	Please decide yourself if this piece of code will be romeved or not.
+
+
 	// Remove the conditional to turn it into a generic handle.
 	if (event.url.pathname.startsWith('/api/maintenance/inventory/parts')) {
 		// Retrieve validation data.
@@ -145,13 +149,30 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 			currentPrismaClient: currentPrismaClient
 		};
 	}
+	*/
+
+	const session = await event.locals.getSession();
+	//console.log(event.locals)
+	if (session) {
+		const currentUserData = session?.user.defaultTenantUser;
+		const adminTenant = await getAdminTenant();
+		const currentPrismaClient =
+			currentUserData?.tenantId == adminTenant?.id // currentUserData.TenantId is also correct.
+				? bypassPrisma
+				: tenantPrisma(currentUserData?.tenantId);
+		event.locals.inventoryActionObject = {
+			currentTenant: currentUserData.tenant,
+			currentTenantUser: currentUserData,
+			currentPrismaClient: currentPrismaClient
+		};
+	}
 	const response = await resolve(event);
 	return response;
 };
 
 // If you have custom handlers, make sure to place them after `sentryHandle()` in the `sequence` function.
 // export const handle = sequence(sentryHandle(), handleAuth, handleGenericActionRequest);
-export const handle = sequence(handleAuth);
+export const handle = sequence(handleAuth, handleGenericActionRequest);
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`
 export const handleError = handleErrorWithSentry();

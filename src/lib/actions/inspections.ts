@@ -98,7 +98,15 @@ export const retrieveInspectionById = async ({
 				}
 			},
 			responses: true,
-			vehicle: true
+			vehicle: {
+				include: {
+					plates: {
+						where: {
+							isActive: true
+						}
+					}
+				}
+			}
 		}
 	});
 
