@@ -2,7 +2,6 @@
 	// @ts-nocheck
 	import { z } from 'zod';
 	import { createEventDispatcher } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
@@ -10,25 +9,28 @@
 	import { reqInvoiceApi } from '@killbill/requests';
 	import { AnnotationSolid } from 'flowbite-svelte-icons';
 	// import { InvoiceItem } from '@killbill/api/models/InvoiceItem';
+	import { onMount } from 'svelte';
 
 	export let data;
 	export let selectedInvoiceItem;
 	export let maxAmount;
 	export let minAmount = 0;
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 
 	const fixSchema = z.object({
-		amount: z.string().refine(
-			(value) => {
-				const num = parseFloat(value);
-				const regex = /^\d*\.?\d+$/; // Expresión regular para números decimales positivos
-				return regex.test(value) && num >= minAmount && num <= maxAmount;
-			},
-			{
-				message: `Amount must be a number between ${minAmount} and ${maxAmount}`
-			}
-		),
+		amount: z
+			.number()
+			.or(z.string())
+			.refine(
+				(value) => {
+					const num = parseFloat(value);
+					const regex = /^\d*\.?\d+$/; // Expresión regular para números decimales positivos
+					return regex.test(value) && num >= minAmount && num <= maxAmount;
+				},
+				{
+					message: `Amount must be a number between ${minAmount} and ${maxAmount}`
+				}
+			),
 		comment: z.string()
 	});
 
@@ -36,14 +38,12 @@
 		SPA: true,
 		validators: fixSchema,
 		onUpdated: async ({ form }) => {
-			if (form.valid) {
-				dispatch('formvalid', false);
-			}
+			if (form.valid) dispatch('formvalid', false);
 		}
 	});
 
 	if (selectedInvoiceItem) {
-		$form.amount = selectedInvoiceItem.amount;
+		$form.amount = parseInt(maxAmount); //selectedInvoiceItem.amount;
 		$form.comment = selectedInvoiceItem.comment;
 	}
 
@@ -51,8 +51,9 @@
 		event.preventDefault();
 
 		// const formData = new FormData(event.target);
+		const { auditLogs, ...otherData } = selectedInvoiceItem;
 		const invoiceItem: InvoiceItem = {
-			...selectedInvoiceItem,
+			...otherData,
 			amount: $form.amount
 		};
 		try {
@@ -64,10 +65,14 @@
 				xKillbillReason: 'Contract-Timeline',
 				xKillbillComment: $form.comment
 			});
-			console.info(res);
+			if (res.status === 201) console.info('Adjusting invoice item successful:', res.data);
+			else console.warn('Unexpected response status:', res.status);
 		} catch (error) {
-			console.error('Adjusting invoice item error:', error);
+			if (error.response.status === 201) {
+				console.info('Adjusting invoice item successful');
+			} else console.error('Adjusting invoice item error:', error);
 		}
+		dispatch('formvalid');
 	}
 </script>
 
@@ -92,9 +97,9 @@
 	<div class="sm:col-span-2">
 		<TextInputComponent
 			formPointer="comment"
-			form={$form.comment}
-			errors={$errors.comment}
-			constraints={$constraints.comment}
+			form={form.comment}
+			errors={errors.comment}
+			constraints={constraints.comment}
 			placeholder="Comment"><AnnotationSolid class="w-6 h-6 inline" /></TextInputComponent
 		>
 	</div>

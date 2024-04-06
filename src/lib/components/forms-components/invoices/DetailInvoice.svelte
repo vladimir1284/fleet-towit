@@ -16,7 +16,9 @@
 	import { reqInvoiceApi } from '@killbill/requests';
 	import { formatStringDate } from '$lib/helpers/dates';
 	import html2pdf from 'html2pdf.js';
+	import { createEventDispatcher } from 'svelte';
 
+	const dispatch = createEventDispatcher();
 	export let data: any;
 	export let currentInvoice: any = undefined;
 	let selectedInvoiceItem;
@@ -70,17 +72,26 @@
 			});
 	};
 
-	async function updateInvoiceData() {
-		// currentInvoice = await reqInvoiceApi.getInvoice({ invoiceId: currentInvoice.invoiceId });
+	async function getThisInvoice(event: any) {
+		currentInvoice = await reqInvoiceApi.getInvoice({
+			invoiceId: currentInvoice.invoiceId,
+			withChildrenItems: true,
+			audit: 'MINIMAL'
+		});
 	}
 
 	async function handleCloseMakePaymentModal(event: any) {
-		console.log(event.detail);
-		makePaymentModal = event.detail;
+		makePaymentModal = false; //event.detail
+		dispatch('reListTimeline');
 	}
 	async function handleCloseEditModal(event: any) {
-		console.log(event.detail);
-		editModal = event.detail;
+		editModal = false; //event.detail
+		await getThisInvoice();
+	}
+
+	function getComments(item) {
+		const auditLogItem = item.auditLogs.length > 0 ? item.auditLogs[item.auditLogs.length - 1] : {};
+		return auditLogItem.comment ? auditLogItem.comment : '-';
 	}
 </script>
 
@@ -90,14 +101,14 @@
 	<InvoiceForm
 		data={data?.InvoiceForm}
 		{selectedInvoiceItem}
-		maxAmount={currentInvoice.amount}
+		maxAmount={currentInvoice.balance}
 		on:formvalid={handleCloseEditModal}
 	/>
-{:else if makePaymentModal}
+{:else if makePaymentModal && currentInvoice.balance > 0}
 	<PaymentInvoiceForm
 		data={data?.PaymentInvoiceForm}
 		selectedInvoice={currentInvoice}
-		maxAmount={currentInvoice.amount}
+		maxAmount={currentInvoice.balance}
 		on:formvalid={handleCloseMakePaymentModal}
 	/>
 {:else}
@@ -116,6 +127,7 @@
 					<div>
 						<GradientButton
 							color="purple"
+							disabled={currentInvoice.balance > 0 ? '' : 'disabled'}
 							on:click={() => {
 								makePaymentModal = true;
 							}}>Make Payment</GradientButton
@@ -136,7 +148,6 @@
 				<TableHeadCell class="text-center">DESCRIPTION</TableHeadCell>
 				<TableHeadCell class="text-center">START DATE</TableHeadCell>
 				<TableHeadCell class="text-center">END DATE</TableHeadCell>
-				<TableHeadCell class="text-center">SUBSCRIPTION ID</TableHeadCell>
 				<TableHeadCell class="text-center">AMOUNT</TableHeadCell>
 				<TableHeadCell class="text-center">COMMENTS</TableHeadCell>
 				<TableHeadCell class="text-center"></TableHeadCell>
@@ -151,25 +162,26 @@
 						>
 						<TableBodyCell class="text-center">{formatStringDate(item.startDate)}</TableBodyCell>
 						<TableBodyCell class="text-center">{formatStringDate(item.endDate)}</TableBodyCell>
-						<TableBodyCell class="text-center">{item.subscriptionId || ''}</TableBodyCell>
 						<TableBodyCell class="text-center">
 							<Badge color={item.amount >= 0 ? 'green' : 'red'} rounded class="px-2.5 py-0.5"
 								>${item.amount} ({currentInvoice.currency})</Badge
 							>
 						</TableBodyCell>
-						<TableBodyCell class="text-center">FALTA ESTO</TableBodyCell>
+						<TableBodyCell class="text-center">{getComments(item)}</TableBodyCell>
 						<TableBodyCell class="text-center">
 							{#if currentInvoice.amount != 0 && item.itemType === 'RECURRING'}
 								<!-- svelte-ignore a11y-no-static-element-interactions -->
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
-								<span
-									class="cursor-pointer font-semibold"
-									on:click={() => {
-										selectedInvoiceItem = item;
-										editModal = true;
-									}}
-									>Adjust<span />
-								</span>
+								<Badge color="purple" rounded class="px-3 py-1">
+									<span
+										class="cursor-pointer font-semibold underline"
+										on:click={() => {
+											selectedInvoiceItem = item;
+											editModal = true;
+										}}
+										>Adjust<span />
+									</span>
+								</Badge>
 							{/if}
 						</TableBodyCell>
 					</TableBodyRow>

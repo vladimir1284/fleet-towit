@@ -13,6 +13,7 @@
 	} from 'flowbite-svelte';
 	import PaymentRefundForm from './PaymentRefundForm.svelte';
 	import { formatStringDate } from '$lib/helpers/dates';
+	import { reqInvoiceApi, reqPaymentApi } from '@killbill/requests';
 
 	export let data: any;
 	export let currentPayment: any = undefined;
@@ -27,9 +28,16 @@
 	let loading: boolean = false;
 	let refundModal: boolean = false;
 
+	async function getThisPayment(event: any) {
+		currentPayment = await reqPaymentApi.getPayment({
+			paymentId: currentPayment.paymentId,
+			withAttempts: true,
+			withPluginInfo: true
+		});
+	}
 	async function handleCloseRefundModal(event: any) {
-		console.log(event.detail);
-		refundModal = event.detail;
+		refundModal = false;
+		await getThisPayment();
 	}
 </script>
 
@@ -52,8 +60,8 @@
 					<span class="px-3">
 						{invoiceId}
 					</span><br />
-					<strong>EXTERNAL KEY:</strong>
-					<span class="px-3">{currentPayment.paymentExternalKey}</span><br />
+					<!-- <strong>EXTERNAL KEY:</strong>
+					<span class="px-3">{currentPayment.paymentExternalKey}</span><br /> -->
 				</div>
 				<div class="flex justify-between">
 					<div>
@@ -74,11 +82,6 @@
 				<TableHeadCell class="text-center">DATE</TableHeadCell>
 				<TableHeadCell class="text-center">TYPE</TableHeadCell>
 				<TableHeadCell class="text-center">AMOUNT</TableHeadCell>
-				<TableHeadCell class="text-center">TRANSACTION EXTERNAL KEY</TableHeadCell>
-				<TableHeadCell class="text-center">FIRST ID</TableHeadCell>
-				<TableHeadCell class="text-center">SECOND ID</TableHeadCell>
-				<TableHeadCell class="text-center">GATEWAY CODE</TableHeadCell>
-				<TableHeadCell class="text-center">GATEWAY MESSAGE</TableHeadCell>
 				<TableHeadCell class="text-center">STATUS</TableHeadCell>
 			</TableHead>
 			<TableBody class="divide-y">
@@ -95,18 +98,7 @@
 						<TableBodyCell class="text-center"
 							>${transaction.processedAmount} ({transaction.processedCurrency})</TableBodyCell
 						>
-						<TableBodyCell class="text-center"
-							>{transaction.paymentExternalKey || '-'}</TableBodyCell
-						>
 
-						<TableBodyCell class="text-center"
-							>{transaction.firstPaymentReferenceId || '-'}</TableBodyCell
-						>
-						<TableBodyCell class="text-center"
-							>{transaction.secondPaymentReferenceId || '-'}</TableBodyCell
-						>
-						<TableBodyCell class="text-center">{transaction.gatewayErrorCode || '-'}</TableBodyCell>
-						<TableBodyCell class="text-center">{transaction.gatewayErrorMsg || '-'}</TableBodyCell>
 						<TableBodyCell class="text-center">
 							<Badge
 								color={transaction.status === 'SUCCESS'

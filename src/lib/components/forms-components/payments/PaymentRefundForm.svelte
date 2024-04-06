@@ -13,25 +13,28 @@
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
 	import { reqInvoiceApi, reqPaymentApi } from '@killbill/requests';
 	import { AnnotationSolid } from 'flowbite-svelte-icons';
-	// import { Invoice } from '@killbill/api/models/Invoice';
+	// import { PaymentTransaction } from '@killbill/api/models/PaymentTransaction';
 	export let data;
-	export let selectedInvoice: any = null;
-	export let maxAmount; // aun no lo tengo
+	export let selectedPayment: any = null;
+	export let maxAmount = 999999999999; // aun no lo tengo
 	export let minAmount = 0;
 	const dispatch = createEventDispatcher();
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 
 	const fixSchema = z.object({
-		amount: z.string().refine(
-			(value) => {
-				const num = parseFloat(value);
-				const regex = /^\d*\.?\d+$/; // Expresión regular para números decimales positivos
-				return regex.test(value) && num >= minAmount && num <= maxAmount;
-			},
-			{
-				message: `Amount must be a number between ${minAmount} and ${maxAmount}`
-			}
-		),
+		amount: z
+			.number()
+			.or(z.string())
+			.refine(
+				(value) => {
+					const num = parseFloat(value);
+					const regex = /^\d*\.?\d+$/; // Expresión regular para números decimales positivos
+					return regex.test(value) && num >= minAmount && num <= maxAmount;
+				},
+				{
+					message: `Amount must be a number between ${minAmount} and ${maxAmount}`
+				}
+			),
 		comment: z.string()
 	});
 
@@ -45,32 +48,36 @@
 		}
 	});
 
-	if (selectedInvoice) {
-		$form.external_payment = false;
-		$form.amount = selectedInvoice.amount;
-		$form.comment = selectedInvoice.comment;
-	} else {
-		// buscar el primer invoice a pagar
-		// selectedInvoice = await
-		$form.external_payment = false;
-		// $form.amount = selectedInvoice.amount;
-		// $form.comment = selectedInvoice.comment;
+	if (selectedPayment) {
+		$form.amount = 200;
 	}
 
 	async function handleSubmit(event) {
 		event.preventDefault();
 
 		// const formData = new FormData(event.target);
-		const invoice: Invoice = {
-			...selectedInvoice,
+		const { auditLogs, ...otherData } = selectedPayment;
+		const payment: PaymentTransaction = {
+			// ...otherData,
 			amount: $form.amount
 		};
+
 		try {
-			const res = 'response';
-			console.info(res);
+			const res = reqPaymentApi.refundPayment({
+				body: payment,
+				paymentId: selectedPayment.paymentId,
+				xKillbillCreatedBy: 'admin',
+				xKillbillReason: 'Contract-Timeline',
+				xKillbillComment: $form.comment
+			});
+			if (res.status === 201) console.info('Refund payment successful:', res.data);
+			else console.warn('Unexpected response status:', res.status);
 		} catch (error) {
-			console.error('Payment invoice error :', error);
+			if (error.response.status === 201) {
+				console.info('Refund payment successful');
+			} else console.error('Refund payment error:', error);
 		}
+		dispatch('formvalid');
 	}
 </script>
 
@@ -83,19 +90,19 @@
 >
 	<input hidden name="id" bind:value={$form.id} />
 	<!-- <input hidden name="tenantId" bind:value={$form.tenantId} /> -->
-	<div class="sm:col-span-2 px-2 pb-2">
+	<!-- <div class="sm:col-span-2 px-2 pb-2">
 		<Radio name="invoice_adjustment" class="pb-2">No Invoice Adjustment</Radio>
 		<Radio name="invoice_adjustment">Invoice Item Adjustment</Radio>
-	</div>
+	</div> -->
 	<div class="sm:col-span-2">
 		<AmountInputComponent formPointer="amount" {form} {errors} {constraints} placeholder="Amount" />
 	</div>
 	<div class="sm:col-span-2">
 		<TextInputComponent
 			formPointer="comment"
-			form={$form.comment}
-			errors={$errors.comment}
-			constraints={$constraints.comment}
+			form={form.comment}
+			errors={errors.comment}
+			constraints={constraints.comment}
 			placeholder="Comment"><AnnotationSolid class="w-6 h-6 inline" /></TextInputComponent
 		>
 	</div>

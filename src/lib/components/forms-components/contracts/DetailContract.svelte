@@ -1,7 +1,8 @@
 <script async lang="ts">
 	//@ts-nocheck
+	import { onMount } from 'svelte';
 	import { tenantActor } from '$lib/store/context-store';
-	import { Badge, Label, GradientButton } from 'flowbite-svelte';
+	import { Badge, Label, Button, GradientButton } from 'flowbite-svelte';
 	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import { Modal } from 'flowbite-svelte';
 	import {
@@ -17,23 +18,39 @@
 	import PaymentInvoiceForm from '../payments/PaymentInvoiceForm.svelte';
 
 	export let data: any;
-	export let selectedContract: any = undefined;
-	export let contractStagesList: any = undefined;
-	export let contractInvoicesList: any = undefined;
-	export let contractPaymentsList: any = undefined;
+	export let selectedContract: Array<object> = [];
+	export let contractStagesList: Array<object> = [];
+	export let contractInvoicesList: Array<object> = [];
+	export let contractPaymentsList: Array<object> = [];
+	export let contractNotesList: Array<object> = [];
+
+	let firstFilter: boolean = true;
+	let stagesFilter: boolean = true;
+	let notesFilter: boolean = true;
+	let invoicesFilter: boolean = true;
+	let paymentsFilter: boolean = true;
+
 	let TimelineData = [];
-	let loading = false;
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
-	let makingPayment: boolean = false;
+	let makePaymentModal: boolean = false;
 
-	const relistTimeline = (data: Array) => {
+	const reListTimeline = () => {
+		TimelineData = [];
+
+		if (paymentsFilter) TimelineData = [...TimelineData, ...contractPaymentsList];
+		if (invoicesFilter) TimelineData = [...TimelineData, ...contractInvoicesList];
+		if (notesFilter) TimelineData = [...TimelineData, ...contractNotesList];
+		if (stagesFilter) TimelineData = [...TimelineData, ...contractStagesList];
+
+		if (firstFilter) {
+			firstFilter = false;
+			stagesFilter = false;
+			notesFilter = false;
+			invoicesFilter = false;
+			paymentsFilter = false;
+		}
 		// ordenar el array TimelineData según su fecha
-		// console.log(contractStagesList);
-		// console.log(contractInvoicesList);
-		// console.log(contractPaymentsList);
-
-		TimelineData = [...contractStagesList, ...contractInvoicesList, ...contractPaymentsList];
 		TimelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
 	};
 	async function updateContractData() {
@@ -48,146 +65,196 @@
 		);
 		selectedContract = await contractData.json();
 		contractStagesList = await contractStages.json();
-		relistTimeline();
+		reListTimeline();
 	}
 
-	async function handleCloseEditModal(event: any) {
+	async function handleCloseEditClientModal(event) {
 		updateContractData();
 		editClient = event.detail;
 	}
 
-	async function handleCloseUpdateModal(event: any) {
+	async function handleCloseUpdateStageModal(event) {
 		updateContractData();
 		updateStage = event.detail;
 	}
 
-	async function handleCloseMakePaymentModal(event: any) {
-		updateContractData();
-		editClient = event.detail;
-	}
-
-	relistTimeline();
+	onMount(async () => {
+		reListTimeline();
+	});
 </script>
 
-{#if editClient}
+<Modal bind:open={editClient} size="xs" title="Update Client">
 	<ClientForm
 		data={data?.clientForm}
 		selectedClient={selectedContract.client}
-		on:formvalid={handleCloseEditModal}
+		on:formvalid={handleCloseEditClientModal}
 	/>
-{:else if updateStage}
-	<UpdateStage data={data?.stageForm} {selectedContract} on:formvalid={handleCloseUpdateModal} />
-{:else if makingPayment}
-	<PaymentInvoiceForm data={data?.PaymentInvoiceForm} on:formvalid={handleCloseMakePaymentModal} />
-{:else}
-	<div>
-		<div class="flex flex-row mb-5">
-			<div class="min-w-[77%]">
-				<GradientButton
-					color="green"
-					on:click={() => {
-						makingPayment = true;
-					}}>Make New Payment</GradientButton
-				>
-			</div>
-			<div class="pl-5 hidden lg:block">
-				<Badge class="my-1" color="gray">payments</Badge>
-				<Badge class="my-1" color="gray">invoices</Badge>
-			</div>
+</Modal>
+<Modal bind:open={updateStage} title="Update Stage" size="xs">
+	<UpdateStage
+		data={data?.stageForm}
+		{selectedContract}
+		on:formvalid={handleCloseUpdateStageModal}
+	/>
+</Modal>
+<Modal bind:open={makePaymentModal} size="xs" title="Pay Last Pending Invoie">
+	<PaymentInvoiceForm data={data?.PaymentInvoiceForm} on:formvalid={reListTimeline} />
+</Modal>
+
+<div id="contractDetails">
+	<div class="flex flex-row mb-5">
+		<div class="min-w-[75%]">
+			<GradientButton
+				disabled
+				color="green"
+				on:click={() => {
+					makePaymentModal = true;
+				}}>Pay Last Pending Invoice</GradientButton
+			>
 		</div>
-		<div class="flex flex-row justify-between h-[40em] overflow-y-auto">
-			<div class="min-w-[75%] p-1 mb-8 lg:mb-12">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<FeatureDefault>
-						<FeatureItem>
-							<svelte:fragment slot="icon">
-								<ClipboardListOutline class="text-primary-600 dark:text-primary-300" />
-							</svelte:fragment>
-							<svelte:fragment slot="h3">Status</svelte:fragment>
+		<div class="min-w-[25%] flex justify-center pt-3">
+			<Button
+				color={stagesFilter ? 'purple' : 'light'}
+				size="xs"
+				class="py-1 mx-1"
+				outline
+				pill
+				on:click={() => {
+					stagesFilter = !stagesFilter;
+					reListTimeline();
+				}}
+			>
+				stage
+			</Button>
 
-							<svelte:fragment slot="paragraph">
-								<Badge class="my-1">{selectedContract?.stage.stage}</Badge>
-								<Label class="my-3">Reason: {selectedContract?.stage.reason ?? '-'}</Label>
-								<Label class="my-3">Comments: {selectedContract?.stage.comments ?? '-'}</Label>
-								<ButtonComponent
-									styles="my-2 w-max"
-									placeholder="Update contract stage"
-									onClick={() => {
-										updateStage = true;
-									}}
-								/>
-							</svelte:fragment>
-						</FeatureItem>
-					</FeatureDefault>
+			<Button
+				color={notesFilter ? 'green' : 'light'}
+				size="xs"
+				class="py-1 mx-1"
+				outline
+				pill
+				on:click={() => {
+					notesFilter = !notesFilter;
+					reListTimeline();
+				}}
+			>
+				notes
+			</Button>
 
-					<FeatureDefault>
-						<FeatureItem>
-							<svelte:fragment slot="icon">
-								<UserOutline class="text-primary-600 dark:text-primary-300" />
-							</svelte:fragment>
+			<Button
+				color={invoicesFilter ? 'blue' : 'light'}
+				size="xs"
+				class="py-1 mx-1"
+				outline
+				pill
+				on:click={() => {
+					invoicesFilter = !invoicesFilter;
+					reListTimeline();
+				}}
+			>
+				invoices
+			</Button>
 
-							<svelte:fragment slot="h3">Client</svelte:fragment>
-							<svelte:fragment slot="paragraph">
-								<Label class="my-3 w-max">Name: {selectedContract.client.name}</Label>
-								<Label class="my-3 w-max">Email: {selectedContract.client.email}</Label>
-								<Label class="my-3 w-max">Phone number: {selectedContract.client.phoneNumber}</Label
-								>
-								<ButtonComponent
-									styles="my-3 w-max"
-									placeholder="Update client information"
-									onClick={() => {
-										editClient = true;
-									}}
-								/>
-							</svelte:fragment>
-						</FeatureItem>
-					</FeatureDefault>
-
-					<FeatureDefault>
-						<FeatureItem>
-							<svelte:fragment slot="icon">
-								<DollarOutline class="text-primary-600 dark:text-primary-300" />
-							</svelte:fragment>
-
-							<svelte:fragment slot="h3">Plan</svelte:fragment>
-							<svelte:fragment slot="paragraph">
-								<Label class="my-3 w-max">Name: {selectedContract.rentalPlan.name}</Label>
-								<Label class="my-3 w-max">Amount: ${selectedContract.rentalPlan.amount}</Label>
-								<Label class="my-3 w-max"
-									>Periodicity: {selectedContract.rentalPlan.periodicity}</Label
-								>
-							</svelte:fragment>
-						</FeatureItem>
-					</FeatureDefault>
-
-					<FeatureDefault>
-						<FeatureItem>
-							<svelte:fragment slot="icon">
-								<TruckOutline class="text-primary-600 dark:text-primary-300" />
-							</svelte:fragment>
-
-							<svelte:fragment slot="h3">Vehicle</svelte:fragment>
-							<svelte:fragment slot="paragraph">
-								<Label class="my-3 w-max">Plate: {selectedContract.vehicle.plate}</Label>
-								<Label class="my-3 w-max">Make: {selectedContract.vehicle.make}</Label>
-								<Label class="my-3 w-max">Type: {selectedContract.vehicle.type}</Label>
-								<Label class="my-3 w-max">Vin: {selectedContract.vehicle.vin}</Label>
-								<Label class="my-3 w-max">Nickname: {selectedContract.vehicle.nickname}</Label>
-								<Label class="my-3 w-max">Spare tires: {selectedContract.vehicle.spare_tires}</Label
-								>
-							</svelte:fragment>
-						</FeatureItem>
-					</FeatureDefault>
-				</div>
-			</div>
-			<div class="overflow-y-scroll h-[100%] hidden lg:block">
-				<ContractTimeline {TimelineData} />
-			</div>
+			<Button
+				color={paymentsFilter ? 'red' : 'light'}
+				size="xs"
+				class="py-1 mx-1"
+				outline
+				pill
+				on:click={() => {
+					paymentsFilter = !paymentsFilter;
+					reListTimeline();
+				}}
+			>
+				payments
+			</Button>
 		</div>
 	</div>
-	<!-- {#if showAlert}
-		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
-			{message}
-		</Alert>
-	{/if} -->
-{/if}
+	<div class="flex flex-row justify-between h-[40em] overflow-y-auto">
+		<div class="min-w-[75%] p-1 mb-8 lg:mb-12">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<FeatureDefault>
+					<FeatureItem>
+						<svelte:fragment slot="icon">
+							<ClipboardListOutline class="text-primary-600 dark:text-primary-300" />
+						</svelte:fragment>
+						<svelte:fragment slot="h3">Status</svelte:fragment>
+
+						<svelte:fragment slot="paragraph">
+							<Badge class="my-1">{selectedContract?.stage.stage}</Badge>
+							<Label class="my-3">Reason: {selectedContract?.stage.reason ?? '-'}</Label>
+							<Label class="my-3">Comments: {selectedContract?.stage.comments ?? '-'}</Label>
+							<ButtonComponent
+								styles="my-2 w-max"
+								placeholder="Update contract stage"
+								onClick={() => {
+									updateStage = true;
+								}}
+							/>
+						</svelte:fragment>
+					</FeatureItem>
+				</FeatureDefault>
+
+				<FeatureDefault>
+					<FeatureItem>
+						<svelte:fragment slot="icon">
+							<UserOutline class="text-primary-600 dark:text-primary-300" />
+						</svelte:fragment>
+
+						<svelte:fragment slot="h3">Client</svelte:fragment>
+						<svelte:fragment slot="paragraph">
+							<Label class="my-3 w-max">Name: {selectedContract.client.name}</Label>
+							<Label class="my-3 w-max">Email: {selectedContract.client.email}</Label>
+							<Label class="my-3 w-max">Phone number: {selectedContract.client.phoneNumber}</Label>
+							<ButtonComponent
+								styles="my-3 w-max"
+								placeholder="Update client information"
+								onClick={() => {
+									editClient = true;
+								}}
+							/>
+						</svelte:fragment>
+					</FeatureItem>
+				</FeatureDefault>
+
+				<FeatureDefault>
+					<FeatureItem>
+						<svelte:fragment slot="icon">
+							<DollarOutline class="text-primary-600 dark:text-primary-300" />
+						</svelte:fragment>
+
+						<svelte:fragment slot="h3">Plan</svelte:fragment>
+						<svelte:fragment slot="paragraph">
+							<Label class="my-3 w-max">Name: {selectedContract.rentalPlan.name}</Label>
+							<Label class="my-3 w-max">Amount: ${selectedContract.rentalPlan.amount}</Label>
+							<Label class="my-3 w-max"
+								>Periodicity: {selectedContract.rentalPlan.periodicity}</Label
+							>
+						</svelte:fragment>
+					</FeatureItem>
+				</FeatureDefault>
+
+				<FeatureDefault>
+					<FeatureItem>
+						<svelte:fragment slot="icon">
+							<TruckOutline class="text-primary-600 dark:text-primary-300" />
+						</svelte:fragment>
+
+						<svelte:fragment slot="h3">Vehicle</svelte:fragment>
+						<svelte:fragment slot="paragraph">
+							<Label class="my-3 w-max">Plate: {selectedContract.vehicle.plate}</Label>
+							<Label class="my-3 w-max">Make: {selectedContract.vehicle.make}</Label>
+							<Label class="my-3 w-max">Type: {selectedContract.vehicle.type}</Label>
+							<Label class="my-3 w-max">Vin: {selectedContract.vehicle.vin}</Label>
+							<Label class="my-3 w-max">Nickname: {selectedContract.vehicle.nickname}</Label>
+							<Label class="my-3 w-max">Spare tires: {selectedContract.vehicle.spare_tires}</Label>
+						</svelte:fragment>
+					</FeatureItem>
+				</FeatureDefault>
+			</div>
+		</div>
+		<div class="overflow-y-scroll h-[100%] min-w-[25%] px-3.5 pt-2">
+			<ContractTimeline {TimelineData} on:reListTimeline={reListTimeline} />
+		</div>
+	</div>
+</div>

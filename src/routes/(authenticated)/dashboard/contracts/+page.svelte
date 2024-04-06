@@ -22,15 +22,15 @@
 		FileEditSolid,
 		RotateOutline,
 		EyeOutline,
-		AnnotationSolid
+		AnnotationSolid,
+		CashOutline
 	} from 'flowbite-svelte-icons';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
-	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
+	import PaymentInvoiceForm from '$lib/components/forms-components/payments/PaymentInvoiceForm.svelte';
 	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
-	import { reqInvoiceApi, reqPaymentApi, reqAccountApi } from '@killbill/requests';
 
 	export let data: PageData;
 	let message = '';
@@ -45,7 +45,7 @@
 	let createModal = false;
 	let deleteModal = false;
 	let updateModal = false;
-	let detailModal = false;
+	let makingPaymentModal: boolean = false;
 	let showNotesModal = false;
 	let selectedContract = undefined;
 
@@ -55,12 +55,9 @@
 		});
 	}
 
-	let contractStagesList = [];
-	let contractInvoicesList = [];
-	let contractPaymentsList = [];
-
 	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+
 	onMount(async () => {
 		try {
 			const clientsResponse = await fetch(`/api/tenants/${currentTenant.id}/client`, { headers });
@@ -149,90 +146,19 @@
 		contracts = [...(await contractsResponse.json())];
 	}
 
-	async function getInvoicesList(contract, limit = 10) {
-		try {
-			const invoices = await reqInvoiceApi.getInvoices({ limit: limit });
-			contractInvoicesList = invoices.map(
-				({ invoiceId, invoiceDate, status, amount, balance, ...rest }) => ({
-					// ...rest,
-					type: 'invoice',
-					comments: 'KillBill invoice',
-					reason: '',
-					invoice_id: invoiceId,
-					date: invoiceDate, // targetDate
-					stage: status,
-					amount,
-					balance
-				})
-			);
-		} catch (error) {
-			console.error('Error getting invoices:', error);
-		}
-	}
-	async function getPaymentsList(contract, limit = 10) {
-		try {
-			const payments = await reqPaymentApi.getPayments({ limit: limit });
-			contractPaymentsList = await payments.map(
-				({
-					paymentId,
-					authAmount,
-					purchasedAmount,
-					refundedAmount,
-					creditedAmount,
-					transactions,
-					...rest
-				}) => {
-					const lastTransaction =
-						transactions.length > 0 ? transactions[transactions.length - 1] : {};
-					return {
-						// ...rest,
-						payment_id: paymentId,
-						type: 'payment',
-						comments: 'KillBill payment',
-						reason: '',
-						date: lastTransaction.effectiveDate || null,
-						stage: lastTransaction.status || null,
-						auth_amount: authAmount,
-						purchased_amount: purchasedAmount,
-						refunded_amount: refundedAmount
-					};
-				}
-			);
-		} catch (error) {
-			console.error('Error getting payments:', error);
-		}
-		``;
-	}
-
-	async function handleDetail(contract) {
-		const request = await fetch(`/api/tenants/${currentTenant.id}/contracts/${contract.id}/stage`);
-		contractStagesList = await request.json();
-
-		// !! aqui esta listando todos los invoices y los payments en común para todos los contratos !!
-		await getInvoicesList(contract, 10);
-		await getPaymentsList(contract, 10);
-
-		selectedContract = contract;
-		detailModal = true;
-	}
-	$: if (!detailModal) {
-		handleCloseDetailModal();
-	}
-
-	async function handleCloseDetailModal() {
-		contractStagesList = [];
-		contractInvoicesList = [];
-		contractPaymentsList = [];
-
-		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
-	}
-
 	async function handleShowNotes(contract) {
 		selectedContract = contract;
 		showNotesModal = true;
+	}
+
+	async function handleShowMakePaymentModal(contract) {
+		selectedContract = contract;
+		makingPaymentModal = true;
+	}
+
+	async function handleCloseMakePaymentModal(event) {
+		makingPaymentModal = false;
+		handleAlert('');
 	}
 </script>
 
@@ -262,14 +188,10 @@
 		<UpdateStage {data} {selectedContract} on:formvalid={handleCloseUpdateModal} />
 	</Modal>
 
-	<Modal title={'Contract #' + selectedContract?.id} size="xl" padding="md" bind:open={detailModal}>
-		<DetailContract
-			{data}
-			{selectedContract}
-			{contractStagesList}
-			{contractInvoicesList}
-			{contractPaymentsList}
-			on:formvalid={handleCloseDetailModal}
+	<Modal size="xs" padding="md" bind:open={makingPaymentModal}>
+		<PaymentInvoiceForm
+			data={data?.PaymentInvoiceForm}
+			on:formvalid={handleCloseMakePaymentModal}
 		/>
 	</Modal>
 
@@ -278,7 +200,7 @@
 		<ViewContractNotes bind:open={showNotesModal} bind:selectedContract {data} />
 	{/if}
 
-	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
+	<Card size="xl" padding="md" class="flex w-full mt-5">
 		<Table>
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
@@ -325,11 +247,27 @@
 							<Badge color="blue" rounded class="px-2.5 py-0.5">{contract.stage.stage}</Badge>
 						</TableBodyCell>
 						<TableBodyCell class="flex w-40 justify-between">
-							<EyeOutline class="text-gray-400" on:click={() => handleDetail(contract)} />
-							<AnnotationSolid class="text-gray-400" on:click={() => handleShowNotes(contract)} />
-							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(contract)} />
-							<RotateOutline class="text-gray-400" on:click={() => handleUpdateStage(contract)} />
-							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(contract.id)} />
+							<a href={`/dashboard/contracts/${contract.id}`}>
+								<EyeOutline class="mx-1 text-gray-400" />
+							</a>
+							<CashOutline
+								class="mx-1 text-gray-400"
+								on:click={() => handleShowMakePaymentModal(contract)}
+							/>
+							<AnnotationSolid
+								class="mx-1 text-gray-400"
+								on:click={() => handleShowNotes(contract)}
+							/>
+							<FileEditSolid class="mx-1 text-gray-400" on:click={() => handleEdit(contract)} />
+							<RotateOutline
+								class="mx-1 text-gray-400"
+								on:click={() => handleUpdateStage(contract)}
+							/>
+							<TrashBinSolid
+								title="asd"
+								class="mx-1 text-red-500"
+								on:click={() => handleDelete(contract.id)}
+							/>
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}
