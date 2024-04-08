@@ -66,7 +66,10 @@ export const fetchCustomFormsByTenant = async ({
 		},
 		include: {
 			cards: true
-		}
+		},
+		orderBy: {
+			createdAt: 'desc'
+		}		
 	});
 
 	const count = await tenantPrisma(tenantId).customForm.count({
