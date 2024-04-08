@@ -1,19 +1,23 @@
 <script lang="ts">
 	// @ts-nocheck
 	import { z } from 'zod';
+	import { zod } from 'sveltekit-superforms/adapters';
 	import { createEventDispatcher } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { UserSolid } from 'flowbite-svelte-icons';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
 	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import PhoneNumberInputComponent from '$lib/components/inputs/PhoneNumberInputComponent.svelte';
-	import { UserSolid } from 'flowbite-svelte-icons';
+
 	export let data;
 	export let selectedClient;
+	import { getContext } from 'svelte';
+
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	let actionURL = `/api/tenants/${currentTenant.id}/client`;
+	const currentTenant = getContext('currentTenant');
+	let actionURL = `/api/tenants/${$currentTenant.id}/client`;
+	let loading = false;
 
 	const fixSchema = z.object({
 		name: z.string(),
@@ -26,8 +30,10 @@
 	});
 
 	const { form, errors, constraints, enhance } = superForm(data, {
-		SPA: true,
-		validators: fixSchema,
+		validators: zod(fixSchema),
+		onSubmit: async (event) => {
+			$form.email = $form.email.trim();
+		},
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -42,32 +48,13 @@
 		$form.tenantId = selectedClient.tenantId;
 		actionURL = actionURL + `/${selectedClient.id}`;
 	}
-
-	async function handleSubmit(event) {
-		event.preventDefault();
-		$form.email = $form.email.trim();
-		const formData = new FormData(event.target);
-		const headers = {
-			'X-User-Tenant': currentTenant.currentUserTenant.id
-		};
-		const response = await fetch(actionURL, {
-			method: 'POST',
-			headers: headers,
-			body: formData
-		});
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		} else {
-			console.log('Form submitted successfully');
-		}
-	}
 </script>
 
 <form
 	class="flex flex-col justify-center align-center space-y-6"
 	method="POST"
 	enctype="multipart/form-data"
-	on:submit={handleSubmit}
+	action={actionURL}
 	use:enhance
 >
 	<input hidden name="id" bind:value={$form.id} />
@@ -86,5 +73,6 @@
 	<SubmitButtonComponent
 		placeholder={!selectedClient ? 'Create client' : 'Update client'}
 		styles="w-[50%] mx-auto block"
+		{loading}
 	/>
 </form>

@@ -1,13 +1,14 @@
-import type { PageServerLoad } from './$types';
-import { superValidate } from 'sveltekit-superforms/server';
-import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
-import { minioClient } from '$lib/minio';
+import { fail } from '@sveltejs/kit';
 import { prisma } from '$lib/prisma';
+import { minioClient } from '$lib/minio';
 import { editUser } from '$lib/actions/user';
+import type { PageServerLoad } from './$types';
+import { zod } from 'sveltekit-superforms/adapters';
+import { superValidate } from 'sveltekit-superforms/server';
 
 const editUserSchema = z.object({
-	id: z.number().optional(),
+	id: z.string().optional(),
 	name: z.string().optional().nullable(),
 	email: z.string().email(),
 	image: z.string().optional().nullable(),
@@ -27,9 +28,9 @@ export const load = (async ({ locals }) => {
 			email: user?.email || '',
 			image: user?.image
 		};
-		form = await superValidate(data, editUserSchema);
+		form = await superValidate(data, zod(editUserSchema));
 	} else {
-		form = await superValidate(editUserSchema);
+		form = await superValidate(zod(editUserSchema));
 	}
 	return { form };
 }) satisfies PageServerLoad;
@@ -38,7 +39,7 @@ export const actions = {
 	default: async ({ request }) => {
 		const formData = await request.formData();
 
-		const form = await superValidate(formData, editUserSchema);
+		const form = await superValidate(formData, zod(editUserSchema));
 
 		if (!form.valid) {
 			console.log('validatin fail', form);

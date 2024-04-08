@@ -1,23 +1,28 @@
 <script async script lang="ts">
-	import { Card, Label, Input, Checkbox } from 'flowbite-svelte';
-	import { EyeOutline, EyeSlashOutline, GoogleSolid } from 'flowbite-svelte-icons';
-	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
-	import { superForm } from 'sveltekit-superforms/client';
-
 	import { signIn } from '@auth/sveltekit/client';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import { superForm } from 'sveltekit-superforms/client';
+	import { Card, Label, Input, Checkbox } from 'flowbite-svelte';
+	import { EyeOutline, EyeSlashOutline } from 'flowbite-svelte-icons';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
+	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
 
 	let show = false;
 	let useMagicLink = true;
+	let loading = false;
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				signIn('email', { email: form.data.email, callbackUrl: '/select-tenant' });
+			} else {
+				loading = false;
 			}
+		},
+		onSubmit: async () => {
+			loading = true;
 		}
 	});
 </script>
@@ -53,12 +58,24 @@
 		<Checkbox checked={useMagicLink} on:change={() => (useMagicLink = !useMagicLink)}>
 			Receive access token
 		</Checkbox>
-		<SubmitButtonComponent placeholder="Login to your account" styles="w-full color-blue" />
+		<SubmitButtonComponent
+			placeholder="Login to your account"
+			styles="w-full color-blue"
+			{loading}
+		/>
 		<ButtonComponent
 			placeholder="Sign in with Google"
 			color="light"
 			styles="justify-evenly text-blue-700 text-lg font-bold"
-			onClick={() => signIn('google')}
+			{loading}
+			onClick={() => {
+				try {
+					loading = true;
+					signIn('google');
+				} catch (error) {
+					loading = false;
+				}
+			}}
 		>
 			<!-- svelte-ignore illegal-attribute-character -->
 			<svg
