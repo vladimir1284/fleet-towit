@@ -15,7 +15,7 @@
 
 	import { TrashBinSolid, FileEditSolid, EyeOutline, CloseOutline } from 'flowbite-svelte-icons';
 	import { slide } from 'svelte/transition';
-	import L, { marker } from 'leaflet';
+	import L from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import TrackersForm from '$lib/components/forms-components/trackers/TrackersForm.svelte';
 	import DeleteTrackersForm from '$lib/components/forms-components/trackers/DeleteTrackersForm.svelte';
@@ -96,8 +96,14 @@
 				popup.close()
 			}
 		} else {
-			markersList = selectedTracker.tracker?.heartBeats[0] ? 
-			createMarkers([selectedTracker.tracker.heartBeats[0]]) : []
+			const pos =  selectedTracker.tracker?.heartBeats[0];
+			if (pos) {
+				markersList = createMarkers([selectedTracker.tracker.heartBeats[0]])
+				map.panTo(L.latLng(pos.latitude, pos.longitude))
+				visibleHeartBeatId = pos.id
+			} else {
+				markersList = []
+			}
 		}
 	}
 
@@ -107,6 +113,7 @@
 	let editModal: any = false;
 	let deleteModal: any = false;
 	let selectedTracker: any;
+	let visibleHeartBeatId: number | undefined = undefined;
 	let initialData: any;
 	let createHeartBeat: any = false
 	let deleteHeartBeat: any = false
@@ -195,14 +202,23 @@
 							<TableBodyCell class="text-center">{vehicle.tracker?.name || '-'}</TableBodyCell>
 							<TableBodyCell class="flex w-40 justify-between">
 								{#if vehicle.tracker}
-									<EyeOutline
-										class="text-gray-400"
+								{#if selectedTracker?.id === vehicle.id}
+								<EyeOutline class="text-blue-400"/>
+								{:else}
+								<EyeOutline
+											class="text-gray-400"
 										on:click={() => {
 											selectedTracker = vehicle;
-											markersList = vehicle.tracker.heartBeats[0] ? 
-											createMarkers([vehicle.tracker.heartBeats[0]]): []
+											const firstHeartBeat = vehicle.tracker?.heartBeats[0];
+											if (firstHeartBeat) {
+												markersList = createMarkers([firstHeartBeat]);
+												visibleHeartBeatId = firstHeartBeat.id
+											} else {
+												markersList =  [];
+											}
 										}}
 									/>
+								{/if}
 									<FileEditSolid class="text-gray-400"
 										on:click={() => {
 											selectedTracker = false;
@@ -264,9 +280,17 @@
 									<TableBodyCell>{heartBeat.latitude}</TableBodyCell>
 									<TableBodyCell>{heartBeat.longitude}</TableBodyCell>
 									<TableBodyCell class="flex w-[fit-content] justify-between">
-										<EyeOutline class="text-gray-400 m-2" on:click={() => {
-											markersList = createMarkers([heartBeat])
+										{#if heartBeat.id === visibleHeartBeatId}
+										<EyeOutline class="text-blue-400 m-2" on:click={() => {
+											map.panTo(L.latLng(heartBeat.latitude, heartBeat.longitude))
 										}} />
+										{:else}
+										<EyeOutline class="text-gray-400 m-2" on:click={() => {
+											visibleHeartBeatId = heartBeat.id
+											markersList = createMarkers([heartBeat])
+											map.panTo(L.latLng(heartBeat.latitude, heartBeat.longitude))
+										}} />
+										{/if}
 										<TrashBinSolid class="text-red-500 m-2" on:click={() => {
 											deleteHeartBeat = {
 												vehicleId: selectedTracker.id,

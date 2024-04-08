@@ -26,22 +26,26 @@
         $form.longitude = initialData.lng
     }
 </script>
-<form class="flex flex-col justify-center align-center space-y-6" method="POST" use:enhance action={actionURL}>
+<form class="flex flex-col justify-center align-center space-y-6 gap-4" method="POST" use:enhance action={actionURL}>
     <div class="sm:col-span-2">
 		<TextInputComponent
-				formPointer="latitude"
-				{form}
-				{errors}
-				{constraints}
-				placeholder="latitude"
+		formPointer="latitude"
+		{form}
+		{errors}
+		{constraints}
+		placeholder="latitude"
 		/>
-		<TextInputComponent
-				formPointer="longitude"
-				{form}
-				{errors}
-				{constraints}
-				placeholder="longitude"
-		/>
+	</div>
+	<div class="sm:col-span-2">
+			<TextInputComponent
+			formPointer="longitude"
+			{form}
+			{errors}
+			{constraints}
+			placeholder="longitude"
+			/>
+	</div>
+	<div class="sm:col-span-2">
 		<DateInputComponent
 				formPointer="timestamp"
 				{form}
