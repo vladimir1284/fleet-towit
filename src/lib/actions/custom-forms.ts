@@ -69,7 +69,7 @@ export const fetchCustomFormsByTenant = async ({
 		},
 		orderBy: {
 			createdAt: 'desc'
-		}		
+		}
 	});
 
 	const count = await tenantPrisma(tenantId).customForm.count({

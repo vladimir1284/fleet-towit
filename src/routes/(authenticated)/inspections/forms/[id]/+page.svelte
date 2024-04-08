@@ -256,18 +256,41 @@
 						{#each cardTypes as ct}
 							{#if ct.value === field.type}
 								<p class="text-blue-500">{ct.name}</p>
+								<p>({field.required ? 'required' : 'not required'})</p>
 							{/if}
 						{/each}
 
-						<Button
-							type="button"
-							size="xs"
-							color="light"
-							class="w-max"
-							on:click={() => (fields = fields.filter((_, i) => i !== index))}
-						>
-							<CloseOutline class="w-2 h-2" />
-						</Button>
+						<div class="inline-flex gap-4 mt-1">
+							<Button
+								type="button"
+								size="xs"
+								color="light"
+								class="w-max"
+								on:click={() => (fields = fields.filter((_, i) => i !== index))}
+							>
+								<CloseOutline class="w-2 h-2" />
+							</Button>
+
+							<Button
+								type="button"
+								size="xs"
+								color="light"
+								class="w-max"
+								on:click={() => {
+									const field = fields[index];
+
+									cardTypeSelect = field.type;
+									labelName = field.labelName;
+									pointPass = field.pointPass;
+									pointFail = field.pointFail;
+									required = field.required;
+
+									fields = fields.filter((_, i) => i !== index);
+								}}
+							>
+								<PenOutline class="w-2 h-2" />
+							</Button>
+						</div>
 					</div>
 					<div class="border-b"></div>
 				{/each}
