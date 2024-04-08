@@ -28,7 +28,7 @@ import {
 import type {} from '@prisma/client';
 
 import { Configuration } from './api/runtime';
-import { Config, apiConfig2, pris } from './config';
+import { Config, apiConfig, pris } from './config';
 import { getTenantKS } from './tenants/tenants';
 import { tenantActor } from '$lib/store/context-store';
 
@@ -56,7 +56,7 @@ function getCurrentTenantBySessionStorage(): object {
  */
 
 async function initializeApi<T>(apiConstructor: new (config: Configuration) => T): Promise<T> {
-	return new apiConstructor(apiConfig2);
+	return new apiConstructor(apiConfig);
 
 	// const currentTenant: any | null = tenantActor.getSnapshot().context.currentTenant;
 	const currentTenant: any | null = getCurrentTenantBySessionStorage();
