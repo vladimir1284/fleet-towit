@@ -165,6 +165,7 @@ model Vehicle {
   costs           Cost[]
   contracts       Contract[]
   inspections     Inspection[]
+  tracker         Tracker?
 }
 
 model VehiclePlate {
@@ -224,18 +225,28 @@ model CustomForm {
   createdAt   DateTime      @default(now())
   // Only show form if is active
   isActive    Boolean       @default(true)
-  fields      CustomField[]
   inspections Inspection[]
+  cards       Card[]
+}
+
+model Card {
+  id     Int           @id @default(autoincrement())
+  name   String
+  formId Int
+  form   CustomForm    @relation(fields: [formId], references: [id], onDelete: Cascade)
+  fields CustomField[]
 }
 
 enum FormFieldType {
   TEXT
   NUMBER
-  RADIO
   SINGLE_CHECK
-  MULTI_CHECK
-  CHECKBOXES
+  IMAGE
+  SIGNATURE
+  EMAIL
+  PHONE
   DATE
+  TIME
 }
 
 model CheckOption {
@@ -251,11 +262,11 @@ model CustomField {
   name         String
   type         FormFieldType
   required     Boolean?              @default(true)
-  formId       Int
-  form         CustomForm            @relation(fields: [formId], references: [id], onDelete: Cascade)
   checkOptions CheckOption[]
   // tenant user responses
   responses    CustomFieldResponse[]
+  card         Card?                 @relation(fields: [cardId], references: [id])
+  cardId       Int?
 }
 
 model CustomFieldResponse {
@@ -528,4 +539,24 @@ model TollDue {
 enum TollDueStage {
   PAID
   UNPAID
+}
+
+model Tracker {
+  id        Int    @id @default(autoincrement())
+  name      String
+  vehicleId Int?   @unique
+  
+  vehicle   Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  
+  heartBeats TrackerHeartBeatData[]
+}
+
+model TrackerHeartBeatData {
+  id        Int       @id @default(autoincrement())
+  timeStamp DateTime  @default(now())
+  latitude  Float
+  longitude Float
+  trackerId Int
+
+  tracker Tracker @relation(fields: [trackerId], references: [id], onDelete: Cascade)
 }

@@ -1,12 +1,15 @@
 import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
-import type { CheckOption, CustomForm } from '@prisma/client';
+import type { Card, CustomForm, CustomField, CheckOption } from '@prisma/client';
+import { Page } from '$lib/pagination';
 
-type fieldType = 'number' | 'text' | 'checkboxes' | 'single_check';
+interface CustomFields extends CustomField {
+	checkOptions: CheckOption[];
+}
 
-/*
- *  The following function are related to CustomForm
- */
+interface Cards extends Card {
+	fields: CustomFields[];
+}
 
 /*
  * Create new custom form
@@ -45,26 +48,38 @@ export const deleteCustomForm = async ({
 /*
  *  Return all custom forms
  */
-export const fetchCustomFormsByTenant = async ({ tenantId }: { tenantId: number }) => {
-	const tenant = await tenantPrisma(tenantId).tenant.findFirst({
+export const fetchCustomFormsByTenant = async ({
+	tenantId,
+	page_number,
+	results = 5
+}: {
+	tenantId: number;
+	page_number: number;
+	results?: number;
+}) => {
+	const customForms = await tenantPrisma(tenantId).customForm.findMany({
+		skip: (page_number - 1) * results,
+		take: results,
 		where: {
-			id: tenantId
+			tenantId: tenantId,
+			isActive: true
 		},
-
 		include: {
-			customForms: {
-				include: {
-					fields: true
-				},
-
-				where: {
-					isActive: true
-				}
-			}
+			cards: true
+		},
+		orderBy: {
+			createdAt: 'desc'
 		}
 	});
 
-	return tenant?.customForms || [];
+	const count = await tenantPrisma(tenantId).customForm.count({
+		where: {
+			tenantId: tenantId,
+			isActive: true
+		}
+	});
+
+	return new Page(customForms, count, results, page_number).toJSON();
 };
 
 /*
@@ -83,9 +98,13 @@ export const retrieveCustomFormById = async ({
 			tenantId: tenantId
 		},
 		include: {
-			fields: {
+			cards: {
 				include: {
-					checkOptions: true
+					fields: {
+						include: {
+							checkOptions: true
+						}
+					}
 				}
 			},
 			inspections: true
@@ -115,34 +134,45 @@ export const cloneCustomForm = async ({
 	// copy data
 	const cloneCustomForm = JSON.parse(JSON.stringify(form));
 
-	const cloneFields = cloneCustomForm.fields.map((field) => {
+	const cloneCards = cloneCustomForm.cards.map((card: Cards) => {
 		return {
-			name: field.name,
-			type: field.type,
-			checkOptions: {
-				create: field.checkOptions?.map((opt) => ({ name: opt.name }))
+			name: card.name,
+			fields: {
+				create: card.fields.map((field) => {
+					return {
+						name: field.name,
+						type: field.type,
+						checkOptions: {
+							create: field.checkOptions?.map((opt) => ({ name: opt.name }))
+						}
+					};
+				})
 			}
 		};
 	});
 
-	// create new form
 	const newForm = await tenantPrisma(tenantId).customForm.create({
 		data: {
 			name: cloneCustomForm.name,
 			tenantId: cloneCustomForm.tenantId,
-			fields: {
-				create: cloneFields
+			cards: {
+				create: cloneCards
 			}
 		},
 		include: {
-			fields: {
+			cards: {
 				include: {
-					checkOptions: true
+					fields: {
+						include: {
+							checkOptions: true
+						}
+					}
 				}
 			},
 			inspections: true
 		}
 	});
+
 	return newForm;
 };
 
@@ -170,56 +200,63 @@ export const renameCustomForm = async ({
 };
 
 /*
- *  The following function are related to custom field
+ * add card to custom form
  */
-
-const getFieldType = (FieldType: fieldType) => {
-	if (FieldType === 'number') return FormFieldType.NUMBER;
-
-	if (FieldType === 'checkboxes') return FormFieldType.CHECKBOXES;
-
-	if (FieldType === 'single_check') return FormFieldType.SINGLE_CHECK;
-
-	return FormFieldType.TEXT;
-};
-
-/*
- *	add field to custom form
- */
-export const addFieldToCustomForm = async ({
-	name,
-	formId,
-	cardType,
+export const addCardToForm = async ({
 	tenantId,
-	checkboxes
+	cardName,
+	formId,
+	fields
 }: {
-	name: string;
-	formId: number;
-	cardType: fieldType;
 	tenantId: number;
-	checkboxes?: string[];
+	cardName: string;
+	formId: number;
+	fields: string;
 }) => {
-	await tenantPrisma(tenantId).customField.create({
-		data: {
-			formId: formId,
-			name: name,
-			type: getFieldType(cardType),
-			checkOptions: {
-				create: checkboxes?.map((name) => ({ name }))
-			}
+	const parseFields = JSON.parse(fields);
+
+	const createCustomField = [];
+
+	for (const field of parseFields) {
+		const customField = {
+			name: field.labelName,
+			type: field.type,
+			required: field.required
+		};
+
+		if (field.type === FormFieldType.SINGLE_CHECK) {
+			customField.checkOptions = {
+				create: [{ name: field.pointPass }, { name: field.pointFail }]
+			};
 		}
-	});
+
+		createCustomField.push(customField);
+	}
+
+	try {
+		await tenantPrisma(tenantId).card.create({
+			data: {
+				formId: formId,
+				name: cardName,
+				fields: {
+					create: createCustomField
+				}
+			}
+		});
+	} catch (err) {
+		console.log(err);
+	}
 };
 
 /*
  * 	delete custom field
  */
-export const deleteCustomField = async ({
-	fieldId,
+export const deleteCard = async ({
+	cardId,
 	formId,
 	tenantId
 }: {
-	fieldId: number;
+	cardId: number;
 	formId: number;
 	tenantId: number;
 }) => {
@@ -233,83 +270,148 @@ export const deleteCustomField = async ({
 	});
 
 	if (customForm) {
-		await tenantPrisma(tenantId).customField.delete({
+		await tenantPrisma(tenantId).card.delete({
 			where: {
-				id: fieldId,
+				id: cardId,
 				formId: customForm.id
 			}
 		});
 	}
 };
 
-/*
- *  update custom field
- */
-export const updateCustomField = async ({
-	cardId,
-	cardType,
-	newName,
+export const updateCard = async ({
 	tenantId,
-	checkboxes
+	cardName,
+	cardId,
+	fields
 }: {
-	cardId: number;
-	cardType: fieldType;
-	newName: string;
 	tenantId: number;
-	checkboxes: (CheckOption | string)[] | undefined;
+	cardName: string;
+	cardId: number;
+	fields: string;
 }) => {
-	let idsToSkip: number[] | undefined = checkboxes
-		?.filter((el) => typeof el !== 'string')
-		.map((el) => el?.id);
+	const parseFields = JSON.parse(fields);
 
-	// if card type is not check then delete all checkOptions
-	if (cardType !== 'checkboxes' && cardType !== 'single_check') idsToSkip = [];
-
-	await tenantPrisma(tenantId).checkOption.deleteMany({
-		where: {
-			id: {
-				notIn: idsToSkip
+	if (cardId) {
+		await tenantPrisma(tenantId).card.update({
+			where: {
+				id: cardId
 			},
-			fieldId: cardId
-		}
-	});
+			data: {
+				name: cardName
+			},
+			include: {
+				fields: true
+			}
+		});
 
-	// update checkboxes
-	if (cardType === 'checkboxes' || cardType === 'single_check') {
-		const checkBoxesToUpdate: CheckOption[] | undefined = checkboxes?.filter(
-			(el) => typeof el !== 'string'
-		) as CheckOption[];
+		await tenantPrisma(tenantId).customField.deleteMany({
+			where: {
+				cardId: cardId,
+				id: {
+					notIn: parseFields
+						.filter((el: { id: number }) => el.id)
+						.map((el: { id: number }) => el.id)
+				}
+			}
+		});
+	}
 
-		for (const checkbox of checkBoxesToUpdate) {
-			await tenantPrisma(tenantId).checkOption.update({
+	for (const field of parseFields) {
+		const customField = {
+			name: field.labelName,
+			type: field.type as FormFieldType,
+			required: field.required,
+			id: field?.id
+		};
+
+		// update old fields
+		if (customField.id) {
+			const cf = await tenantPrisma(tenantId).customField.update({
 				where: {
-					id: checkbox.id
+					id: customField.id
 				},
 				data: {
-					name: checkbox.name
+					name: customField.name,
+					type: customField.type,
+					required: customField.required
+				},
+				include: {
+					checkOptions: true
+				}
+			});
+
+			const updateCheck = async (id: number, name: string) => {
+				await tenantPrisma(tenantId).checkOption.update({
+					where: {
+						id: id
+					},
+					data: {
+						name: name
+					}
+				});
+			};
+
+			if (cf.type === FormFieldType.SINGLE_CHECK) {
+				// SINGLE_CHECK only has 2 checkOptions
+
+				// if has 2 checkOptions update
+				if (cf.checkOptions.length === 2) {
+					await updateCheck(cf.checkOptions[0].id, field.pointPass);
+					await updateCheck(cf.checkOptions[1].id, field.pointFail);
+					// if not has checkOptions create
+				} else {
+					await tenantPrisma(tenantId).customField.update({
+						where: {
+							id: customField.id
+						},
+						data: {
+							checkOptions: {
+								create: [
+									{
+										name: field.pointPass
+									},
+									{
+										name: field.pointFail
+									}
+								]
+							}
+						}
+					});
+				}
+
+				// delete checkOptions
+			} else {
+				for (const checkoption of cf.checkOptions) {
+					await tenantPrisma(tenantId).checkOption.delete({
+						where: {
+							id: checkoption.id
+						}
+					});
+				}
+			}
+			// create new fields
+		} else {
+			await tenantPrisma(tenantId).customField.create({
+				data: {
+					cardId: cardId,
+					name: customField.name,
+					type: customField.type,
+					checkOptions: {
+						create:
+							FormFieldType.SINGLE_CHECK === customField.type
+								? [
+										{
+											name: field.pointPass
+										},
+										{
+											name: field.pointFail
+										}
+									]
+								: undefined
+					}
 				}
 			});
 		}
 	}
-
-	// update card
-	const checkBoxesToCreate = checkboxes?.filter(
-		(el) => typeof el === 'string' && el != ''
-	) as string[];
-
-	await tenantPrisma(tenantId).customField.update({
-		where: {
-			id: cardId
-		},
-		data: {
-			type: getFieldType(cardType),
-			name: newName,
-			checkOptions: {
-				create: checkBoxesToCreate?.map((name) => ({ name }))
-			}
-		},
-		include: {
-			checkOptions: true
-		}
-	});
 };

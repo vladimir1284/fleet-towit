@@ -92,17 +92,14 @@
 				{/each}
 			</TableBody>
 
-
-
 			<div class="p-5 text-end text-md text-gray-900 bg-white dark:text-white dark:bg-gray-800">
 				<!-- INVOICE TOTAL: ${currentInvoice.amount} ({currentInvoice.currency})<br /> -->
 				<strong>INVOICE TOTAL:</strong> ${totalAmount} ({currentInvoice.currency})<br />
-				<strong>RESULTING AVAILABLE CREDITS:</strong> ${currentInvoice.refundAdj} ({currentInvoice.currency})<br />
+				<strong>RESULTING AVAILABLE CREDITS:</strong> ${currentInvoice.refundAdj} ({currentInvoice.currency})<br
+				/>
 				<strong>REFUNDED:</strong> ${currentInvoice.refundAdj} ({currentInvoice.currency})<br />
 				<strong>BALANCE:</strong> ${currentInvoice.balance} ({currentInvoice.currency})<br />
-
 			</div>
-
 		</Table>
 	</Card>
 	<!-- {#if showAlert}

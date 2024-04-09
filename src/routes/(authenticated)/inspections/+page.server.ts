@@ -1,44 +1,53 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
+import { z } from 'zod';
+import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 import {
 	fetchInspections,
 	createInspection,
 	fetchListFormsAndVehicles
 } from '$lib/actions/inspections';
 
-import { z } from 'zod';
-import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
-import { zod } from 'sveltekit-superforms/adapters';
-
-
 const createInspectionSchema = z.object({
 	form_id: z.number(),
 	vehicle_id: z.number()
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const session = await verifySession(locals);
 
 	const form = await superValidate(zod(createInspectionSchema));
 
-	// // this code is for testing purposes only
-	const tenantId = session?.user.defaultTenantUser.tenant.id;
+	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const inspections = await fetchInspections({ tenantId: tenantId });
+	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({
+		tenantId: tenantUserId
+	});
 
-	// list form and vehicles
-	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({ tenantId: tenantId });
+	const results = await fetchInspections({
+		tenantId: tenantUserId,
+		page_number: Number(url.searchParams.get('page')) || 1
+	});
 
-	return { form, inspections, listCustomForm, listVehicles };
+	const inspections = results.data;
+
+	const pagination = {
+		has_next_page: results.has_next_page,
+		has_prev_page: results.has_prev_page,
+		next_page: results.next_page,
+		prev_page: results.prev_page
+	};
+
+	return { form, inspections, pagination, listCustomForm, listVehicles };
 };
 
 export const actions = {
@@ -51,12 +60,10 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		// this code is for testing purposes only
-		const tenantId = session?.user.defaultTenantUser.tenant.id;
-
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		const newInspection = await createInspection({
-			tenantId: tenantId,
+			tenantId: tenantUserId,
 			userId: session.user.id,
 			vehicleId: form.data.vehicle_id,
 			formId: form.data.form_id

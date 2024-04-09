@@ -9,12 +9,10 @@
 	import { Card, Label } from 'flowbite-svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
-
 	export let handleDelete = () => {};
 	export let fileName: string;
 	export let size: number;
 
-	
 	let extension: string;
 	let type: string;
 

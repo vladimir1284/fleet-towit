@@ -1,7 +1,6 @@
 <script async script lang="ts">
 	import { FloatingLabelInput, Label } from 'flowbite-svelte';
 
-	
 	export let placeholder: string;
 	export let suggestions: any;
 	export let formPointer: any | undefined;
@@ -60,7 +59,7 @@
 	<ul
 		class="flex flex-col overflow-y-scroll w-full max-h-[8rem] mt-1 bg-white border border-gray-300 rounded shadow-lg"
 	>
-		{#each filteredSuggestions as suggestion, index} 
+		{#each filteredSuggestions as suggestion, index}
 			<button
 				class="p-2 hover:bg-gray-100 cursor-pointer {selectedIndex === index ? 'bg-gray-200' : ''}"
 				on:click={() => handleSuggestionClick(suggestion.plate)}

@@ -1,36 +1,44 @@
-import { createCustomForm, fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
+import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
-import type { Actions, PageServerLoad } from './$types';
-import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 import { zod } from 'sveltekit-superforms/adapters';
+import { z } from 'zod';
+import { createCustomForm, fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
+import { TEMPORARY_REDIRECT_STATUS, MISSING_SECURITY_HEADER_STATUS } from '$lib/shared';
 
 const createFormSchema = z.object({
 	form_name: z.string()
 });
 
-const verifySession = async (locals: unknown) => {
-	//@ts-expect-error Error type on locals
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const session = await verifySession(locals);
 
 	const form = await superValidate(zod(createFormSchema));
 
-	// this code is for testing purposes only
-	const tenantId = session?.user.defaultTenantUser.tenant.id;
+	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
+	const results = await fetchCustomFormsByTenant({
+		tenantId: tenantUserId,
+		page_number: Number(url.searchParams.get('page')) || 1
+	});
 
-	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantId });
+	const customForms = results.data;
 
-	return { form, customForms };
+	const pagination = {
+		has_next_page: results.has_next_page,
+		has_prev_page: results.has_prev_page,
+		next_page: results.next_page,
+		prev_page: results.prev_page
+	};
+
+	return { form, customForms, pagination };
 };
 
 export const actions = {
@@ -43,12 +51,10 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		// this code is for testing purposes only
-		const tenantId = session?.user.defaultTenantUser.tenant.id;
-
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 		const newForm = await createCustomForm({
-			tenantId: tenantId,
+			tenantId: tenantUserId,
 			name: form.data.form_name
 		});
 
