@@ -165,6 +165,7 @@ model Vehicle {
   costs           Cost[]
   contracts       Contract[]
   inspections     Inspection[]
+  tracker         Tracker?
 }
 
 model VehiclePlate {
@@ -528,4 +529,24 @@ model TollDue {
 enum TollDueStage {
   PAID
   UNPAID
+}
+
+model Tracker {
+  id        Int    @id @default(autoincrement())
+  name      String
+  vehicleId Int?   @unique
+  
+  vehicle   Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  
+  heartBeats TrackerHeartBeatData[]
+}
+
+model TrackerHeartBeatData {
+  id        Int       @id @default(autoincrement())
+  timeStamp DateTime  @default(now())
+  latitude  Float
+  longitude Float
+  trackerId Int
+
+  tracker Tracker @relation(fields: [trackerId], references: [id], onDelete: Cascade)
 }

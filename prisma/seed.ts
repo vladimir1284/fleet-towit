@@ -6,6 +6,7 @@ import seedClients from './seeders/clients.seed';
 import seedInspection from './seeders/inspections.seed';
 import seedRentalPlans from './seeders/rentalPlan.seed';
 import seedContract from './seeders/contracts.seed';
+import seedTracker from './seeders/trackers.seed';
 const prisma = bypassPrisma;
 
 async function main() {
@@ -88,6 +89,8 @@ async function main() {
 	// await seedParts(prisma, [testTenantId, tenantId]);
 	// Contracts
 	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
+	//Trackers
+	await seedTracker(prisma, createdVehiclesIds)
 }
 
 main()
