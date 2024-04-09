@@ -71,9 +71,11 @@
 			<h2 class="font-semibold">
 				VIN: <span class="font-normal">{data.inspection.vehicle.vin}</span>
 			</h2>
-			<h2 class="font-semibold">
-				Plate: <span class="font-normal">{data.inspection.vehicle.plate}</span>
-			</h2>
+			{#if data.inspection.vehicle.plate}
+				<h2 class="font-semibold">
+					Plate: <span class="font-normal">{data.inspection.vehicle.plate}</span>
+				</h2>
+			{/if}
 			<h2 class="font-semibold mr-16">
 				Date: <span class="font-normal">
 					{dateInspections}
