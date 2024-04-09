@@ -21,7 +21,7 @@ const seedContract = async (
 		},
 		vehicle: {
 			connect: {
-				id: faker.helpers.arrayElement(createdVehiclesIds)
+				id: 1
 			}
 		},
 		stage: {
@@ -34,7 +34,6 @@ const seedContract = async (
 		activeDate: faker.date.future(),
 		endDate: faker.date.future()
 	});
-
 
 	const numberOfContracts = 50;
 	for (let i = 0; i < numberOfContracts; i++) {
