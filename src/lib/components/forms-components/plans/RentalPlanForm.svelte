@@ -11,7 +11,6 @@
 	export let data;
 	export let selectedPlan: any;
 
-
 	let periodicityList = [
 		{ value: 'WEEKLY', name: 'WEEKLY' },
 		{ value: 'BIWEEKLY', name: 'BIWEEKLY' },

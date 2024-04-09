@@ -89,11 +89,9 @@
 		onUpdate: async (event) => {
 			const plate = plates.filter((_plate) => _plate.id == event.form.data.plateId);
 			event.form.data.plateId = plate[0].plate;
-			event.form.data.createDate = event.form.data.createDate
-				.toISOString()
-				.slice(0, 10)
+			event.form.data.createDate = event.form.data.createDate.toISOString().slice(0, 10);
 			if (event.form.errors._errors) {
-				handleAlert(event.form.errors._errors[0])
+				handleAlert(event.form.errors._errors[0]);
 			}
 		},
 		onUpdated: async ({ form }) => {
@@ -121,7 +119,6 @@
 		$form.invoice = '';
 	};
 
-
 	function changeFile(event: Event) {
 		const inputElement = event.target as HTMLInputElement;
 		if (inputElement && inputElement.files) {
@@ -132,14 +129,12 @@
 		attachFile = !attachFile;
 	}
 
-
 	function handleAlert(message) {
 		showAlert = message;
 		setTimeout(() => {
 			showAlert = false;
 		}, 10000);
 	}
-
 
 	function findPlateID(plate) {
 		let selectedPlate = plates.filter((_plate) => _plate['plate'] === plate?.toUpperCase());

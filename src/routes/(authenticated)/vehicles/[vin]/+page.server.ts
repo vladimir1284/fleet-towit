@@ -3,7 +3,7 @@
 // import type { FormattedVehicleData, VehicleDataEntry } from '../types.js';
 // import vehicleMock from '$lib/mocks/vehicle.json';
 
-import getVehicle from "$lib/actions/vehicle";
+import getVehicle from '$lib/actions/vehicle';
 
 // const getValue = (data: VehicleDataEntry[], variable: string) => {
 // 	const value = data.find((entry: VehicleDataEntry) => entry.Variable === variable)?.Value;
@@ -44,11 +44,11 @@ import getVehicle from "$lib/actions/vehicle";
 
 export const load = async ({ params }) => {
 	const vin = params.vin;
-	const vehicle = await getVehicle(vin)
+	const vehicle = await getVehicle(vin);
 
-	console.log('MORE DETAILS\n' + JSON.stringify(vehicle, null, 4))
+	console.log('MORE DETAILS\n' + JSON.stringify(vehicle, null, 4));
 
 	return {
 		vehicle
-	}
-}
+	};
+};

@@ -14,7 +14,7 @@ async function update(model: string, operation: string, args: any) {
 		case 'Contract':
 			await contractsOperations(operation, args);
 			break;
-			// TODO sincronizar los tenants
+		// TODO sincronizar los tenants
 	}
 }
 

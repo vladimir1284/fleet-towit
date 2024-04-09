@@ -1,11 +1,23 @@
 import { tenantPrisma } from '$lib/prisma';
 import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
+import { minioClient } from '$lib/minio';
+import { Page } from '$lib/pagination';
 
 /*
  *	Get all inspections
  */
-export const fetchInspections = async ({ tenantId }: { tenantId: number }) => {
+export const fetchInspections = async ({
+	tenantId,
+	page_number,
+	results = 5
+}: {
+	tenantId: number;
+	page_number: number;
+	results?: number;
+}) => {
 	const inspections = await tenantPrisma(tenantId).inspection.findMany({
+		skip: (page_number - 1) * results,
+		take: results,
 		where: {
 			tenantId: tenantId
 		},
@@ -18,14 +30,25 @@ export const fetchInspections = async ({ tenantId }: { tenantId: number }) => {
 		}
 	});
 
-	return inspections;
+	const count = await tenantPrisma(tenantId).inspection.count({
+		where: {
+			tenantId: tenantId
+		}
+	});
+
+	return new Page(inspections, count, results, page_number).toJSON();
 };
 
 /*
  *  Helper
  */
 export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: number }) => {
-	const customForms = await fetchCustomFormsByTenant({ tenantId: tenantId });
+	const customForms = await tenantPrisma(tenantId).customForm.findMany({
+		where: {
+			tenantId: tenantId,
+			isActive: true
+		}
+	});
 	const listCustomForm = customForms.map((el) => ({ value: el.id, name: el.name }));
 
 	const vehicles = await tenantPrisma(tenantId).vehicle.findMany();
@@ -85,12 +108,16 @@ export const retrieveInspectionById = async ({
 		include: {
 			customForm: {
 				include: {
-					fields: {
+					cards: {
 						include: {
-							checkOptions: true,
-							responses: {
-								where: {
-									inspectionId: id
+							fields: {
+								include: {
+									checkOptions: true,
+									responses: {
+										where: {
+											inspectionId: id
+										}
+									}
 								}
 							}
 						}
@@ -98,15 +125,7 @@ export const retrieveInspectionById = async ({
 				}
 			},
 			responses: true,
-			vehicle: {
-				include: {
-					plates: {
-						where: {
-							isActive: true
-						}
-					}
-				}
-			}
+			vehicle: true
 		}
 	});
 
@@ -140,38 +159,63 @@ export const createResponseToInspection = async ({
 		tenantUserId: number;
 		checkOptionId?: number;
 		content?: string;
-		checked?: boolean;
 		note?: string;
 	}[] = [];
 
 	for (const [key, value] of Object.entries(form_data)) {
 		const fieldId = Number(key.split('_')[1]);
 
-		// if checkbox
-		if (key.includes('checkbox')) {
-			const checkboxId = Number(key.split('_')[3]);
-
-			data.push({
-				fieldId: fieldId,
-				checkOptionId: checkboxId,
-				checked: value as boolean,
-				tenantUserId: tenantUser.id
-			});
-			// in radio (single check) only check 1 field from all fields
-		} else if (key.includes('radio')) {
+		// in radio (single check) only check 1 field from all fields
+		if (key.includes('radio')) {
 			data.push({
 				fieldId: fieldId,
 				checkOptionId: value as number,
-				checked: true,
+				content: 'checked',
 				tenantUserId: tenantUser.id
 			});
 			// add note to response
 		} else if (key.includes('note')) {
 			data.map((el) => (el.fieldId === fieldId ? (el.note = value) : el));
+
+			// upload file to minio
+		} else if (value instanceof File) {
+			const buff = Buffer.from(await value.arrayBuffer());
+
+			await minioClient.putObject('develop', `/inspections/${inspectionId}/${value.name}`, buff);
+
+			data.push({
+				fieldId: fieldId,
+				content: value.name,
+				tenantUserId: tenantUser.id
+			});
+			// convert from base 64 to file then upload image to minio
+		} else if (/^data:image\/png;base64,([A-Za-z0-9+/=])+$/.test(value)) {
+			const urltoFile = async (url: string, filename: string) => {
+				const mimeType = (url.match(/^data:([^;]+);/) || '')[1];
+				const req = await fetch(url);
+				const buff = await req.arrayBuffer();
+				return new File([buff], filename, { type: mimeType });
+			};
+
+			const signature = await urltoFile(value, `signature-${fieldId}.png`);
+
+			const buff = Buffer.from(await signature.arrayBuffer());
+
+			await minioClient.putObject(
+				'develop',
+				`/inspections/${inspectionId}/${signature.name}`,
+				buff
+			);
+
+			data.push({
+				fieldId: fieldId,
+				content: signature.name,
+				tenantUserId: tenantUser.id
+			});
 		} else {
 			data.push({
 				fieldId: fieldId,
-				content: value.toString(),
+				content: value ? value.toString() : value,
 				tenantUserId: tenantUser.id
 			});
 		}
@@ -187,5 +231,6 @@ export const createResponseToInspection = async ({
 			}
 		}
 	});
+
 	return response;
 };

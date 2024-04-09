@@ -5,7 +5,6 @@
 
 	export let data;
 
-	
 	let loading = false;
 	const dispatch = createEventDispatcher();
 
@@ -22,7 +21,7 @@
 			}
 			console.log('User deleted successfully');
 			dispatch('formvalid', false);
-		}finally {
+		} finally {
 			loading = false;
 		}
 	};

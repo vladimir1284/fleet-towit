@@ -4,7 +4,7 @@
 	export let styles: string = '';
 	export let onClick: ((event: MouseEvent) => void) | undefined = undefined;
 	export let loading: boolean = false;
-	export let disabled: boolean = false
+	export let disabled: boolean = false;
 </script>
 
 <Button type="submit" class={styles} disabled={loading || disabled} on:click={onClick}>

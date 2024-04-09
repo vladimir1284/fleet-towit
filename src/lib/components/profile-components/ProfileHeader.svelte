@@ -8,16 +8,13 @@
 	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
-	
 	/**
 	 * @type {{ id: number; name: null; email: any; defaultTenantUser: { tenant: { name: any; }; }[]; image: any; }}
 	 */
 	export let userData;
-	
 
 	const currentTenant = getContext('currentTenant');
-	
-	
+
 	async function handleSignOut() {
 		await signOut();
 	}
@@ -44,7 +41,7 @@
 			currentTenant.set({
 				...tenantUser.tenant,
 				currentUserTenant: tenantUser
-			})
+			});
 		}
 	}
 </script>

@@ -7,12 +7,10 @@
 	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
-
 	export let data;
 	export let selectedUser;
 	export let tenantsList = [];
 
-	
 	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');

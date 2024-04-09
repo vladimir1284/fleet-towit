@@ -32,7 +32,6 @@
 		document.cookie = `${USER_TENANT_HEADER}=${currentUserTenantHash};`;
 		
 		await goto('/dashboard');*/
-		
 	}
 </script>
 

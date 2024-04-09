@@ -6,13 +6,13 @@ export const getAllVehicles = async () => {
 			tracker: { include: {heartBeats: { orderBy: { timeStamp: 'desc' }}}},
 			plates: {
 				where: {
-					isActive: true,
+					isActive: true
 				}
-			},
+			}
 		}
 	});
 	const vehiclesWithActualPlate = vehicles.map((v) => {
-		return { ...v, plate: v.plates[0] || undefined }
+		return { ...v, plate: v.plates[0] || undefined };
 	});
 	return vehiclesWithActualPlate
 };

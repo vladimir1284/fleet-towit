@@ -37,6 +37,7 @@ if (KILLBILL === true) {
 		syncKillBill();
 	}
 }
+
 const handleAuth = (async (...args) => {
 	const [{ event }] = args;
 	return SvelteKitAuth({

@@ -56,7 +56,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 		});
 		const oldOwner = await getTenantOwner({ tenantId: parseInt(params.tenantId) });
 		const tenantUserToBeOwner = await getTenantUser({ tenantUserId: form.data.ownerId });
-		console.log(oldOwner)
+		console.log(oldOwner);
 		if (oldOwner?.id !== tenantUserToBeOwner?.id) {
 			await updateTenantUser({
 				//@ts-expect-error It's detecting it as undefined

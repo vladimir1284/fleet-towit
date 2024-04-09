@@ -18,11 +18,7 @@
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
-	import {
-		TrashBinSolid,
-		FileEditSolid,
-		ArrowDownToBracketOutline
-	} from 'flowbite-svelte-icons';
+	import { TrashBinSolid, FileEditSolid, ArrowDownToBracketOutline } from 'flowbite-svelte-icons';
 	import TollForm from '$lib/components/forms-components/tolls/TollForm.svelte';
 	import DeleteTollForm from '$lib/components/forms-components/tolls/DeleteTollForm.svelte';
 
