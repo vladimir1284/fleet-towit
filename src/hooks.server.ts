@@ -24,13 +24,10 @@ import { PrismaClient } from '@prisma/client';
 import { getTenantUsers } from '$lib/actions/tenantUsers';
 const prisma = new PrismaClient();
 
-import bcrypt from 'bcryptjs';
 import { getAdminTenant } from '$lib/actions/admin';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
-import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
 import { building } from '$app/environment';
 import { syncKillBill } from './killbill/killbill';
-import { goto } from '$app/navigation';
 
 if (KILLBILL === true) {
 	console.log('Kill Bill initial sync!');
