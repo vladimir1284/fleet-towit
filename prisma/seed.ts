@@ -87,7 +87,7 @@ async function main() {
 	await seedInspection(prisma, [testTenantId, tenantId]);
 	// await seedParts(prisma, [testTenantId, tenantId]);
 	// Contracts
-	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
+	// await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
 }
 
 main()

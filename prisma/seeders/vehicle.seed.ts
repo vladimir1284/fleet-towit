@@ -35,6 +35,14 @@ const seedVehicles = async (prisma) => {
 							}
 						}
 					]
+				},
+				plates: {
+					create: [
+						{
+							plate: 'e152e79c-34bf-4c55-aad6-62d296dbc70a',
+							isActive: true
+						}
+					]
 				}
 			}
 		});
@@ -68,6 +76,14 @@ const seedVehicles = async (prisma) => {
 							tags: {
 								create: [{ name: 'Garantía' }, { name: 'Mantenimiento' }]
 							}
+						}
+					]
+				},
+				plates: {
+					create: [
+						{
+							plate: 'ecd87439-ae41-4846-8640-72b4d598cfa6',
+							isActive: true
 						}
 					]
 				}
@@ -104,6 +120,14 @@ const seedVehicles = async (prisma) => {
 							tags: {
 								create: [{ name: 'Obligatorio' }, { name: 'Garantía' }]
 							}
+						}
+					]
+				},
+				plates: {
+					create: [
+						{
+							plate: '1abd91ed-5555-4cd2-8afe-cad82d577bd4',
+							isActive: true
 						}
 					]
 				}
