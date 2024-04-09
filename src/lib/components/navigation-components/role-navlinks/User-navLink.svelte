@@ -9,6 +9,7 @@
 <NavLi class={navStyle} href="/clients">Clients</NavLi>
 <NavLi class={navStyle} href="/contracts">Contracts</NavLi>
 <NavLi class={navStyle} href="/tolls">Tolls</NavLi>
+<NavLi class={navStyle} href="/trackers">Trackers</NavLi>
 
 <NavLi class={navStyle}>
 	Inspections<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
