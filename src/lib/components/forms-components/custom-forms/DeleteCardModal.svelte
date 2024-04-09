@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { Button, Modal } from 'flowbite-svelte';
 	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 
@@ -21,7 +22,7 @@
 			Are you sure you want to delete this card ?
 		</h3>
 		<!-- Form -->
-		<form method="post" action="?/deleteCard">
+		<form method="post" action="?/deleteCard" use:enhance={() => closeModal()}>
 			<input type="hidden" bind:value={idCardSelected} name="card_id" />
 			<input type="hidden" value={customFormId} name="form_id" />
 

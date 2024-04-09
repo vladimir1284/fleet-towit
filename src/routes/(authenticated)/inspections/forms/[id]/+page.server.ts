@@ -4,13 +4,15 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
 import { FormFieldType } from '@prisma/client';
+import { FormFieldTypeSchema } from '$lib/zod';
 import {
 	retrieveCustomFormById,
 	deleteCustomForm,
 	renameCustomForm,
 	cloneCustomForm,
 	deleteCard,
-	addCardToForm
+	addCardToForm,
+	updateCard
 } from '$lib/actions/custom-forms';
 import {
 	PERMANENT_REDIRECT_STATUS,
@@ -21,6 +23,12 @@ import {
 const addCardSchema = z.object({
 	card_name: z.string(),
 	form_id: z.number(),
+	fields: z.string()
+});
+
+const updateCardSchema = z.object({
+	card_name: z.string(),
+	card_id: z.number(),
 	fields: z.string()
 });
 
@@ -61,7 +69,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				formId: formId
 			});
 
-			const form = await superValidate(zod(addCardSchema));
+			const addCardForm = await superValidate(zod(addCardSchema));
+			const updateCardForm = await superValidate(zod(updateCardSchema));
 
 			if (!customForm) redirect_to_back();
 
@@ -72,14 +81,24 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenantUserId });
 
 				return {
+					// forms
+					addCardForm,
+					updateCardForm,
+					// data
 					redirect_to: cloneForm.id,
 					customForm: cloneForm,
-					form,
 					FormFieldType
 				};
 			}
 
-			return { customForm, form, FormFieldType };
+			return {
+				// forms
+				addCardForm,
+				updateCardForm,
+				// data
+				customForm,
+				FormFieldType
+			};
 		} catch (error) {
 			console.log(error);
 			redirect_to_back();
@@ -172,6 +191,28 @@ export const actions = {
 			tenantId: tenantUserId,
 			formId: form.data.form_id,
 			cardId: form.data.card_id
+		});
+	},
+
+	/*
+	 *  update card to custom form
+	 */
+	updateCard: async ({ request, locals }) => {
+		const session = await verifySession(locals);
+
+		const form = await superValidate(request, zod(updateCardSchema));
+
+		if (!form.valid) {
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
+		}
+
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
+
+		await updateCard({
+			tenantId: tenantUserId,
+			cardName: form.data.card_name,
+			cardId: form.data.card_id,
+			fields: form.data.fields
 		});
 	}
 } satisfies Actions;

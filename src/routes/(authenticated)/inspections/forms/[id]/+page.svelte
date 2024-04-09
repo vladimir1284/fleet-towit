@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import { superForm } from 'sveltekit-superforms/client';
+	import { enhance } from '$app/forms';
 	import { Button, Input, Label, Select, Helper, Modal, Checkbox } from 'flowbite-svelte';
 	import {
 		TrashBinOutline,
@@ -18,8 +18,6 @@
 
 	if (data?.redirect_to) goto(`/inspections/forms/${data.redirect_to}/`);
 
-	const { form, constraints } = superForm(data.form);
-
 	// modals
 	let openDeleteFormModal = false;
 	const handlerDeleteFormModalClose = () => (openDeleteFormModal = false);
@@ -31,7 +29,13 @@
 	let idCardSelected: number;
 
 	// new card
-	let newCardName: string;
+	let cardName: string;
+
+	// edit card ( cardId )
+	let editCard: number;
+
+	// edit field (list index)
+	let editField: number;
 
 	// edit form name
 	let isEditFormName = false;
@@ -89,36 +93,45 @@
 	interface Field {
 		labelName: string;
 		type: data.FormFieldType;
+		required: boolean;
 		pointPass?: string;
 		pointFail?: string;
-		required: boolean;
+		id?: number;
 	}
 
 	let fields: Field[] = [];
+
 	let cardTypeSelect: data.FormFieldType;
 	let labelName: string;
 	let pointPass: string;
 	let pointFail: string;
 	let required: boolean = true;
+	let fieldId: number;
 
 	$: stringifyFields = JSON.stringify(fields);
 
 	const addFieldToCard = () => {
-		fields = [
-			...fields,
-			{
-				labelName: labelName,
-				type: cardTypeSelect,
-				pointPass,
-				pointFail,
-				required
-			}
-		];
+		const newField: Field = {
+			labelName: labelName,
+			type: cardTypeSelect,
+			id: fieldId,
+			pointPass,
+			pointFail,
+			required
+		};
+
+		if (editField >= 0) {
+			fields = fields.filter((_, i) => i !== editField);
+
+			fields.splice(editField, 0, newField);
+		} else fields = [...fields, newField];
 
 		labelName = '';
 		pointPass = undefined;
 		pointFail = undefined;
 		required = true;
+		editField = undefined;
+		fieldId = undefined;
 	};
 </script>
 
@@ -131,6 +144,10 @@
 				class="flex flex-wrap lg:flex-nowrap gap-4 md:w-1/2"
 				method="post"
 				action="?/renameForm"
+				use:enhance={({ formData }) => {
+					isEditFormName = false;
+					formName = formData.get('new_form_name');
+				}}
 			>
 				<Input
 					bind:value={data.customForm.name}
@@ -187,13 +204,7 @@
 		<div class="bg-white p-4 flex flex-col gap-4 shadow rounded-lg w-1/2 h-max">
 			<div>
 				<Label for="card_name" class="mb-2">Card name*</Label>
-				<Input
-					bind:value={newCardName}
-					type="text"
-					id="card_name"
-					placeholder="Type here"
-					required
-				/>
+				<Input bind:value={cardName} type="text" id="card_name" placeholder="Type here" required />
 			</div>
 			<!-- select -->
 			<div>
@@ -210,7 +221,6 @@
 				</Helper>
 			</div>
 			<!-- /select -->
-
 			{#if cardTypeSelect}
 				<div class="border-t mt-4 py-4 flex flex-col gap-4">
 					<!-- label field -->
@@ -236,8 +246,17 @@
 					<Checkbox checked={required} on:change={() => (required = !required)}>Required</Checkbox>
 
 					<div class="inline-flex gap-4">
-						<Button on:click={() => (cardTypeSelect = '')} outline color="red">Cancel</Button>
-						<Button type="button" color="blue" on:click={addFieldToCard}>Add field</Button>
+						<Button
+							on:click={() => {
+								cardTypeSelect = '';
+								editField = undefined;
+							}}
+							outline
+							color="red">Cancel</Button
+						>
+						<Button type="button" color="blue" on:click={addFieldToCard}
+							>{editField >= 0 ? 'Update field' : 'Add field'}</Button
+						>
 					</div>
 				</div>
 			{/if}
@@ -245,7 +264,7 @@
 
 		<!-- view custom fields -->
 		<div class="bg-white h-max p-4 flex flex-col gap-4 shadow rounded-lg w-1/2">
-			<h4 class="font-semibold text-lg">{newCardName ? newCardName : 'New Card'}</h4>
+			<h4 class="font-semibold text-lg">{cardName ? cardName : 'New Card'}</h4>
 			<div class="h-80 overflow-y-auto border rounded-lg">
 				{#each fields as field, index}
 					<div class="p-2 flex flex-col">
@@ -261,6 +280,7 @@
 						{/each}
 
 						<div class="inline-flex gap-4 mt-1">
+							<!-- delete field button -->
 							<Button
 								type="button"
 								size="xs"
@@ -270,7 +290,7 @@
 							>
 								<CloseOutline class="w-2 h-2" />
 							</Button>
-
+							<!-- edit field button -->
 							<Button
 								type="button"
 								size="xs"
@@ -284,8 +304,9 @@
 									pointPass = field.pointPass;
 									pointFail = field.pointFail;
 									required = field.required;
+									fieldId = field?.id;
 
-									fields = fields.filter((_, i) => i !== index);
+									editField = index;
 								}}
 							>
 								<PenOutline class="w-2 h-2" />
@@ -295,23 +316,32 @@
 					<div class="border-b"></div>
 				{/each}
 			</div>
-
-			<form method="post" action="?/addCard">
-				<input
-					type="hidden"
-					name="card_name"
-					bind:value={newCardName}
-					{...$constraints.card_name}
-				/>
-				<input
-					type="hidden"
-					name="form_id"
-					bind:value={data.customForm.id}
-					{...$constraints.form_id}
-				/>
-				<input type="hidden" name="fields" bind:value={stringifyFields} {...$constraints.fields} />
-				<Button type="submit">Create card</Button>
+			<!-- Form -->
+			<form
+				method="post"
+				action={editCard ? '?/updateCard' : '?/addCard'}
+				use:enhance={() => {
+					fields = [];
+					cardName = '';
+					editCard = false;
+				}}
+			>
+				<input type="hidden" name="card_name" bind:value={cardName} />
+				<input type="hidden" name="card_id" bind:value={editCard} />
+				<input type="hidden" name="form_id" bind:value={data.customForm.id} />
+				<input type="hidden" name="fields" bind:value={stringifyFields} />
+				<Button type="submit">{editCard ? 'Update card' : 'Create card'}</Button>
+				<Button
+					on:click={() => {
+						fields = [];
+						cardName = '';
+						editCard = undefined;
+					}}
+					outline
+					color="red">Cancel</Button
+				>
 			</form>
+			<!-- Form -->
 		</div>
 	</div>
 
@@ -319,7 +349,7 @@
 	<div class="bg-white shadow rounded-lg p-4 flex flex-col gap-4">
 		<h4 class="font-bold text-xl">Cards ({data.customForm.cards.length})</h4>
 		<div class="border-t"></div>
-		{#each data.customForm.cards as card}
+		{#each data.customForm.cards as card, index}
 			<div class="border-b pb-4">
 				<h5 class="font-semibold text-lg underline">
 					{card.name}:
@@ -349,7 +379,7 @@
 					{/each}
 				</div>
 				<div class="ml-4 mt-4">
-					<!-- delete field button -->
+					<!-- delete card button -->
 					<Button
 						outline
 						size="xs"
@@ -360,6 +390,35 @@
 						}}
 					>
 						<TrashBinOutline class="h-4 w-4" />
+					</Button>
+					<!-- edit card button -->
+					<Button
+						outline
+						size="xs"
+						color="light"
+						on:click={() => {
+							cardName = card.name;
+							editCard = card.id;
+
+							fields = card.fields.map((el) => {
+								const field = {
+									labelName: el.name,
+									type: el.type,
+									required: el.required,
+									id: el.id
+								};
+
+								if (el.type === data.FormFieldType.SINGLE_CHECK) {
+									field.pointPass = el.checkOptions[0].name;
+									field.pointFail = el.checkOptions[1].name;
+									return field;
+								} else return field;
+							});
+
+							document.documentElement.scrollTop = 0;
+						}}
+					>
+						<PenOutline class="h-4 w-4" />
 					</Button>
 				</div>
 			</div>
