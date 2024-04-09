@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-export async function sendWelcomeEmail(email: string, tenantName: string, role: string) {
+export async function sendWelcomeEmail(email: string, tenantName: string, role: string, origin: string) {
 	const mailOptions = {
 		from: EMAIL_FROM,
 		to: email,
@@ -62,7 +62,7 @@ export async function sendWelcomeEmail(email: string, tenantName: string, role: 
                     <h1>Welcome to ${tenantName}</h1>
                     <p>You have been invited to join <strong>${tenantName}</strong> as a <strong>${role}</strong>.</p>
                     <p>Click the button below to login:</p>
-                    <a href="https://fleet.crabdance.com">Accept Invitation</a>
+                    <a href=${origin}>Accept Invitation</a>
                 </div>
             </body>
         </html>

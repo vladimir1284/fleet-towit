@@ -24,10 +24,8 @@ import { PrismaClient } from '@prisma/client';
 import { getTenantUsers } from '$lib/actions/tenantUsers';
 const prisma = new PrismaClient();
 
-import bcrypt from 'bcryptjs';
 import { getAdminTenant } from '$lib/actions/admin';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
-import { USER_TENANT_HEADER, BAD_REQUEST_RESPONSE, FORBIDDEN_ACCESS_RESPONSE } from '$lib/shared';
 import { building } from '$app/environment';
 import { syncKillBill } from './killbill/killbill';
 
@@ -153,7 +151,7 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 	*/
 
 	const session = await event.locals.getSession();
-	//console.log(event.locals)
+
 	if (session) {
 		const currentUserData = session?.user.defaultTenantUser;
 		const adminTenant = await getAdminTenant();
@@ -162,7 +160,7 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 				? bypassPrisma
 				: tenantPrisma(currentUserData?.tenantId);
 		event.locals.inventoryActionObject = {
-			currentTenant: currentUserData.tenant,
+			currentTenant: currentUserData?.tenant,
 			currentTenantUser: currentUserData,
 			currentPrismaClient: currentPrismaClient
 		};
