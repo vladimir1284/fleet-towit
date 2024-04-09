@@ -6,7 +6,9 @@
 	import CreateVehicle from '$lib/components/modals/CreateVehicle.svelte';
 	import type { MoreDetailsButton } from '$lib/components/data-visualization/types';
 	import { TableSolid } from 'flowbite-svelte-icons';
-	import { SvelteComponent } from 'svelte';
+
+	import { setContext } from 'svelte';
+	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 
@@ -39,6 +41,10 @@
 	};
 
 	const createVehicle = (data) => {};
+
+	// Vehicle creation context.
+	const { form } = data;
+	setContext('VehicleForm', writable(form));
 </script>
 
 <Heading tag="h1" class="text-center">Vehicles</Heading>
