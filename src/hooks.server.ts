@@ -162,7 +162,7 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 				? bypassPrisma
 				: tenantPrisma(currentUserData?.tenantId);
 		event.locals.inventoryActionObject = {
-			currentTenant: currentUserData,
+			currentTenant: currentUserData.tenant,
 			currentTenantUser: currentUserData,
 			currentPrismaClient: currentPrismaClient
 		};

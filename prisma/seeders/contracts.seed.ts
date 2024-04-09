@@ -21,7 +21,7 @@ const seedContract = async (
 		},
 		vehicle: {
 			connect: {
-				id: faker.helpers.arrayElement(createdVehiclesIds)
+				id: 1
 			}
 		},
 		stage: {
