@@ -1,6 +1,8 @@
 import type { Actions, PageServerLoad } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect, fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
+import { FormFieldType } from '@prisma/client';
 import { generateValidationSchema } from '$lib/validations';
 import { retrieveInspectionById, createResponseToInspection } from '$lib/actions/inspections';
 import {
@@ -8,14 +10,11 @@ import {
 	MISSING_SECURITY_HEADER_STATUS,
 	PERMANENT_REDIRECT_STATUS
 } from '$lib/shared';
-import { FormFieldType } from '@prisma/client';
-import { zod } from 'sveltekit-superforms/adapters';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-
 	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
-
 	return session;
 };
 
@@ -26,26 +25,26 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (inspectionId) {
 		try {
-			// this code is for testing purposes only
-			const tenantId = session?.user.defaultTenantUser.tenant.id;
+			const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 			const inspection = await retrieveInspectionById({
-				tenantId: tenantId,
+				tenantId: tenantUserId,
 				id: inspectionId
 			});
 
 			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
+
 			// if inspection have responses redirect
-			if (inspection.responses.length > 0)
-				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
+			if (inspection.responses.length > 0) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 
 			// generate schema
-			const schema = generateValidationSchema(inspection.customForm.fields);
+			const schema = generateValidationSchema(inspection.customForm.cards);
 
 			const form = await superValidate(zod(schema));
 
-			return { inspection, form, FormFieldType };
-		} catch {
+			return { inspection, FormFieldType, form };
+		} catch (error) {
+			console.log(error);
 			redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 		}
 	}
@@ -60,20 +59,21 @@ export const actions = {
 		const inspectionId = Number(params.id);
 
 		if (inspectionId) {
-			// this code is for testing purposes only
-			const tenantId = session?.user.defaultTenantUser.tenant.id;
+			const tenantUserId = session.user.defaultTenantUser.tenantId;
 
 			const inspection = await retrieveInspectionById({
-				tenantId: tenantId,
+				tenantId: tenantUserId,
 				id: inspectionId
 			});
 
 			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/register/`);
 
 			// generate schema
-			const schema = generateValidationSchema(inspection.customForm.fields);
+			const schema = generateValidationSchema(inspection.customForm.cards);
 
-			const form = await superValidate(request, zod(schema));
+			const formData = await request.formData();
+
+			const form = await superValidate(formData, zod(schema));
 
 			if (!form.valid) {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -82,7 +82,7 @@ export const actions = {
 			const response = await createResponseToInspection({
 				form_data: form.data,
 				userId: session.user.id,
-				tenantId: tenantId,
+				tenantId: tenantUserId,
 				inspectionId: inspectionId
 			});
 

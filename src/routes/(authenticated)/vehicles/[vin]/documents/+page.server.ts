@@ -1,15 +1,16 @@
 //@ts-nocheck
 
-import path from "path"
-import type { PageServerLoad } from "../../$types"
-import { PrismaClient } from '@prisma/client'
+import path from 'path';
+import type { PageServerLoad } from '../../$types';
+import { PrismaClient } from '@prisma/client';
 //import { TableSolid, ImageSolid, BookSolid, ChartSolid, EyeSolid } from 'flowbite-svelte-icons'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export const load: PageServerLoad = async () => {
-  try {
-    const vehicles = await prisma.vehicle.findMany(/*{
+	try {
+		const vehicles =
+			await prisma.vehicle.findMany(/*{
       include: {
         vehiclePictures: {
           select: {
@@ -37,36 +38,35 @@ export const load: PageServerLoad = async () => {
         },
         inspections: {}
       }
-    }*/)
+    }*/);
 
-    const details = {
-      pictures: {
-        icon: 'ImageSolid'
-      },
-      documents: {
-        icon: 'BookSolid'
-      },
-      costs: {
-        icon: 'ChartSolid'
-      },
-      contracts: {
-        icon: 'BookSolid'
-      },
-      tolls: {
-        icon: 'BookSolid'
-      },
-      inspections: {
-        icon: 'BookSolid'
-      },
-    }
+		const details = {
+			pictures: {
+				icon: 'ImageSolid'
+			},
+			documents: {
+				icon: 'BookSolid'
+			},
+			costs: {
+				icon: 'ChartSolid'
+			},
+			contracts: {
+				icon: 'BookSolid'
+			},
+			tolls: {
+				icon: 'BookSolid'
+			},
+			inspections: {
+				icon: 'BookSolid'
+			}
+		};
 
-    return {
-      vehicles,
-      details
-    }
-
-  } catch (error) {
-    //@ts-expect-error This expects any error
-    console.log(error)
-  }
-}
+		return {
+			vehicles,
+			details
+		};
+	} catch (error) {
+		//@ts-expect-error This expects any error
+		console.log(error);
+	}
+};

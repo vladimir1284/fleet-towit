@@ -6,7 +6,7 @@
 	export let constraints: any;
 	export let errors: any;
 	export let form: any;
-	
+
 	$: formattedPhoneNumber = formatPhoneNumber($form.phoneNumber);
 
 	function formatPhoneNumber(phoneNumber: string) {

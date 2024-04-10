@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 
 const seedRentalPlans = async (prisma) => {
 	console.log('Seeding rental plans data...');
-    const createdPlanIds = [];
+	const createdPlanIds = [];
 
 	const generateRentalPlan = () => ({
 		name: faker.commerce.productName(),
@@ -15,11 +15,11 @@ const seedRentalPlans = async (prisma) => {
 		const createdPlan = await prisma.rentalPlan.create({
 			data: generateRentalPlan()
 		});
-        createdPlanIds.push(createdPlan.id)
+		createdPlanIds.push(createdPlan.id);
 	}
 
 	console.log('Seeding complete!');
-    return createdPlanIds;
+	return createdPlanIds;
 };
 
 export default seedRentalPlans;

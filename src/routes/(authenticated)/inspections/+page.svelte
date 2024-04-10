@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import {
 		Table,
 		TableBody,
@@ -11,10 +12,15 @@
 		Button,
 		Modal,
 		Label,
-		Select
+		Select,
+		PaginationItem
 	} from 'flowbite-svelte';
+	import { ArrowLeftSolid, ArrowRightSolid } from 'flowbite-svelte-icons';
 
 	export let data: PageData;
+
+	const previous = () => goto(`/inspections?page=${data.pagination.prev_page}`);
+	const next = () => goto(`/inspections?page=${data.pagination.next_page}`);
 
 	let customFormSelected = '';
 	let vehicleSelected = '';
@@ -25,6 +31,22 @@
 	<div class="flex justify-end gap-4">
 		<Button color="blue" on:click={() => (openModal = true)}>Create inspection</Button>
 		<Button color="blue" href={`${$page.url.pathname}/forms`}>Forms</Button>
+	</div>
+	<!-- pagination buttons -->
+	<div class="flex space-x-3 rtl:space-x-reverse">
+		{#if data.pagination.has_prev_page}
+			<PaginationItem class="flex items-center" on:click={previous}>
+				<ArrowLeftSolid class="me-2 w-3.5 h-3.5" />
+				Previous
+			</PaginationItem>
+		{/if}
+
+		{#if data.pagination.has_next_page}
+			<PaginationItem class="flex items-center" on:click={next}>
+				Next
+				<ArrowRightSolid class="ms-2 w-3.5 h-3.5" />
+			</PaginationItem>
+		{/if}
 	</div>
 	<!-- list inspections -->
 	<Table>
@@ -40,12 +62,13 @@
 					<TableBodyCell>{inspection.id}</TableBodyCell>
 					<TableBodyCell>{inspection.customForm.name}</TableBodyCell>
 					<TableBodyCell>
-						{inspection.createdAt.getDate() + 1} /
+						{inspection.createdAt.getDate()} /
 						{inspection.createdAt.getMonth() + 1} /
-						{inspection.createdAt.getFullYear() + 1}
+						{inspection.createdAt.getFullYear()}
 					</TableBodyCell>
 					<TableBodyCell
-						><a href={`${$page.url.pathname}/read/${inspection.id}`}>Read</a></TableBodyCell
+						><a href={`${$page.url.pathname}/exception-report/${inspection.id}`}>Read</a
+						></TableBodyCell
 					>
 				</TableBodyRow>
 			{/each}

@@ -5,7 +5,35 @@ import PdfPrinter from 'pdfmake';
 import blobStream, { type IBlobStream } from 'blob-stream';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FormFieldType } from '@prisma/client';
+import type {
+	Inspection,
+	Vehicle,
+	CustomForm,
+	CustomField,
+	CustomFieldResponse,
+	CheckOption,
+	Card
+} from '@prisma/client';
+import { minioClient } from '$lib/minio';
 import { retrieveInspectionById } from '$lib/actions/inspections';
+
+interface CustomFields extends CustomField {
+	responses: CustomFieldResponse[];
+	checkOptions: CheckOption[];
+}
+
+interface Cards extends Card {
+	fields: CustomFields[];
+}
+
+interface CustomForms extends CustomForm {
+	cards: Cards[];
+}
+
+interface Inspections extends Inspection {
+	vehicle: Vehicle;
+	customForm: CustomForms;
+}
 
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const session = await locals.getSession();
@@ -27,21 +55,21 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 		});
 	}
 
-	// this code is for testing purposes only
-	const tenant = session?.user.tenantUsers[0].tenant;
+	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const inspection = await retrieveInspectionById({
-		tenantId: tenant.id,
+	const inspection = (await retrieveInspectionById({
+		tenantId: tenantUserId,
 		id: inspectionId
-	});
+	})) as Inspections;
 
 	const pdf = await createPDF(inspection);
 
+	// @ts-expect-error: pass
 	return new Response(pdf);
 };
 
-const createPDF = async (inspection: any) => {
-	const day = inspection.createdAt.getDate() + 1;
+const createPDF = async (inspection: Inspections) => {
+	const day = inspection.createdAt.getDate();
 	const month = inspection.createdAt.getMonth() + 1;
 	const year = inspection.createdAt.getFullYear();
 
@@ -59,7 +87,7 @@ const createPDF = async (inspection: any) => {
 		}
 	};
 
-	const docDefinition: TDocumentDefinitions = {
+	const docDefinition = {
 		content: [
 			{
 				columns: [
@@ -82,28 +110,24 @@ const createPDF = async (inspection: any) => {
 			{
 				alignment: 'justify',
 				columns: [
-					// model
 					{
 						text: [
 							{ text: 'Modelo: ', style: 'details' },
 							{ text: inspection.vehicle.model, style: 'content' }
 						]
 					},
-					// VIN
 					{
 						text: [
 							{ text: 'VIN: ', style: 'details' },
 							{ text: inspection.vehicle.vin, style: 'content' }
 						]
 					},
-					// plate
 					{
 						text: [
 							{ text: 'Plate: ', style: 'details' },
-							{ text: inspection.vehicle?.plates[0].plate, style: 'content' }
+							{ text: inspection.vehicle.plate, style: 'content' }
 						]
 					},
-					// Date
 					{
 						text: [
 							{ text: 'Date: ', style: 'details' },
@@ -112,7 +136,6 @@ const createPDF = async (inspection: any) => {
 					}
 				]
 			},
-			'\n',
 			{
 				alignment: 'justify',
 				columns: [
@@ -133,8 +156,7 @@ const createPDF = async (inspection: any) => {
 						style: 'details'
 					}
 				]
-			},
-			'\n'
+			}
 		],
 
 		images: {
@@ -157,16 +179,48 @@ const createPDF = async (inspection: any) => {
 			content: {
 				fontSize: 9
 			},
+			card_name: {
+				fontSize: 9,
+				bold: true,
+				decoration: 'underline'
+			},
 			icon: {
 				font: 'Fontello'
 			}
+		},
+
+		defaultStyle: {
+			lineHeight: 1.5
 		}
 	};
 
-	for (const field of inspection.customForm.fields) {
-		// text , number
-		if (field.type === FormFieldType.NUMBER || field.type === FormFieldType.TEXT) {
-			const columns: any = [
+	const parseDate = (date: string) => {
+		const dateParsed = new Date(date);
+
+		const day = dateParsed.getDate();
+		const month = dateParsed.getMonth() + 1;
+		const year = dateParsed.getFullYear();
+
+		return `${day} / ${month} / ${year}`;
+	};
+
+	interface Column {
+		text?: string | (string | { text: string; style: string })[];
+		style?: string;
+		width?: number;
+		link?: string;
+		image?: string;
+	}
+
+	for (const card of inspection.customForm.cards) {
+		docDefinition.content.push({
+			// @ts-expect-error: pass
+			text: `\n${card.name}:`,
+			style: 'card_name'
+		});
+
+		for (const field of card.fields) {
+			const columns: Column[] = [
 				{
 					text: `${field.name}:`,
 					style: 'content',
@@ -174,67 +228,128 @@ const createPDF = async (inspection: any) => {
 				}
 			];
 
-			// response
-			for (const response of field.responses) {
-				columns.push({
-					text: response.content,
-					style: 'content'
-				});
-			}
-
-			docDefinition.content.push({ columns });
-			docDefinition.content.push('\n');
-			// single ckeck
-		} else if (field.type === FormFieldType.SINGLE_CHECK) {
-			const columns: any = [
-				{
-					text: `${field.name}:`,
-					style: 'content',
-					width: 170
-				}
-			];
-
-			for (const option of field.checkOptions) {
+			// text , number
+			if (field.type === FormFieldType.NUMBER || field.type === FormFieldType.TEXT) {
+				// response
 				for (const response of field.responses) {
-					if (option.id === response.checkOptionId) {
+					columns.push({
+						text: response.content ? (response.content as string) : '-',
+						style: 'content'
+					});
+				}
+
+				// @ts-expect-error: pass
+				docDefinition.content.push({ columns });
+				// single check
+			} else if (field.type === FormFieldType.SINGLE_CHECK) {
+				for (const option of field.checkOptions) {
+					for (const response of field.responses) {
+						if (option.id === response.checkOptionId) {
+							columns.push({
+								text: [{ text: '', style: 'icon' }, `  ${option.name}`],
+								style: 'content',
+								width: 80
+							});
+						} else {
+							columns.push({
+								text: [{ text: '', style: 'icon' }, `  ${option.name}`],
+								style: 'content',
+								width: 80
+							});
+						}
+					}
+				}
+
+				for (const response of field.responses) {
+					if (response.note) {
 						columns.push({
-							text: [{ text: '', style: 'icon' }, `  ${option.name}`],
-							style: 'content',
-							width: 80
+							text: `Note: ${response.note}`,
+							style: 'content'
 						});
 					} else {
 						columns.push({
-							text: [{ text: '', style: 'icon' }, `  ${option.name}`],
-							style: 'content',
-							width: 80
+							text: ``,
+							style: 'content'
 						});
 					}
 				}
-			}
 
-			for (const response of field.responses) {
-				if (response.note) {
+				// @ts-expect-error: pass
+				docDefinition.content.push({ columns });
+				// email
+			} else if (field.type === FormFieldType.EMAIL) {
+				for (const response of field.responses) {
 					columns.push({
-						text: `Note: ${response.note}`,
-						style: 'content'
+						text: response.content ? (response.content as string) : '-',
+						style: 'content',
+						link: `mailto:${response.content}`
 					});
-				} else {
+				}
+				// @ts-expect-error: pass
+				docDefinition.content.push({ columns });
+				// date
+			} else if (field.type === FormFieldType.DATE) {
+				// response
+				for (const response of field.responses) {
 					columns.push({
-						text: ``,
+						text: response.content ? parseDate(String(response.content)) : '-',
 						style: 'content'
 					});
 				}
-			}
 
-			docDefinition.content.push({ columns });
-			docDefinition.content.push('\n');
+				// @ts-expect-error: pass
+				docDefinition.content.push({ columns });
+			} else if (field.type === FormFieldType.TIME) {
+				for (const response of field.responses) {
+					columns.push({
+						text: response.content ? String(response.content) : '-',
+						style: 'content'
+					});
+				}
+
+				// @ts-expect-error: pass
+				docDefinition.content.push({ columns });
+			} else if (field.type === FormFieldType.PHONE) {
+				for (const response of field.responses) {
+					columns.push({
+						text: response.content ? String(response.content) : '-',
+						style: 'content',
+						link: `tel:${response.content}`
+					});
+				}
+				// @ts-expect-error: pass
+				docDefinition.content.push({ columns });
+			} else if (field.type === FormFieldType.IMAGE || field.type === FormFieldType.SIGNATURE) {
+				for (const response of field.responses) {
+					if (response.content) {
+						const file_url = await minioClient.presignedGetObject(
+							'develop',
+							`inspections/${inspection.id}/${response.content}`
+						);
+
+						const imgBase64 = await toBase64(file_url);
+
+						columns.push({
+							image: imgBase64,
+							width: 200
+						});
+					} else {
+						columns.push({
+							text: '-',
+							style: 'content'
+						});
+					}
+				}
+				// @ts-expect-error: pass
+				docDefinition.content.push({ columns });
+			}
 		}
 	}
 
 	const printer = new PdfPrinter(fonts);
 
 	return new Promise((resolve, reject) => {
-		const pdf = printer.createPdfKitDocument(docDefinition);
+		const pdf = printer.createPdfKitDocument(docDefinition as TDocumentDefinitions);
 
 		pdf
 			.pipe(blobStream())
@@ -248,4 +363,18 @@ const createPDF = async (inspection: any) => {
 
 		pdf.end();
 	});
+};
+
+const toBase64 = async (url: string) => {
+	try {
+		const req = await fetch(url);
+		const buffer = Buffer.from(await req.arrayBuffer());
+
+		const base64data = buffer.toString('base64');
+		const contentType = req.headers.get('content-type');
+
+		return `data:${contentType};base64,${base64data}`;
+	} catch (error) {
+		console.error(error);
+	}
 };

@@ -17,11 +17,11 @@ const seedClients = async (prisma, tenantsId: number[]) => {
 		const createdClient = await prisma.client.create({
 			data: generateClient()
 		});
-		createdClientsIds.push(createdClient.id)
+		createdClientsIds.push(createdClient.id);
 	}
 
 	console.log('Seeding complete!');
-	return createdClientsIds
+	return createdClientsIds;
 };
 
 export default seedClients;

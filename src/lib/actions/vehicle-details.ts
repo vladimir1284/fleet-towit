@@ -1,49 +1,54 @@
-import { json } from "@sveltejs/kit"
-import prisma from "$lib/prisma-client"
+import { json } from '@sveltejs/kit';
+import prisma from '$lib/prisma-client';
 
 const getVehicleDetails = async (vin: string, detailsCategory: string): any => {
-  detailsCategory = detailsCategory.toLowerCase()
+	detailsCategory = detailsCategory.toLowerCase();
 
-  const select = {
-    nickname: true,
-  }
+	const select = {
+		nickname: true
+	};
 
-  select[detailsCategory] = true
+	select[detailsCategory] = true;
 
-  try {
-    const vehicle = await prisma.vehicle.findUnique({
-      where: {
-        vin
-      },
-      select
-    })
+	try {
+		const vehicle = await prisma.vehicle.findUnique({
+			where: {
+				vin
+			},
+			select
+		});
 
-    if (!vehicle) throw new Error('Vehicle not found')
+		if (!vehicle) throw new Error('Vehicle not found');
 
-    const nickname = vehicle.nickname
-    const records = vehicle[detailsCategory]
+		const nickname = vehicle.nickname;
+		const records = vehicle[detailsCategory];
 
-    return json({
-      records,
-      nickname
-    }, {
-      status: 201,
-      statusText: 'Data sent'
-    })
+		return json(
+			{
+				records,
+				nickname
+			},
+			{
+				status: 201,
+				statusText: 'Data sent'
+			}
+		);
+	} catch (error) {
+		//@ts-expect-error This expects any error
+		console.log(error.message);
 
-  } catch (error) {
-    //@ts-expect-error This expects any error
-    console.log(error.message)
+		return json(
+			{
+				costs: [],
+				nickname: 'N\\A'
+			},
+			{
+				status: 500,
+				//@ts-expect-error This expects any error
+				statusText: error.message
+			}
+		);
+	}
+};
 
-    return json({
-      costs: [],
-      nickname: 'N\\A'
-    }, {
-      status: 500,
-      //@ts-expect-error This expects any error
-      statusText: error.message
-    })
-  }
-}
-
-export default getVehicleDetails
+export default getVehicleDetails;

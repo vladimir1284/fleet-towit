@@ -4,10 +4,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
-
 	export let data;
 
-	
 	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
@@ -22,7 +20,7 @@
 			if (!response.ok) {
 				console.error('Failed to delete', response);
 				return;
-			}else {
+			} else {
 				console.log('Deleted successfully');
 				dispatch('formvalid', false);
 			}

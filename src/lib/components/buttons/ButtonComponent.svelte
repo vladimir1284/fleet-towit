@@ -23,7 +23,7 @@
 	{#if loading}
 		<Spinner size="5" color="white" />
 	{:else}
-		<slot /> 
+		<slot />
 		{placeholder}
 	{/if}
 </Button>

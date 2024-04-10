@@ -9,7 +9,7 @@ export const getTenantUsers = async ({ userId }: { userId: string }) => {
 		include: {
 			tenant: true
 		}
-	})
+	});
 	return tenantUsers;
 };
 

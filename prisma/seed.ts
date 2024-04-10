@@ -6,6 +6,7 @@ import seedClients from './seeders/clients.seed';
 import seedInspection from './seeders/inspections.seed';
 import seedRentalPlans from './seeders/rentalPlan.seed';
 import seedContract from './seeders/contracts.seed';
+import seedTracker from './seeders/trackers.seed';
 const prisma = bypassPrisma;
 
 async function main() {
@@ -18,7 +19,7 @@ async function main() {
 		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'towithouston@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'albertolicea00@icloud.com', userRole: Role.ADMIN, is_default: true },
-		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true }
 		// Add more users as needed
 	];
 	const tenantsData = {
@@ -85,9 +86,11 @@ async function main() {
 	const createdVehiclesIds = await seedVehicles(prisma);
 	// Inspection
 	await seedInspection(prisma, [testTenantId, tenantId]);
-	await seedParts(prisma, [testTenantId, tenantId]);
+	// await seedParts(prisma, [testTenantId, tenantId]);
 	// Contracts
 	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
+	//Trackers
+	await seedTracker(prisma, createdVehiclesIds)
 }
 
 main()
