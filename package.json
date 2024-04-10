@@ -53,7 +53,7 @@
 	},
 	"type": "module",
 	"prisma": {
-		"seed": "dotenv -v DEBUG=app:seed -- tsx prisma/seed.ts"
+		"seed": "tsx prisma/seed.ts"
 	},
 	"dependencies": {
 		"@auth/core": "^0.18.6",
