@@ -143,10 +143,24 @@
 										accept="image/*"
 										aria-invalid={$errors[`field_${field.id}`] ? 'true' : undefined}
 										on:input={(e) => {
-											$form[`field_${field.id}`] = e.currentTarget.files?.item(0);
+											const file = e.currentTarget.files?.item(0);
+
+											$form[`field_${field.id}`] = file;
+
+											document.getElementById(`preview_${field.id}`).src =
+												URL.createObjectURL(file);
 										}}
 										{...$constraints[`field_${field.id}`]}
 									/>
+
+									<!-- preview -->
+									<div
+										class={$form[`field_${field.id}`]
+											? 'w-16 h-16 rounded-lg mt-2 overflow-hidden'
+											: 'hidden'}
+									>
+										<img class="w-full h-full" id={`preview_${field.id}`} />
+									</div>
 								{:else if field.type == data.FormFieldType.SIGNATURE}
 									<input
 										type="text"
@@ -158,6 +172,19 @@
 										bind:value={$form[`field_${field.id}`]}
 										{...$constraints[`field_${field.id}`]}
 									/>
+
+									<!-- signature preview -->
+									<div
+										class={$form[`field_${field.id}`]
+											? 'w-32 h-16 rounded-lg mt-2 overflow-hidden mb-2'
+											: 'hidden'}
+									>
+										<img
+											class="w-full h-full"
+											id={`preview_${field.id}`}
+											src={$form[`field_${fieldId}`]}
+										/>
+									</div>
 
 									<Button
 										color={$form[`field_${fieldId}`] && !pad.isEmpty() ? 'green' : 'blue'}
