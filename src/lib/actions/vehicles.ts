@@ -1,9 +1,8 @@
-import { bypassPrisma } from '$lib/prisma';
+import type { PrismaClient } from '@prisma/client';
 
-export const getAllVehicles = async () => {
-	const vehicles = await bypassPrisma.vehicle.findMany({
+export const getAllVehicles = async (instance: PrismaClient) => {
+	const vehicles = await instance.vehicle.findMany({
 		include: {
-			tracker: { include: {heartBeats: { orderBy: { timeStamp: 'desc' }}}},
 			plates: {
 				where: {
 					isActive: true
@@ -14,5 +13,5 @@ export const getAllVehicles = async () => {
 	const vehiclesWithActualPlate = vehicles.map((v) => {
 		return { ...v, plate: v.plates[0] || undefined };
 	});
-	return vehiclesWithActualPlate
-};
+	return vehiclesWithActualPlate;
+}

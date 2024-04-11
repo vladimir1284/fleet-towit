@@ -1,5 +1,5 @@
-import { bypassPrisma } from '$lib/prisma';
 import type { Note, User } from '$lib/zod';
+import type { PrismaClient } from '@prisma/client';
 
 type NoteType = {
 	id?: number;
@@ -25,8 +25,11 @@ export interface NoteResult {
 	file: string | null;
 }
 
-export const getContractNotes = async (id: number): Promise<Array<NoteResult>> => {
-	return await bypassPrisma.note.findMany({
+export const getContractNotes = async (
+	instance: PrismaClient,
+	id: number
+): Promise<Array<NoteResult>> => {
+	return await instance.note.findMany({
 		where: {
 			contractId: id
 		},
@@ -39,17 +42,14 @@ export const getContractNotes = async (id: number): Promise<Array<NoteResult>> =
 	});
 };
 
-export const pushNote = async ({
-	id,
-	contractId,
-	userId,
-	subject,
-	body,
-	remainder,
-	file
-}: NoteType): Promise<Note> => {
+export const pushNote = async (
+	instance: PrismaClient,
+	{ id, contractId, userId, subject, body, remainder, file }: NoteType
+): Promise<Note> => {
+	let note;
+
 	if (id) {
-		return await bypassPrisma.note.update({
+		note = await instance.note.update({
 			where: {
 				id: id
 			},
@@ -63,22 +63,25 @@ export const pushNote = async ({
 				file
 			}
 		});
+	} else {
+		note = await instance.note.create({
+			data: {
+				contractId,
+				userId,
+				Subject: subject,
+				Body: body,
+				remainder,
+				file,
+				createdDate: new Date()
+			}
+		});
 	}
-	return await bypassPrisma.note.create({
-		data: {
-			contractId,
-			userId,
-			Subject: subject,
-			Body: body,
-			remainder,
-			file,
-			createdDate: new Date()
-		}
-	});
+
+	return note;
 };
 
-export const deleteNote = async (id: number) => {
-	return await bypassPrisma.note.delete({
+export const deleteNote = async (instance: PrismaClient, id: number) => {
+	return await instance.note.delete({
 		where: {
 			id: id
 		}

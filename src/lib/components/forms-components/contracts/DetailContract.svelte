@@ -20,7 +20,6 @@
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	const formatDate = (date: Date | string) => {
 		if (!date) {
@@ -35,16 +34,20 @@
 	};
 
 	async function updateContractData() {
-		const contractData = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`,
-			{ headers }
-		);
-		const contractStages = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`,
-			{ headers }
-		);
-		selectedContract = await contractData.json();
-		contractStagesList = await contractStages.json();
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`)
+			.then((contractDataResponse) => {
+				return axios.get(
+					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
+				);
+			})
+			.then((contractStagesResponse) => {
+				selectedContract = contractDataResponse.data;
+				contractStagesList = contractStagesResponse.data;
+			})
+			.catch((error) => {
+				console.error('Error fetching contract data:', error);
+			});
 	}
 
 	async function handleCloseEditModal(event: any) {
@@ -136,7 +139,7 @@
 
 					<svelte:fragment slot="h3">Vehicle</svelte:fragment>
 					<svelte:fragment slot="paragraph">
-						<Label class="my-4 w-max">Plate: {selectedContract.vehicle.plate}</Label>
+						<Label class="my-4 w-max">Plate: {selectedContract.vehicle.plates[0].plate}</Label>
 						<Label class="my-4 w-max">Make: {selectedContract.vehicle.make}</Label>
 						<Label class="my-4 w-max">Type: {selectedContract.vehicle.type}</Label>
 						<Label class="my-4 w-max">Vin: {selectedContract.vehicle.vin}</Label>

@@ -6,6 +6,8 @@ const seedTracker = async(
 ) => {
     console.log('seeding trackers data')
 
+    const randomElement = (array) => array[Math.floor(Math.random() * array.length)];
+
     const generateHeartBeat = (trackerId: number) => {
         const fakeLoc = faker.location.nearbyGPSCoordinate({origin: [39.8283, -98.5795], radius: 1000})
         return {
@@ -23,7 +25,7 @@ const seedTracker = async(
     const generateTracker = (c: number) => ({
         vehicle: {
             connect: {
-                id: faker.helpers.arrayElement(createdVehiclesIds)
+                id: randomElement(createdVehiclesIds)
             }
         },
         name: 'Tracker#'+c,

@@ -1,17 +1,22 @@
 import { json } from '@sveltejs/kit';
-import prisma from '$lib/prisma-client';
+import type { PrismaClient } from '@prisma/client';
 
-const getVehicleDetails = async (vin: string, detailsCategory: string): any => {
+const getVehicleDetails = async (
+	instance: PrismaClient,
+	vin: string,
+	detailsCategory: string
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> => {
 	detailsCategory = detailsCategory.toLowerCase();
 
-	const select = {
+	const select: { [key: string]: boolean } = {
 		nickname: true
 	};
 
 	select[detailsCategory] = true;
 
 	try {
-		const vehicle = await prisma.vehicle.findUnique({
+		const vehicle = await instance.vehicle.findUnique({
 			where: {
 				vin
 			},

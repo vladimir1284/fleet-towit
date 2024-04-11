@@ -1,7 +1,7 @@
-import { bypassPrisma } from '$lib/prisma';
+import type { PrismaClient } from '@prisma/client';
 
-export const getAllPlates = async () => {
-	const plates = await bypassPrisma.vehiclePlate.findMany({
+export const getAllPlates = async (instance: PrismaClient) => {
+	const plates = await instance.vehiclePlate.findMany({
 		include: {
 			vehicle: true
 		}
@@ -9,8 +9,8 @@ export const getAllPlates = async () => {
 	return plates;
 };
 
-export const getPlateById = async ({ id }: { id: number }) => {
-	const plate = await bypassPrisma.vehiclePlate.findUnique({
+export const getPlateById = async (instance: PrismaClient, { id }: { id: number }) => {
+	const plate = await instance.vehiclePlate.findUnique({
 		where: {
 			id
 		},
@@ -22,19 +22,20 @@ export const getPlateById = async ({ id }: { id: number }) => {
 };
 
 export const getPlatesByVehicleId = async (
+	instance: PrismaClient,
 	{ vehicleId }: { vehicleId: number },
 	activeOnly: false
 ) => {
 	let plates;
 	if (activeOnly) {
-		plates = await bypassPrisma.vehiclePlate.findMany({
+		plates = await instance.vehiclePlate.findMany({
 			where: {
 				vehicleId,
 				isActive: true
 			}
 		});
 	} else {
-		plates = await bypassPrisma.vehiclePlate.findMany({
+		plates = await instance.vehiclePlate.findMany({
 			where: {
 				vehicleId
 			}

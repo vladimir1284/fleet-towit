@@ -1,12 +1,13 @@
 import { z } from 'zod';
-import type { RequestHandler } from '@sveltejs/kit';
-import { actionResult, superValidate } from 'sveltekit-superforms/server';
 import {
 	listRentalPlans,
 	createRentalPlan,
 	updateRentalPlan,
 	deleteRentalPlan
 } from '$lib/actions/rental-plans';
+import { zod } from 'sveltekit-superforms/adapters';
+import type { RequestHandler } from '@sveltejs/kit';
+import { actionResult, superValidate } from 'sveltekit-superforms/server';
 
 const fixSchema = z.object({
 	name: z.string(),
@@ -20,7 +21,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-	const rentalPlans = await listRentalPlans();
+	const rentalPlans = await listRentalPlans(locals.currentInstance.currentPrismaClient);
 
 	return new Response(JSON.stringify(rentalPlans), { status: 200 });
 };
@@ -31,21 +32,21 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-	const form = await superValidate(request, fixSchema);
+	const form = await superValidate(request, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
 		return actionResult('failure', { form }, { status: 400 });
 	}
 
 	if (params.rentalPlanId) {
-		await updateRentalPlan({
+		await updateRentalPlan(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.rentalPlanId || '0', 10),
 			name: form.data.name,
 			amount: form.data.amount,
 			periodicity: form.data.periodicity
 		});
 	} else {
-		await createRentalPlan({
+		await createRentalPlan(locals.currentInstance.currentPrismaClient, {
 			name: form.data.name,
 			amount: form.data.amount,
 			periodicity: form.data.periodicity
@@ -60,7 +61,9 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 	try {
-		await deleteRentalPlan({ id: parseInt(params.rentalPlanId || '0', 10) });
+		await deleteRentalPlan(locals.currentInstance.currentPrismaClient, {
+			id: parseInt(params.rentalPlanId || '0', 10)
+		});
 		return new Response(null, { status: 204 });
 	} catch (error) {
 		console.error(error);

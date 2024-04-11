@@ -13,14 +13,17 @@
 		Alert,
 		Badge
 	} from 'flowbite-svelte';
+	import axios from 'axios';
 	import { onMount } from 'svelte';
-	import type { PageData } from '../$types';
 	import { getContext } from 'svelte';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
-	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
-	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
+	import type { PageData } from '../$types';
+	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
+	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
+	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
+	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
+	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline, AnnotationSolid } from 'flowbite-svelte-icons';
 
 	export let data: PageData;
 	let message = '';
@@ -36,35 +39,42 @@
 	let deleteModal = false;
 	let updateModal = false;
 	let detailModal = false;
+	let showNotesModal = false;
 	let selectedContract = undefined;
 
 	let contractStagesList = [];
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
+	async function loadData() {
+		loading = true;
+		await axios
+			.all([
+				axios.get(`/api/tenants/${$currentTenant.id}/client`),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts`),
+				axios.get(`/api/tenants/${$currentTenant.id}/vehicles`),
+				axios.get(`/api/tenants/${$currentTenant.id}/rentalPlan`)
+			])
+			.then(
+				axios.spread(
+					(clientsResponse, contractsResponse, vehiclesResponse, rentalPlansResponse) => {
+						clients = [...clientsResponse.data];
+						vehicles = [...vehiclesResponse.data];
+						contracts = [...contractsResponse.data];
+						rentalPlans = [...rentalPlansResponse.data];
+
+						loading = false;
+					}
+				)
+			)
+			.catch((error) => {
+				console.error('Error:', error);
+				loading = false;
+			});
+	}
+
 	onMount(async () => {
-		try {
-			const clientsResponse = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
-			const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-				headers
-			});
-			const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, {
-				headers
-			});
-			const rentalPlansResponse = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, {
-				headers
-			});
-
-			clients = [...(await clientsResponse.json())];
-			vehicles = [...(await vehiclesResponse.json())];
-			contracts = [...(await contractsResponse.json())];
-			rentalPlans = [...(await rentalPlansResponse.json())];
-
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
 
 	function handleAlert(text) {
@@ -79,10 +89,7 @@
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleEdit(contract) {
@@ -94,10 +101,7 @@
 		editModal = event.detail;
 		handleAlert('Contract edited succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleUpdateStage(contract) {
@@ -109,10 +113,7 @@
 		updateModal = event.detail;
 		handleAlert('Contract updated succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleDelete(contractId) {
@@ -124,35 +125,51 @@
 		deleteModal = event.detail;
 		handleAlert('Contract deleted succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleDetail(contract) {
-		const request = await fetch(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`);
-		contractStagesList = await request.json();
-		selectedContract = contract;
-		detailModal = true;
+		axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`)
+        .then(response => {
+            contractStagesList = response.data;
+            selectedContract = contract;
+			detailModal = true;
+        })
+        .catch(error => {
+            console.error('Error fetching contract stages:', error);
+        });
 	}
+	
 	$: if (!detailModal) {
 		handleCloseDetailModal();
+	}
+
+	$: {
+		contracts.forEach((contract) => {
+			contract.RemStatus = getContractRemainderStatus(contract.notes);
+		});
+	}
+
+	async function handleShowNotes(contract) {
+		selectedContract = contract;
+		showNotesModal = true;
 	}
 
 	async function handleCloseDetailModal() {
 		contractStagesList = [];
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 </script>
 
 {#if loading}
 	<p>Loading...</p>
 {:else}
+
+	{#if selectedContract}
+		<ViewContractNotes {data} bind:open={showNotesModal} bind:selectedContract />
+	{/if}
+
 	<Modal bind:open={createModal} size="xs">
 		<ContractForm {data} {clients} {vehicles} {rentalPlans} on:formvalid={handleCloseModal} />
 	</Modal>
@@ -217,6 +234,7 @@
 						</TableBodyCell>
 						<TableBodyCell class="flex w-40 justify-between">
 							<EyeOutline class="text-gray-400" on:click={() => handleDetail(contract)} />
+							<AnnotationSolid class="text-gray-400" on:click={() => handleShowNotes(contract)} />
 							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(contract)} />
 							<RotateOutline class="text-gray-400" on:click={() => handleUpdateStage(contract)} />
 							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(contract.id)} />

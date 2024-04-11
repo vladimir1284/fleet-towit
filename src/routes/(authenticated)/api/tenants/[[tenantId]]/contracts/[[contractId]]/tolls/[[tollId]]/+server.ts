@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { minioClient } from '$lib/minio';
 import type { $Enums } from '@prisma/client';
+import { getPlateById } from '$lib/actions/plates';
 import { zod } from 'sveltekit-superforms/adapters';
 import { actionResult } from 'sveltekit-superforms';
 import type { RequestHandler } from '@sveltejs/kit';
@@ -13,7 +14,6 @@ import {
 	updateToll,
 	listTolls
 } from '$lib/actions/tolls';
-import { getPlateById } from '$lib/actions/plates';
 
 const tollSchema = z.object({
 	amount: z.number().gte(0),
@@ -34,7 +34,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	let contractId;
 
 	if (!params.contractId) {
-		const tolls = await listTolls();
+		const tolls = await listTolls(locals.currentInstance.currentPrismaClient);
 		return new Response(JSON.stringify(tolls), { status: 200 });
 	} else {
 		try {
@@ -42,7 +42,9 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 		} catch {
 			return new Response('invalid contractId', { status: 400 });
 		}
-		const tolls = await listTollsByContractId({ contractId });
+		const tolls = await listTollsByContractId(locals.currentInstance.currentPrismaClient, {
+			contractId
+		});
 		return new Response(JSON.stringify(tolls), { status: 200 });
 	}
 };
@@ -53,10 +55,8 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 	const formData = await request.formData();
-	console.log('FORMDATA', formData);
 	const form = await superValidate(formData, zod(tollSchema));
 	const file = formData.get('fileData');
-	console.log('FORM', form);
 	if (form.valid) {
 		let toll: {
 			contractId: number;
@@ -69,14 +69,16 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 			invoiceNumber: string | null;
 			createDate: Date;
 		};
-		const plate = await getPlateById({ id: form.data.plateId });
-		const contract = await getContractByDateRange({
+		const plate = await getPlateById(locals.currentInstance.currentPrismaClient, {
+			id: form.data.plateId
+		});
+		const contract = await getContractByDateRange(locals.currentInstance.currentPrismaClient, {
 			vehicleId: plate?.vehicleId || 0,
 			date: form.data.createDate
 		});
 		form.data.contractId = contract?.id || NaN;
 		if (!params.tollId) {
-			toll = await createToll({
+			toll = await createToll(locals.currentInstance.currentPrismaClient, {
 				amount: form.data.amount,
 				plateId: form.data.plateId,
 				contractId: form.data.contractId,
@@ -87,7 +89,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 				note: form.data.note
 			});
 		} else {
-			toll = await updateToll({
+			toll = await updateToll(locals.currentInstance.currentPrismaClient, {
 				id: parseInt(params.tollId),
 				amount: form.data.amount,
 				plateId: form.data.plateId,
@@ -118,7 +120,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 				return actionResult('success', { form }, { status: 200 });
 			}
 		} catch {
-			await deleteToll({ id: toll.id });
+			await deleteToll(locals.currentInstance.currentPrismaClient, { id: toll.id });
 			setError(form, 'Error sending the file');
 			form.valid = false;
 			return actionResult('failure', { form }, { status: 400 });
@@ -136,6 +138,6 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 	if (!params.tollId) {
 		return new Response('Invalid tollId', { status: 400 });
 	}
-	await deleteToll({ id: parseInt(params.tollId) });
+	await deleteToll(locals.currentInstance.currentPrismaClient, { id: parseInt(params.tollId) });
 	return new Response('sucess', { status: 200 });
 };

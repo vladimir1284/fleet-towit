@@ -1,9 +1,9 @@
 import { json } from '@sveltejs/kit';
-import prisma from '$lib/prisma-client';
+import type { PrismaClient } from '@prisma/client';
 
-const getVehicle = async (vin: string) => {
+const getVehicle = async (instance: PrismaClient, vin: string) => {
 	try {
-		const vehicle = await prisma.vehicle.findUnique({
+		const vehicle = await instance.vehicle.findUnique({
 			where: {
 				vin
 			},
@@ -12,7 +12,12 @@ const getVehicle = async (vin: string) => {
 				documents: true,
 				costs: true,
 				contracts: true,
-				inspections: true
+				inspections: true,
+				plates: {
+					where: {
+						isActive: true
+					}
+				}
 			}
 		});
 

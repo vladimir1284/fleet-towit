@@ -11,6 +11,7 @@
 
 	import type { Writable } from 'svelte/store';
 	import type { Part } from '@prisma/client';
+	import axios from 'axios';
 
 	// Retrieve part list context.
 	const writablePartStore: Writable<Part[]> = getContext('PartList');
@@ -34,15 +35,15 @@
 			}
 		);
 
-		const partRetrievalResponse = await fetch(parsedQueryParams, {
-			method: 'GET'
-		});
-		// Utilize retrieved parts if valid response.
-		if (partRetrievalResponse.ok) {
-			const { data: untainedTenantParts } = await partRetrievalResponse.json();
-			return untainedTenantParts;
-		}
-		return $writablePartStore;
+        await axios.get(parsedQueryParams)
+            .then((response) => {
+                const { data: untainedTenantParts } = response.data;
+                return untainedTenantParts;
+            })
+            .catch((error) => {
+                console.error('Error fetching parts:', error);
+                return $writablePartStore;
+            });
 	};
 
 	$: promise = searchPartRecords(partSearchPattern);

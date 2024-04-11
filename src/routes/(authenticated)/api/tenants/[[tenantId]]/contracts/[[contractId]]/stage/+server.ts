@@ -19,7 +19,9 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 	if (params.contractId) {
-		const stages = await getPreviousStage({ contractId: parseInt(params.contractId) });
+		const stages = await getPreviousStage(locals.currentInstance.currentPrismaClient, {
+			contractId: parseInt(params.contractId)
+		});
 		return new Response(JSON.stringify(stages));
 	} else {
 		return new Response('Invalid contractId', { status: 400 });
@@ -38,7 +40,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 		return actionResult('failure', { form }, { status: 400 });
 	}
 	if (params.contractId) {
-		await updateContractStage({
+		await updateContractStage(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.contractId || '0', 10),
 			date: new Date(Date.now()),
 			reason: form.data.reason,

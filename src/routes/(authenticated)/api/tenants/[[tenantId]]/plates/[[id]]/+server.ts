@@ -7,6 +7,6 @@ export const GET: RequestHandler = async ({ locals }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-	const plates = await getAllPlates();
+	const plates = await getAllPlates(locals.currentInstance.currentPrismaClient);
 	return new Response(JSON.stringify(plates));
 };
