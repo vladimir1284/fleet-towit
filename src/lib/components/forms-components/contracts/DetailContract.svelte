@@ -139,7 +139,7 @@
 
 					<svelte:fragment slot="h3">Vehicle</svelte:fragment>
 					<svelte:fragment slot="paragraph">
-						<Label class="my-4 w-max">Plate: {selectedContract.vehicle.plate}</Label>
+						<Label class="my-4 w-max">Plate: {selectedContract.vehicle.plates[0].plate}</Label>
 						<Label class="my-4 w-max">Make: {selectedContract.vehicle.make}</Label>
 						<Label class="my-4 w-max">Type: {selectedContract.vehicle.type}</Label>
 						<Label class="my-4 w-max">Vin: {selectedContract.vehicle.vin}</Label>

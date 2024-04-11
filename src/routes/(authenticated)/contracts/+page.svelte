@@ -13,14 +13,15 @@
 		Alert,
 		Badge
 	} from 'flowbite-svelte';
+	import axios from 'axios';
 	import { onMount } from 'svelte';
-	import type { PageData } from '../$types';
 	import { getContext } from 'svelte';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
-	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
-	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
+	import type { PageData } from '../$types';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
+	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
+	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
+	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 
 	export let data: PageData;
 	let message = '';
@@ -46,10 +47,10 @@
 		loading = true;
 		await axios
 			.all([
-				axios.get(`/api/tenants/${$currentTenant.id}/client`, { headers }),
-				axios.get(`/api/tenants/${$currentTenant.id}/contracts`, { headers }),
-				axios.get(`/api/tenants/${$currentTenant.id}/vehicles`, { headers }),
-				axios.get(`/api/tenants/${$currentTenant.id}/rentalPlan`, { headers })
+				axios.get(`/api/tenants/${$currentTenant.id}/client`),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts`),
+				axios.get(`/api/tenants/${$currentTenant.id}/vehicles`),
+				axios.get(`/api/tenants/${$currentTenant.id}/rentalPlan`)
 			])
 			.then(
 				axios.spread(

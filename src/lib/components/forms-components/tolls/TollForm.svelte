@@ -21,7 +21,6 @@
 
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
-	let headers;
 	let plates = [];
 	let attachFile = false;
 	let loading = false;

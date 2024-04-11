@@ -7,6 +7,7 @@
 	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
+	import axios from 'axios';
 
 	export let data: PageData;
 	let tenants = [];

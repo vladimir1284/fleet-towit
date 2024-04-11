@@ -25,7 +25,15 @@ export const getAllContracts = async (isAdminUser = false) => {
 		include: {
 			client: true,
 			rentalPlan: true,
-			vehicle: true,
+			vehicle: {
+				include: {
+					plates: {
+						where: {
+							isActive: true
+						}
+					}
+				}
+			},
 			stage: {
 				include: {
 					previousStage: true
