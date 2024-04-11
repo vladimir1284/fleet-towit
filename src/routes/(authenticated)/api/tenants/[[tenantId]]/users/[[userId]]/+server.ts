@@ -29,7 +29,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 
-	const users = await listTenantUsers(locals.inventoryActionObject.currentPrismaClient, {
+	const users = await listTenantUsers(locals.currentInstance.currentPrismaClient, {
 		tenantId: parseInt(params.tenantId, 10)
 	});
 	return new Response(JSON.stringify(users), { status: 200 });
@@ -48,14 +48,11 @@ export const POST: RequestHandler = async ({ locals, params, request, url }) => 
 	}
 
 	if (!params.userId) {
-		const createdTenantUser = await createTenantUser(
-			locals.inventoryActionObject.currentPrismaClient,
-			{
-				tenantId: form.data.tenantId,
-				email: form.data.email,
-				role: Role[form.data.role]
-			}
-		);
+		const createdTenantUser = await createTenantUser(locals.currentInstance.currentPrismaClient, {
+			tenantId: form.data.tenantId,
+			email: form.data.email,
+			role: Role[form.data.role]
+		});
 
 		if (
 			(await bypassPrisma.tenantUser.count({
@@ -64,7 +61,7 @@ export const POST: RequestHandler = async ({ locals, params, request, url }) => 
 				}
 			})) == 1
 		) {
-			await updateDefaultTenantUser(locals.inventoryActionObject.currentPrismaClient, {
+			await updateDefaultTenantUser(locals.currentInstance.currentPrismaClient, {
 				id: createdTenantUser.id,
 				tenantId: form.data.tenantId,
 				isDefault: true
@@ -74,7 +71,7 @@ export const POST: RequestHandler = async ({ locals, params, request, url }) => 
 		const tenant = await bypassPrisma.tenant.findUnique({ where: { id: form.data.tenantId } });
 		await sendWelcomeEmail(form.data.email, tenant?.name ?? '', form.data.role, url.origin);
 	} else {
-		await updateTenantUser(locals.inventoryActionObject.currentPrismaClient, {
+		await updateTenantUser(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.userId, 10),
 			tenantId: form.data.tenantId,
 			email: form.data.email,
@@ -91,19 +88,16 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 	///////TODO     Migrando logica para actions
-	const currentUserData = locals.inventoryActionObject?.currentTenantUser;
+	const currentUserData = locals.currentInstance?.currentTenantUser;
 	const tenantUserId = parseInt(formData.get('tenantUserId') as string, 10);
 	const isDefault = formData.get('is_default') === 'true';
 
-	const tenantUser = await updateDefaultTenantUser(
-		locals.inventoryActionObject.currentPrismaClient,
-		{
-			id: tenantUserId,
-			//@ts-expect-error currenUserData is not string
-			tenantId: currentUserData?.tenant.id,
-			isDefault
-		}
-	);
+	const tenantUser = await updateDefaultTenantUser(locals.currentInstance.currentPrismaClient, {
+		id: tenantUserId,
+		//@ts-expect-error currenUserData is not string
+		tenantId: currentUserData?.tenant.id,
+		isDefault
+	});
 	return new Response(JSON.stringify(tenantUser), { status: 200 });
 };
 
@@ -117,13 +111,13 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 		if (tenantUserToDelete?.is_default) {
 			const allTenantUsers = await getTenantUsers({ userId: tenantUserToDelete.userId });
 
-			await updateDefaultTenantUser(locals.inventoryActionObject.currentPrismaClient, {
+			await updateDefaultTenantUser(locals.currentInstance.currentPrismaClient, {
 				id: allTenantUsers[0].id,
 				tenantId: allTenantUsers[0].tenantId,
 				isDefault: true
 			});
 		}
-		await deleteTenantUser(locals.inventoryActionObject.currentPrismaClient, {
+		await deleteTenantUser(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.userId)
 		});
 		return new Response('Success', { status: 200 });

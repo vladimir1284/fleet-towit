@@ -4,7 +4,7 @@ import type { PrismaClient } from '@prisma/client';
 declare global {
 	namespace App {
 		interface Locals {
-			inventoryActionObject: {
+			currentInstance: {
 				currentTenant: string;
 				currentTenantUser: string;
 				currentPrismaClient: PrismaClient;

@@ -1,10 +1,10 @@
 <script async lang="ts">
 	import type { Note } from '$lib/zod';
-	import { Fileupload, GradientButton, Input, Textarea, Toggle } from 'flowbite-svelte';
+	import { GradientButton, Input, Textarea, Toggle } from 'flowbite-svelte';
 	import { EditOutline, PaperClipOutline } from 'flowbite-svelte-icons';
 	import { createEventDispatcher } from 'svelte';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { DateInput, DatePicker } from 'date-picker-svelte';
+	import { DatePicker } from 'date-picker-svelte';
 	import { getNoteFileName } from './tools';
 
 	const dispatch = createEventDispatcher();
@@ -39,7 +39,7 @@
 		dispatch('noteCancel');
 	};
 
-	const changeFile = (event) => {
+	const changeFile = (event: any) => {
 		if (event.target.files.length > 0) {
 			file = event.target.files[0].name;
 		}
