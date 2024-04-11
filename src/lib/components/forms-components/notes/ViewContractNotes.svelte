@@ -7,6 +7,7 @@
 	import type { PageData } from '../../../../routes/$types';
 	import type { NoteResult } from '$lib/actions/contracts_notes';
 	import type { Note } from '$lib/zod';
+	import axios from 'axios';
 
 	interface Contract {
 		id: number;
@@ -59,15 +60,17 @@
 		if (!selectedContract) return;
 		loading = true;
 
-		try {
-			const notesResp = await fetch(actionURL);
-			const notesRes = await notesResp.json();
-			notes = Array.from(map(notesRes));
-		} catch (e) {
-			console.log(e);
-		} finally {
-			loading = false;
-		}
+		axios
+			.get(actionURL)
+			.then((response) => {
+				notes = Array.from(map(response.data));
+			})
+			.catch((error) => {
+				console.log('Error fetching data', error);
+			})
+			.finally(() => {
+				loading = false;
+			});
 	}
 
 	const onNoteCreated = async () => {
@@ -90,15 +93,15 @@
 	};
 
 	const onNoteRemove = async (e: CustomEvent) => {
-		const response = await fetch(`${removeURL}/${e.detail.id}`, {
-			method: 'DELETE'
-		});
-		if (!response.ok) {
-			console.error('Failed to delete user');
-			return;
-		}
-		console.log('Deleted successfully');
-		updateContractNotes();
+		await axios
+			.delete(`${removeURL}/${e.detail.id}`)
+			.then(() => {
+				console.log('Deleted successfully');
+				updateContractNotes();
+			})
+			.catch((error) => {
+				console.error('Failed to delete user', error);
+			});
 	};
 
 	$: {

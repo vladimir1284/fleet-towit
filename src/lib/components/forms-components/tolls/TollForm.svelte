@@ -14,6 +14,7 @@
 	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import AutocompleteInputComponent from '$lib/components/inputs/AutocompleteInputComponent.svelte';
+	import axios from 'axios';
 
 	export let data;
 	export let selectedToll;
@@ -45,15 +46,18 @@
 	};
 
 	async function getContractByDate(selectedDate: string, vehiclePlate: string) {
-		headers = { 'X-User-Tenant': $currentTenant.id };
 		let plateId = findPlateID(vehiclePlate);
 		if (plateId) {
-			const response = await fetch(
-				`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&plate_id=${plateId}`,
-				{ headers }
-			);
-
-			selectedContract = await response.json();
+			await axios
+				.get(
+					`/api/tenants/${$currentTenant.id}/contracts?search_date=${selectedDate}&plate_id=${plateId}`
+				)
+				.then((response) => {
+					selectedContract = response.data;
+				})
+				.catch((error) => {
+					console.log('Error fetching contract data', error);
+				});
 		} else {
 			selectedContract = undefined;
 		}
@@ -61,18 +65,28 @@
 
 	onMount(async () => {
 		if ($form.invoice) {
-			fetch(
-				`https://minios3.crabdance.com/develop/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}/${selectedToll.invoice}`,
-				{ method: 'HEAD' }
-			).then((r) => {
-				fileSize = parseInt(r.headers.get('Content-Length'));
-			});
+			await axios
+				.head(
+					`https://minios3.crabdance.com/develop/contracts/${selectedToll.contractId}/tolls/${selectedToll.id}/${selectedToll.invoice}`
+				)
+				.then((response) => {
+					fileSize = parseInt(response.headers['content-length']);
+				})
+				.catch((error) => {
+					console.error('Error fetching file size:', error);
+				});
 
 			attachFile = true;
 		}
-		headers = { 'X-User-Tenant': $currentTenant.id };
-		const platesResponse = await fetch(`/api/tenants/${$currentTenant.id}/plates`, { headers });
-		plates = [...(await platesResponse.json())];
+
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/plates`)
+			.then((response) => {
+				plates = [...response.data];
+			})
+			.catch((error) => {
+				console.error('Error fetching plates data:', error);
+			});
 	});
 
 	let stageSelectorList = [

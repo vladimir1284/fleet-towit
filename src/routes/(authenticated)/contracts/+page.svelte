@@ -41,30 +41,36 @@
 	let contractStagesList = [];
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
+	async function loadData() {
+		loading = true;
+		await axios
+			.all([
+				axios.get(`/api/tenants/${$currentTenant.id}/client`, { headers }),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts`, { headers }),
+				axios.get(`/api/tenants/${$currentTenant.id}/vehicles`, { headers }),
+				axios.get(`/api/tenants/${$currentTenant.id}/rentalPlan`, { headers })
+			])
+			.then(
+				axios.spread(
+					(clientsResponse, contractsResponse, vehiclesResponse, rentalPlansResponse) => {
+						clients = [...clientsResponse.data];
+						vehicles = [...vehiclesResponse.data];
+						contracts = [...contractsResponse.data];
+						rentalPlans = [...rentalPlansResponse.data];
+
+						loading = false;
+					}
+				)
+			)
+			.catch((error) => {
+				console.error('Error:', error);
+				loading = false;
+			});
+	}
+
 	onMount(async () => {
-		try {
-			const clientsResponse = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
-			const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-				headers
-			});
-			const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, {
-				headers
-			});
-			const rentalPlansResponse = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, {
-				headers
-			});
-
-			clients = [...(await clientsResponse.json())];
-			vehicles = [...(await vehiclesResponse.json())];
-			contracts = [...(await contractsResponse.json())];
-			rentalPlans = [...(await rentalPlansResponse.json())];
-
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
 
 	function handleAlert(text) {
@@ -79,10 +85,7 @@
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleEdit(contract) {
@@ -94,10 +97,7 @@
 		editModal = event.detail;
 		handleAlert('Contract edited succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleUpdateStage(contract) {
@@ -109,10 +109,7 @@
 		updateModal = event.detail;
 		handleAlert('Contract updated succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleDelete(contractId) {
@@ -124,18 +121,21 @@
 		deleteModal = event.detail;
 		handleAlert('Contract deleted succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 
 	async function handleDetail(contract) {
-		const request = await fetch(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`);
-		contractStagesList = await request.json();
-		selectedContract = contract;
-		detailModal = true;
+		axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`)
+        .then(response => {
+            contractStagesList = response.data;
+            selectedContract = contract;
+			detailModal = true;
+        })
+        .catch(error => {
+            console.error('Error fetching contract stages:', error);
+        });
 	}
+	
 	$: if (!detailModal) {
 		handleCloseDetailModal();
 	}
@@ -143,10 +143,7 @@
 	async function handleCloseDetailModal() {
 		contractStagesList = [];
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+		loadData();
 	}
 </script>
 

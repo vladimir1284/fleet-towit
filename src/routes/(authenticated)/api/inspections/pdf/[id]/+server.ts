@@ -16,6 +16,7 @@ import type {
 } from '@prisma/client';
 import { minioClient } from '$lib/minio';
 import { retrieveInspectionById } from '$lib/actions/inspections';
+import axios from 'axios';
 
 interface CustomFields extends CustomField {
 	responses: CustomFieldResponse[];
@@ -367,11 +368,11 @@ const createPDF = async (inspection: Inspections) => {
 
 const toBase64 = async (url: string) => {
 	try {
-		const req = await fetch(url);
-		const buffer = Buffer.from(await req.arrayBuffer());
+		const response = await axios.get(url, { responseType: 'arraybuffer' });
+		const buffer = Buffer.from(response.data);
 
 		const base64data = buffer.toString('base64');
-		const contentType = req.headers.get('content-type');
+		const contentType = response.headers['content-type'];
 
 		return `data:${contentType};base64,${base64data}`;
 	} catch (error) {

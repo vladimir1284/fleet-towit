@@ -18,6 +18,7 @@
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
+	import axios from 'axios';
 
 	export let data: PageData;
 	let clients = [];
@@ -31,16 +32,23 @@
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
+	async function loadData() {
+		loading = true;
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/client`)
+			.then((response) => {
+				clients = [...response.data];
+				loading = false;
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+				loading = false;
+			});
+	}
+
 	onMount(async () => {
-		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
-			clients = [...(await response.json())];
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
 
 	function handleAlert(text) {
@@ -55,8 +63,7 @@
 		createModal = event.detail;
 		handleAlert('Client created succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
-		clients = [...(await response.json())];
+		loadData();
 	}
 
 	async function handleEdit(client) {
@@ -68,8 +75,7 @@
 		editModal = event.detail;
 		handleAlert('Client edited succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
-		clients = [...(await response.json())];
+		loadData();
 	}
 
 	async function handleDelete(clientId) {
@@ -81,8 +87,7 @@
 		deleteModal = event.detail;
 		handleAlert('Client deleted succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
-		clients = [...(await response.json())];
+		loadData();
 	}
 </script>
 

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Alert, Heading, Spinner } from 'flowbite-svelte';
-	import type { PageData } from '../../../routes/$types';
 	import Table from '$lib/components/data-visualization/GenericTable.svelte';
 	import { onMount } from 'svelte';
 	import type { TransformRule } from './transformation/types';
 	import { transform } from './transformation/transform';
+	import axios from 'axios';
 
 	export let rules: TransformRule[] = ['capitalize', 'wordify'];
 	export let vin: string;
@@ -17,30 +17,28 @@
 	const load = async () => {
 		const url = `/api/vehicles/${vin}/${categoryName}/`;
 
-		console.log('URL', url);
-		const response = await fetch(url);
+        try {
+            const response = await axios.get(url);
+            records = response.data.records;
+            nickname = response.data.nickname;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            throw new Error('Not reloaded');
+        }
 
-		if (response.ok) {
-			const data = await response.json();
-			records = data.records;
-			nickname = data.nickname;
-		} else {
-			throw new Error('Not reloaded');
-		}
 	};
 
 	const remove = async (id: string) => {
 		try {
-			const url = `/api/vehicles/${vin}/${categoryName}/${id}`;
-			const response = await fetch(url, {
-				method: 'delete'
-			});
+            const url = `/api/vehicles/${vin}/${categoryName}/${id}`;
+            await axios.delete(url);
 
-			await load();
-		} catch (error) {
-			//@ts-ignore
-			alert(error.message);
-		}
+            await load();
+        } catch (error) {
+            console.error('Error removing item:', error);
+            // Consider a more user friendly way to handle errors, such as displaying a message in the UI
+            alert(error.message); // This line is commented out as it's not recommended to use alerts for error handling in production applications
+        }
 	};
 
 	const create = async () => {

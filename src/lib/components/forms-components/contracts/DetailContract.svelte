@@ -20,7 +20,6 @@
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	const formatDate = (date: Date | string) => {
 		if (!date) {
@@ -35,16 +34,20 @@
 	};
 
 	async function updateContractData() {
-		const contractData = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`,
-			{ headers }
-		);
-		const contractStages = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`,
-			{ headers }
-		);
-		selectedContract = await contractData.json();
-		contractStagesList = await contractStages.json();
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`)
+			.then((contractDataResponse) => {
+				return axios.get(
+					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
+				);
+			})
+			.then((contractStagesResponse) => {
+				selectedContract = contractDataResponse.data;
+				contractStagesList = contractStagesResponse.data;
+			})
+			.catch((error) => {
+				console.error('Error fetching contract data:', error);
+			});
 	}
 
 	async function handleCloseEditModal(event: any) {

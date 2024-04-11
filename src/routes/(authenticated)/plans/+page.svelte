@@ -12,6 +12,7 @@
 		Modal,
 		Alert
 	} from 'flowbite-svelte';
+	import axios from 'axios';
 	import { TrashBinSolid, FileEditSolid } from 'flowbite-svelte-icons';
 	import RentalPlanForm from '$lib/components/forms-components/plans/RentalPlanForm.svelte';
 	import type { PageData } from '../$types';
@@ -31,16 +32,23 @@
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
+	async function loadData() {
+		loading = true;
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/rentalPlan`)
+			.then((response) => {
+				plans = [...response.data];
+				loading = false;
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+				loading = false;
+			});
+	}
+
 	onMount(async () => {
-		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, { headers });
-			plans = [...(await response.json())];
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
 
 	function handleAlert(text) {
@@ -54,7 +62,7 @@
 	function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Plan created succesfully!');
-		location.reload();
+		loadData();
 	}
 
 	async function handleEdit(rentalPlan) {
@@ -65,7 +73,7 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Plan edited succesfully!');
-		location.reload();
+		loadData();
 	}
 
 	async function handleDelete(rentalPlanId) {
@@ -76,7 +84,7 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Plan deleted succesfully!');
-		location.reload();
+		loadData();
 	}
 </script>
 
