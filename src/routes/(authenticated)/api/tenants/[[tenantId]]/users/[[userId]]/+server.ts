@@ -1,10 +1,4 @@
 import { z } from 'zod';
-import { Role } from '@prisma/client';
-import { bypassPrisma } from '$lib/prisma';
-import type { RequestHandler } from '@sveltejs/kit';
-import { sendWelcomeEmail } from '$lib/actions/emails';
-import { actionResult } from 'sveltekit-superforms';
-import { superValidate } from 'sveltekit-superforms/server';
 import {
 	listTenantUsers,
 	createTenantUser,
@@ -12,9 +6,13 @@ import {
 	updateDefaultTenantUser,
 	deleteTenantUser
 } from '$lib/actions/tenantUsers';
+import { Role } from '@prisma/client';
+import { bypassPrisma } from '$lib/prisma';
 import { zod } from 'sveltekit-superforms/adapters';
-import { getTenantUser } from '$lib/actions/admin';
-import { getTenantUsers } from '$lib/actions/user';
+import type { RequestHandler } from '@sveltejs/kit';
+import { sendWelcomeEmail } from '$lib/actions/emails';
+import { actionResult } from 'sveltekit-superforms/server';
+import { superValidate } from 'sveltekit-superforms/server';
 
 const fixSchema = z.object({
 	role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
@@ -35,12 +33,13 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	return new Response(JSON.stringify(users), { status: 200 });
 };
 
-export const POST: RequestHandler = async ({ locals, params, request, url }) => {
+export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const session = await locals.getSession();
 	const formData = await request.formData();
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
+
 	const form = await superValidate(formData, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
@@ -48,28 +47,13 @@ export const POST: RequestHandler = async ({ locals, params, request, url }) => 
 	}
 
 	if (!params.userId) {
-		const createdTenantUser = await createTenantUser(locals.currentInstance.currentPrismaClient, {
+		await createTenantUser(locals.currentInstance.currentPrismaClient, {
 			tenantId: form.data.tenantId,
 			email: form.data.email,
 			role: Role[form.data.role]
 		});
-
-		if (
-			(await bypassPrisma.tenantUser.count({
-				where: {
-					id: createdTenantUser.id
-				}
-			})) == 1
-		) {
-			await updateDefaultTenantUser(locals.currentInstance.currentPrismaClient, {
-				id: createdTenantUser.id,
-				tenantId: form.data.tenantId,
-				isDefault: true
-			});
-		}
-
 		const tenant = await bypassPrisma.tenant.findUnique({ where: { id: form.data.tenantId } });
-		await sendWelcomeEmail(form.data.email, tenant?.name ?? '', form.data.role, url.origin);
+		await sendWelcomeEmail(form.data.email, tenant?.name ?? '', form.data.role);
 	} else {
 		await updateTenantUser(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.userId, 10),
@@ -87,8 +71,8 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-	///////TODO     Migrando logica para actions
-	const currentUserData = locals.currentInstance?.currentTenantUser;
+
+	const currentUserData = locals.currentInstance.currentTenantUser;
 	const tenantUserId = parseInt(formData.get('tenantUserId') as string, 10);
 	const isDefault = formData.get('is_default') === 'true';
 
@@ -107,16 +91,6 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 	if (params.userId) {
-		const tenantUserToDelete = await getTenantUser({ tenantUserId: parseInt(params.userId) });
-		if (tenantUserToDelete?.is_default) {
-			const allTenantUsers = await getTenantUsers({ userId: tenantUserToDelete.userId });
-
-			await updateDefaultTenantUser(locals.currentInstance.currentPrismaClient, {
-				id: allTenantUsers[0].id,
-				tenantId: allTenantUsers[0].tenantId,
-				isDefault: true
-			});
-		}
 		await deleteTenantUser(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.userId)
 		});

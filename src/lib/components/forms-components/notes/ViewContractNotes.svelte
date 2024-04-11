@@ -1,35 +1,30 @@
 <script lang="ts">
-	import { tenantActor } from '$lib/store/context-store';
-	import { GradientButton, Modal, Spinner, Timeline, TimelineItem } from 'flowbite-svelte';
+	//@ts-nocheck
 	import { PlusSolid } from 'flowbite-svelte-icons';
-	import CreateContractNote from './CreateContractNote.svelte';
-	import NoteCard from './NoteCard.svelte';
+	import CreateContractNote from '$lib/components/forms-components/notes/CreateContractNote.svelte';
+	import type { Note } from '$lib/zod';
+	import { getContext } from 'svelte';
+	import NoteCard from '$lib/components/forms-components/notes/NoteCard.svelte';
 	import type { PageData } from '../../../../routes/$types';
 	import type { NoteResult } from '$lib/actions/contracts_notes';
-	import type { Note } from '$lib/zod';
-	import axios from 'axios';
+	import { GradientButton, Modal, Spinner, Timeline, TimelineItem } from 'flowbite-svelte';
 
 	interface Contract {
 		id: number;
 	}
 
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
-	const tenant = currentTenant?.id;
+	const currentTenant = getContext('currentTenant');
 
 	export let selectedContract: Contract | undefined = undefined;
 	export let open = false;
 	export let data: PageData;
 
-	let removeURL: string;
-	let actionURL: string;
-	$: {
-		removeURL = `/api/tenants/${tenant?.id}/contracts/${selectedContract?.id}/note`;
-		actionURL = `/api/tenants/${tenant?.id}/contracts/${selectedContract?.id}/notes`;
-	}
-	let notes: Array<[string, Array<NoteResult>]> | null = null;
+	let	actionURL = `/api/tenants/${$currentTenant.id}/contracts/${selectedContract?.id}/notes`;
+
 	let loading = false;
 	let creating = false;
 	let selectedNote: Note | null = null;
+	let notes: Array<[string, Array<NoteResult>]> | null = null;
 
 	const formatDate = (date: Date | string): string => {
 		return new Date(date).toLocaleDateString('en-us', {
@@ -60,17 +55,15 @@
 		if (!selectedContract) return;
 		loading = true;
 
-		axios
-			.get(actionURL)
-			.then((response) => {
-				notes = Array.from(map(response.data));
-			})
-			.catch((error) => {
-				console.log('Error fetching data', error);
-			})
-			.finally(() => {
-				loading = false;
-			});
+		try {
+			const notesResp = await fetch(actionURL);
+			const notesRes = await notesResp.json();
+			notes = Array.from(map(notesRes));
+		} catch (e) {
+			console.log(e);
+		} finally {
+			loading = false;
+		}
 	}
 
 	const onNoteCreated = async () => {
@@ -93,15 +86,15 @@
 	};
 
 	const onNoteRemove = async (e: CustomEvent) => {
-		await axios
-			.delete(`${removeURL}/${e.detail.id}`)
-			.then(() => {
-				console.log('Deleted successfully');
-				updateContractNotes();
-			})
-			.catch((error) => {
-				console.error('Failed to delete user', error);
-			});
+		const response = await fetch(`${actionURL}/${e.detail.id}`, {
+			method: 'DELETE'
+		});
+		if (!response.ok) {
+			console.error('Failed to delete user');
+			return;
+		}
+		console.log('Deleted successfully');
+		updateContractNotes();
 	};
 
 	$: {
@@ -131,7 +124,7 @@
 				on:noteCancel={onNoteFormClose}
 				on:noteCreated={onNoteCreated}
 				{data}
-				{tenant}
+				tenant={$currentTenant.id}
 				{selectedContract}
 				{selectedNote}
 			></CreateContractNote>
@@ -144,7 +137,7 @@
 				{#each notes as [date, notesList]}
 					<TimelineItem class="w-full" {date}>
 						{#each notesList as note}
-							<NoteCard {note} on:edit={onNoteEdit} on:delete={onNoteRemove} />
+							<NoteCard {data} {note} on:edit={onNoteEdit} on:delete={onNoteRemove} />
 						{/each}
 					</TimelineItem>
 				{/each}

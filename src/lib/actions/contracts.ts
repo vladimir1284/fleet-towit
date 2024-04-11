@@ -1,5 +1,4 @@
-import { bypassPrisma } from '$lib/prisma';
-import { Stage } from '@prisma/client';
+import { PrismaClient, Stage } from '@prisma/client';
 
 type createContracType = { clientId: number; rentalPlanId: number; vehicleId: number };
 type updateContractType = createContracType & { id: number };
@@ -12,9 +11,9 @@ type updateContractStageType = {
 	stage: Stage;
 };
 
-export const getAllContracts = async (isAdminUser = false) => {
+export const getAllContracts = async (instance: PrismaClient, isAdminUser = false) => {
 	const _stage = isAdminUser ? undefined : 'DISMISS';
-	const contracts = await bypassPrisma.contract.findMany({
+	const contracts = await instance.contract.findMany({
 		where: {
 			NOT: {
 				stage: {
@@ -44,8 +43,11 @@ export const getAllContracts = async (isAdminUser = false) => {
 	return contracts;
 };
 
-export const getContract = async ({ contractId }: { contractId: number }) => {
-	const contract = await bypassPrisma.contract.findUnique({
+export const getContract = async (
+	instance: PrismaClient,
+	{ contractId }: { contractId: number }
+) => {
+	const contract = await instance.contract.findUnique({
 		where: { id: contractId },
 		include: {
 			client: true,
@@ -61,9 +63,12 @@ export const getContract = async ({ contractId }: { contractId: number }) => {
 	return contract;
 };
 
-export const getPreviousStage = async ({ contractId }: { contractId: number }) => {
+export const getPreviousStage = async (
+	instance: PrismaClient,
+	{ contractId }: { contractId: number }
+) => {
 	// Find the stage by its ID
-	const contract = await bypassPrisma.contract.findUnique({
+	const contract = await instance.contract.findUnique({
 		where: { id: contractId },
 		include: {
 			stage: {
@@ -81,7 +86,7 @@ export const getPreviousStage = async ({ contractId }: { contractId: number }) =
 		stagesFound.push(stage);
 		let lastStageId = stage.previousStageId ? stage.previousStageId : null;
 		while (lastStageId) {
-			const previousStage = await bypassPrisma.stageUpdate.findUnique({
+			const previousStage = await instance.stageUpdate.findUnique({
 				where: { id: lastStageId }
 			});
 			stagesFound.push(previousStage);
@@ -93,15 +98,18 @@ export const getPreviousStage = async ({ contractId }: { contractId: number }) =
 	}
 };
 
-export const createContract = async ({ clientId, rentalPlanId, vehicleId }: createContracType) => {
-	const initial = await bypassPrisma.stageUpdate.create({
+export const createContract = async (
+	instance: PrismaClient,
+	{ clientId, rentalPlanId, vehicleId }: createContracType
+) => {
+	const initial = await instance.stageUpdate.create({
 		data: {
 			date: new Date(Date.now()),
 			stage: Stage.PENDING
 		}
 	});
 
-	const contract = await bypassPrisma.contract.create({
+	const contract = await instance.contract.create({
 		data: {
 			clientId,
 			rentalPlanId,
@@ -112,31 +120,26 @@ export const createContract = async ({ clientId, rentalPlanId, vehicleId }: crea
 	return contract;
 };
 
-export const updateContract = async ({
-	id,
-	clientId,
-	rentalPlanId,
-	vehicleId
-}: updateContractType) => {
-	const contract = await bypassPrisma.contract.update({
+export const updateContract = async (
+	instance: PrismaClient,
+	{ id, clientId, rentalPlanId, vehicleId }: updateContractType
+) => {
+	const contract = await instance.contract.update({
 		where: { id },
 		data: { clientId, rentalPlanId, vehicleId }
 	});
 	return contract;
 };
 
-export const updateContractStage = async ({
-	id,
-	date,
-	reason,
-	comments,
-	stage
-}: updateContractStageType) => {
-	const contract = await bypassPrisma.contract.findUnique({
+export const updateContractStage = async (
+	instance: PrismaClient,
+	{ id, date, reason, comments, stage }: updateContractStageType
+) => {
+	const contract = await instance.contract.findUnique({
 		where: { id },
 		include: { stage: true }
 	});
-	const newStage = await bypassPrisma.stageUpdate.create({
+	const newStage = await instance.stageUpdate.create({
 		data: {
 			date,
 			reason,
@@ -154,24 +157,21 @@ export const updateContractStage = async ({
 		activeDate = new Date(Date.now());
 		activeDate.setHours(0, 0, 0, 0);
 	}
-	await bypassPrisma.contract.update({
+	await instance.contract.update({
 		where: { id },
 		data: { stageId: newStage.id, endDate, activeDate }
 	});
 };
 
-export const deleteContract = async ({ id }: { id: number }) => {
-	await bypassPrisma.contract.delete({ where: { id } });
+export const deleteContract = async (instance: PrismaClient, { id }: { id: number }) => {
+	await instance.contract.delete({ where: { id } });
 };
 
-export const getContractByDateRange = async ({
-	vehicleId,
-	date
-}: {
-	vehicleId: number;
-	date: Date;
-}) => {
-	const contract = await bypassPrisma.contract.findFirst({
+export const getContractByDateRange = async (
+	instance: PrismaClient,
+	{ vehicleId, date }: { vehicleId: number; date: Date }
+) => {
+	const contract = await instance.contract.findFirst({
 		where: {
 			vehicleId,
 			activeDate: { lte: date },

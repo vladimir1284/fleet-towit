@@ -1,10 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-
-export const DELETE = async ({ params }) => {
-	const prisma = new PrismaClient();
+export const DELETE = async ({ locals, params }) => {
 	const id = Number(params.id);
 	try {
-		await prisma.cost.delete({
+		await locals.currentInstance.currentPrismaClient.cost.delete({
 			where: {
 				id
 			}

@@ -1,6 +1,6 @@
 import getVehicleDetails from '$lib/actions/vehicle-details.js';
 
-export const GET = async ({ params }) => {
+export const GET = async ({ locals, params }) => {
 	const vin = params.vin;
-	return getVehicleDetails(vin, 'costs');
+	return getVehicleDetails(locals.currentInstance.currentPrismaClient, vin, 'costs');
 };

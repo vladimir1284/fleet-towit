@@ -1,16 +1,17 @@
-import { tenantPrisma } from '$lib/prisma';
-import { Role } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 
 type createUserType = { tenantId: number; email: string; role?: Role };
 
-export const createNewUser = async ({ tenantId, email, role = Role.STAFF }: createUserType) => {
-	const tenantContext = tenantPrisma(tenantId);
-	const tenant = await tenantContext.tenant.findUnique({ where: { id: tenantId } });
-	let user = await tenantContext.user.findUnique({ where: { email: email } });
+export const createNewUser = async (
+	instance: PrismaClient,
+	{ tenantId, email, role = Role.STAFF }: createUserType
+) => {
+	const tenant = await instance.tenant.findUnique({ where: { id: tenantId } });
+	let user = await instance.user.findUnique({ where: { email: email } });
 	if (!user) {
-		user = await tenantContext.user.create({ data: { email: email } });
+		user = await instance.user.create({ data: { email: email } });
 	}
-	const tenantUser = await tenantContext.tenantUser.create({
+	const tenantUser = await instance.tenantUser.create({
 		data: {
 			tenantId: tenantId,
 			userId: user.id,
@@ -20,23 +21,10 @@ export const createNewUser = async ({ tenantId, email, role = Role.STAFF }: crea
 	return { ...tenantUser, user, tenant };
 };
 
-/*
-export const updateTenantUser = async({tenantUserId, email, tenantId, role}: editUserType) => {
-	const tenantContext = tenantPrisma(tenantId);
-	console.log('tenantUserId',tenantUserId)
-	console.log('email',email)
-	console.log('tenantId',tenantId)
-	console.log('userRole',role)
-	let user = await tenantContext.user.findUnique({where:{email: email}})
-	if (!user) {
-		user = await tenantContext.user.create({data: {email: email}})
-	} 
-	const tenantUser = await tenantContext.tenantUser.update({where:{id: tenantUserId}, data:{tenantId, role: role, userId: user.id}})
-	return tenantUser
-}*/
-
-export const getTenantUsers = async ({ tenantId }: { tenantId: number }) => {
-	const tenantContext = tenantPrisma(tenantId);
-	const basetenantUsers = await tenantContext.tenantUser.findMany();
+export const getTenantUsers = async (
+	instance: PrismaClient,
+	{ tenantId }: { tenantId: number }
+) => {
+	const basetenantUsers = await instance.tenantUser.findMany();
 	return basetenantUsers;
 };

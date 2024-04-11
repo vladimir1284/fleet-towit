@@ -17,11 +17,13 @@
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
+	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
+	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
+	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline, AnnotationSolid } from 'flowbite-svelte-icons';
 
 	export let data: PageData;
 	let message = '';
@@ -37,6 +39,7 @@
 	let deleteModal = false;
 	let updateModal = false;
 	let detailModal = false;
+	let showNotesModal = false;
 	let selectedContract = undefined;
 
 	let contractStagesList = [];
@@ -141,6 +144,17 @@
 		handleCloseDetailModal();
 	}
 
+	$: {
+		contracts.forEach((contract) => {
+			contract.RemStatus = getContractRemainderStatus(contract.notes);
+		});
+	}
+
+	async function handleShowNotes(contract) {
+		selectedContract = contract;
+		showNotesModal = true;
+	}
+
 	async function handleCloseDetailModal() {
 		contractStagesList = [];
 
@@ -151,6 +165,11 @@
 {#if loading}
 	<p>Loading...</p>
 {:else}
+
+	{#if selectedContract}
+		<ViewContractNotes {data} bind:open={showNotesModal} bind:selectedContract />
+	{/if}
+
 	<Modal bind:open={createModal} size="xs">
 		<ContractForm {data} {clients} {vehicles} {rentalPlans} on:formvalid={handleCloseModal} />
 	</Modal>
@@ -215,6 +234,7 @@
 						</TableBodyCell>
 						<TableBodyCell class="flex w-40 justify-between">
 							<EyeOutline class="text-gray-400" on:click={() => handleDetail(contract)} />
+							<AnnotationSolid class="text-gray-400" on:click={() => handleShowNotes(contract)} />
 							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(contract)} />
 							<RotateOutline class="text-gray-400" on:click={() => handleUpdateStage(contract)} />
 							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(contract.id)} />
