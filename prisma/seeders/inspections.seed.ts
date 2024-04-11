@@ -184,48 +184,6 @@ const seedInspection = async (prisma, tenantsId: number[]) => {
 				}
 			}
 		});
-
-		await prisma.customForm.create({
-			data: {
-				name: 'Nuevos Campos',
-				tenantId: tenantId,
-				cards: {
-					create: [
-						{
-							name: 'Tarjeta con nuevos campos',
-							fields: {
-								create: [
-									{
-										name: 'Imagen',
-										type: 'IMAGE'
-									},
-									{
-										name: 'Firma',
-										type: 'SIGNATURE'
-									},
-									{
-										name: 'Correo',
-										type: 'EMAIL'
-									},
-									{
-										name: 'Teléfono',
-										type: 'PHONE'
-									},
-									{
-										name: 'Fecha',
-										type: 'DATE'
-									},
-									{
-										name: 'Hora',
-										type: 'TIME'
-									}
-								]
-							}
-						}
-					]
-				}
-			}
-		});
 	}
 
 	console.log('Seeding complete!');
