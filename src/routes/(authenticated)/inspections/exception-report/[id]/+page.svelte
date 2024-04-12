@@ -123,9 +123,9 @@
 										{#each field.responses as response}
 											<div class="flex items-center gap-2">
 												{#if option.id === response.checkOptionId}
-													<Checkbox disabled checked /> {option.name}
+													<Checkbox disabled checked>{option.name}</Checkbox>
 												{:else}
-													<Checkbox disabled /> {option.name}
+													<Checkbox disabled>{option.name}</Checkbox>
 												{/if}
 											</div>
 										{/each}
