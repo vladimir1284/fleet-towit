@@ -20,6 +20,7 @@
 	import TrackersForm from '$lib/components/forms-components/trackers/TrackersForm.svelte';
 	import DeleteTrackersForm from '$lib/components/forms-components/trackers/DeleteTrackersForm.svelte';
 	import PopupDisplayer from '$lib/components/forms-components/trackers/PopupDisplayer.svelte';
+	import TrackerInfoDisplayer from '$lib/components/forms-components/trackers/TrackerInfoDisplayer.svelte';
 	import HeartBeatForm from '$lib/components/forms-components/trackers/HeartBeatForm.svelte';
 	import DeleteHeartBeatForm from '$lib/components/forms-components/trackers/DeleteHeartBeatForm.svelte'
 
@@ -65,10 +66,24 @@
 		}
 	}
 
-	const createMarkers = (objectsArray) => {
+	const createMarkers = (objectsArray, enablePopup = true) => {
 		const newMarkers = []
 			objectsArray.forEach((obj) => {
 				const marker = L.marker(L.latLng(obj.latitude, obj.longitude))
+				if (enablePopup) {
+					marker.bindPopup(() => {
+						const container = L.DomUtil.create('div')
+						new TrackerInfoDisplayer({
+						target: container,
+						props: {
+							data: obj
+						}
+						})
+						return container
+					})
+				} else {
+					marker.on('click', () => {selectedTracker = obj.vehicle})
+				}
 				newMarkers.push(marker)
 			})
 		return newMarkers
@@ -78,6 +93,7 @@
 		markerLayer.clearLayers();
 		markersList.forEach((_marker) => {
 			markerLayer.addLayer(_marker)
+			if (markersList.length === 1) { _marker.openPopup() }
 		})
 		
 	}
@@ -88,17 +104,17 @@
 			vehicles.forEach((vehicle) => {
 				if (vehicle.tracker?.heartBeats[0]) {
 					const hb = vehicle.tracker?.heartBeats[0]
-					objects.push(hb)
+					objects.push({...hb, vehicle})
 				}
 			})
-			markersList = createMarkers(objects)
+			markersList = createMarkers(objects, false)
 			if (popup.isOpen()) {
 				popup.close()
 			}
 		} else {
 			const pos =  selectedTracker.tracker?.heartBeats[0];
 			if (pos) {
-				markersList = createMarkers([selectedTracker.tracker.heartBeats[0]])
+				markersList = createMarkers([{...selectedTracker.tracker.heartBeats[0], vehicle: selectedTracker}])
 				map.panTo(L.latLng(pos.latitude, pos.longitude))
 				visibleHeartBeatId = pos.id
 			} else {
@@ -287,7 +303,7 @@
 										{:else}
 										<EyeOutline class="text-gray-400 m-2" on:click={() => {
 											visibleHeartBeatId = heartBeat.id
-											markersList = createMarkers([heartBeat])
+											markersList = createMarkers([{...heartBeat, vehicle: selectedTracker}])
 											map.panTo(L.latLng(heartBeat.latitude, heartBeat.longitude))
 										}} />
 										{/if}
