@@ -12,7 +12,11 @@
 	if (!data?.session?.user.defaultTenantUser) {
 		const currentUserTenant = data.session.user.defaultTenantUser;
 		saveToSessionStorage('currentTenant', { ...currentUserTenant.tenant, currentUserTenant });
-		goto('/dashboard');
+
+		// Esta linea está comentada xq hace que no sea
+		// posible entrar en la ruta de las inpecciones
+
+		// goto('/dashboard');
 	}
 
 	const currentTenant = writable();
