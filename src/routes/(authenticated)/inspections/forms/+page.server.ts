@@ -24,9 +24,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const results = await fetchCustomFormsByTenant({
+	const results = await fetchCustomFormsByTenant(locals.currentInstance.currentPrismaClient, {
 		tenantId: tenantUserId,
-		page_number: Number(url.searchParams.get('page')) || 1
 	});
 
 	const customForms = results.data;
@@ -53,7 +52,7 @@ export const actions = {
 
 		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-		const newForm = await createCustomForm({
+		const newForm = await createCustomForm(locals.currentInstance.currentPrismaClient, {
 			tenantId: tenantUserId,
 			name: form.data.form_name
 		});

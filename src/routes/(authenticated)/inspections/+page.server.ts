@@ -29,13 +29,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles({
+	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles(locals.currentInstance.currentPrismaClient, {
 		tenantId: tenantUserId
 	});
 
-	const results = await fetchInspections({
+	const results = await fetchInspections(locals.currentInstance.currentPrismaClient, {
 		tenantId: tenantUserId,
-		page_number: Number(url.searchParams.get('page')) || 1
 	});
 
 	const inspections = results.data;
@@ -62,7 +61,7 @@ export const actions = {
 
 		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-		const newInspection = await createInspection({
+		const newInspection = await createInspection(locals.currentInstance.currentPrismaClient, {
 			tenantId: tenantUserId,
 			userId: session.user.id,
 			vehicleId: form.data.vehicle_id,

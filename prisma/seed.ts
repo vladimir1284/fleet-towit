@@ -80,16 +80,16 @@ async function main() {
 	}
 
 	// Clients
-	const createdClientsIds = await seedClients(prisma, [testTenantId]);
+	await seedClients(prisma);
 	// Rental Plans
-	const createdPlansIds = await seedRentalPlans(prisma);
+	await seedRentalPlans(prisma);
 	// Vehicles
 	const createdVehiclesIds = await seedVehicles(prisma);
 	// Inspection
 	await seedInspection(prisma, [testTenantId, tenantId]);
 	// await seedParts(prisma, [testTenantId, tenantId]);
 	// Contracts
-	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
+	await seedContract(prisma);
 	//Trackers
 	await seedTracker(prisma, createdVehiclesIds);
 }

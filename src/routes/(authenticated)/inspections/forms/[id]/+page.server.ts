@@ -4,14 +4,13 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
 import { FormFieldType } from '@prisma/client';
-import { FormFieldTypeSchema } from '$lib/zod';
 import {
 	retrieveCustomFormById,
 	deleteCustomForm,
 	renameCustomForm,
 	cloneCustomForm,
 	deleteCard,
-	addCardToForm,
+	addCard,
 	updateCard
 } from '$lib/actions/custom-forms';
 import {
@@ -64,7 +63,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		try {
 			const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-			const customForm = await retrieveCustomFormById({
+			const customForm = await retrieveCustomFormById(locals.currentInstance.currentPrismaClient, {
 				tenantId: tenantUserId,
 				formId: formId
 			});
@@ -78,7 +77,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			// and the user will be redirected to its path
 
 			if (customForm?.inspections.length) {
-				const cloneForm = await cloneCustomForm({ form: customForm, tenantId: tenantUserId });
+				const cloneForm = await cloneCustomForm(locals.currentInstance.currentPrismaClient, {
+					form: customForm
+				});
 
 				return {
 					// forms
@@ -113,7 +114,6 @@ export const actions = {
 	 * action to delete form
 	 */
 	deleteForm: async ({ request, locals }) => {
-		const session = await verifySession(locals);
 
 		const form = await superValidate(request, zod(deleteFormSchema));
 
@@ -121,10 +121,7 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		const tenantUserId = session.user.defaultTenantUser.tenantId;
-
-		await deleteCustomForm({
-			tenantId: tenantUserId,
+		await deleteCustomForm(locals.currentInstance.currentPrismaClient, {
 			formId: form.data.form_id
 		});
 
@@ -145,7 +142,7 @@ export const actions = {
 
 		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-		await renameCustomForm({
+		await renameCustomForm(locals.currentInstance.currentPrismaClient, {
 			tenantId: tenantUserId,
 			formId: form.data.form_id,
 			newName: form.data.new_form_name
@@ -165,7 +162,7 @@ export const actions = {
 		}
 		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-		await addCardToForm({
+		await addCard(locals.currentInstance.currentPrismaClient, {
 			tenantId: tenantUserId,
 			cardName: form.data.card_name,
 			formId: form.data.form_id,
@@ -187,7 +184,7 @@ export const actions = {
 
 		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-		await deleteCard({
+		await deleteCard(locals.currentInstance.currentPrismaClient, {
 			tenantId: tenantUserId,
 			formId: form.data.form_id,
 			cardId: form.data.card_id

@@ -57,21 +57,25 @@
 			<TableHeadCell>Action</TableHeadCell>
 		</TableHead>
 		<TableBody>
-			{#each data.inspections as inspection}
-				<TableBodyRow>
-					<TableBodyCell>{inspection.id}</TableBodyCell>
-					<TableBodyCell>{inspection.customForm.name}</TableBodyCell>
-					<TableBodyCell>
-						{inspection.createdAt.getDate()} /
-						{inspection.createdAt.getMonth() + 1} /
-						{inspection.createdAt.getFullYear()}
-					</TableBodyCell>
-					<TableBodyCell
-						><a href={`${$page.url.pathname}/exception-report/${inspection.id}`}>Read</a
-						></TableBodyCell
-					>
-				</TableBodyRow>
-			{/each}
+			{#if data.inspections}
+				{#each data.inspections as inspection}
+					<TableBodyRow>
+						<TableBodyCell>{inspection.id}</TableBodyCell>
+						<TableBodyCell>{inspection.customForm.name}</TableBodyCell>
+						<TableBodyCell>
+							{inspection.createdAt.getDate()} /
+							{inspection.createdAt.getMonth() + 1} /
+							{inspection.createdAt.getFullYear()}
+						</TableBodyCell>
+						<TableBodyCell
+							><a href={`${$page.url.pathname}/exception-report/${inspection.id}`}>Read</a
+							></TableBodyCell
+						>
+					</TableBodyRow>
+				{/each}
+			{:else}
+				No data
+			{/if}
 		</TableBody>
 	</Table>
 	<!-- modal -->

@@ -24,11 +24,9 @@ export const createCustomForm = async (
 export const deleteCustomForm = async (
 	instance: PrismaClient,
 	{
-		tenantId,
 		formId
 	}: {
 		formId: number;
-		tenantId: number;
 	}
 ) => {
 	await instance.customForm.update({
@@ -107,11 +105,9 @@ export const retrieveCustomFormById = async (
 export const cloneCustomForm = async (
 	instance: PrismaClient,
 	{
-		form,
-		tenantId
+		form
 	}: {
 		form: CustomForm;
-		tenantId: number;
 	}
 ) => {
 	// deactivate old form
@@ -176,12 +172,10 @@ export const renameCustomForm = async (
 	instance: PrismaClient,
 	{
 		formId,
-		newName,
-		tenantId
+		newName
 	}: {
 		formId: number;
 		newName: string;
-		tenantId: number;
 	}
 ) => {
 	await instance.customForm.update({
@@ -201,12 +195,10 @@ export const renameCustomForm = async (
 export const addCard = async (
 	instance: PrismaClient,
 	{
-		tenantId,
 		cardName,
 		formId,
 		fields
 	}: {
-		tenantId: number;
 		cardName: string;
 		formId: number;
 		fields: string;
@@ -240,6 +232,144 @@ export const addCard = async (
 			}
 		}
 	});
+};
+
+
+export const updateCard = async (instance: PrismaClient, {
+	tenantId,
+	cardName,
+	cardId,
+	fields
+}: {
+	tenantId: number;
+	cardName: string;
+	cardId: number;
+	fields: string;
+}) => {
+	const parseFields = JSON.parse(fields);
+
+	if (cardId) {
+		await instance.card.update({
+			where: {
+				id: cardId
+			},
+			data: {
+				name: cardName
+			},
+			include: {
+				fields: true
+			}
+		});
+
+		await instance.customField.deleteMany({
+			where: {
+				cardId: cardId,
+				id: {
+					notIn: parseFields
+						.filter((el: { id: number }) => el.id)
+						.map((el: { id: number }) => el.id)
+				}
+			}
+		});
+	}
+
+	for (const field of parseFields) {
+		const customField = {
+			name: field.labelName,
+			type: field.type as FormFieldType,
+			required: field.required,
+			id: field?.id
+		};
+
+		// update old fields
+		if (customField.id) {
+			const cf = await instance.customField.update({
+				where: {
+					id: customField.id
+				},
+				data: {
+					name: customField.name,
+					type: customField.type,
+					required: customField.required
+				},
+				include: {
+					checkOptions: true
+				}
+			});
+
+			const updateCheck = async (id: number, name: string) => {
+				await instance.checkOption.update({
+					where: {
+						id: id
+					},
+					data: {
+						name: name
+					}
+				});
+			};
+
+			if (cf.type === FormFieldType.SINGLE_CHECK) {
+				// SINGLE_CHECK only has 2 checkOptions
+
+				// if has 2 checkOptions update
+				if (cf.checkOptions.length === 2) {
+					await updateCheck(cf.checkOptions[0].id, field.pointPass);
+					await updateCheck(cf.checkOptions[1].id, field.pointFail);
+					// if not has checkOptions create
+				} else {
+					await instance.customField.update({
+						where: {
+							id: customField.id
+						},
+						data: {
+							checkOptions: {
+								create: [
+									{
+										name: field.pointPass
+									},
+									{
+										name: field.pointFail
+									}
+								]
+							}
+						}
+					});
+				}
+
+				// delete checkOptions
+			} else {
+				for (const checkoption of cf.checkOptions) {
+					await instance.checkOption.delete({
+						where: {
+							id: checkoption.id
+						}
+					});
+				}
+			}
+			// create new fields
+		} else {
+			await instance.customField.create({
+				data: {
+					cardId: cardId,
+					name: customField.name,
+					type: customField.type,
+					checkOptions: {
+						create:
+							FormFieldType.SINGLE_CHECK === customField.type
+								? [
+										{
+											name: field.pointPass
+										},
+										{
+											name: field.pointFail
+										}
+									]
+								: undefined
+					}
+				}
+			});
+		}
+	}
 };
 
 /*
