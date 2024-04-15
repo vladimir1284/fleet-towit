@@ -1,6 +1,6 @@
 import { createTenantUser } from '../src/lib/actions/admin';
 import { bypassPrisma } from '../src/lib/prisma';
-import { PrismaPromise, Role } from '@prisma/client';
+import { Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
 import seedClients from './seeders/clients.seed';
 import seedInspection from './seeders/inspections.seed';
@@ -19,7 +19,8 @@ async function main() {
 		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'towithouston@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'albertolicea00@icloud.com', userRole: Role.ADMIN, is_default: true },
-		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true }
+		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'anayvisarrieta@gmail.com', userRole: Role.ADMIN, is_default: true }
 		// Add more users as needed
 	];
 	const tenantsData = {
@@ -90,7 +91,7 @@ async function main() {
 	// Contracts
 	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
 	//Trackers
-	await seedTracker(prisma, createdVehiclesIds)
+	await seedTracker(prisma, createdVehiclesIds);
 }
 
 main()
