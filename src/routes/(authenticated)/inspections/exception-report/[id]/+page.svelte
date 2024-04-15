@@ -82,9 +82,9 @@
 	});
 </script>
 
-<section class="p-4 w-2/3">
+<section class="flex flex-col gap-4 p-4 w-2/3">
+	<Button class="w-max" on:click={makePdf}>Download pdf</Button>
 	<div class="flex flex-col gap-4 bg-white rounded-lg shadow p-4 w-full">
-		<Button class="w-max" on:click={makePdf}>Download pdf</Button>
 		<div class="flex flex-wrap justify-between">
 			<h2 class="font-semibold">
 				Model: <span class="font-normal">{data.inspection.vehicle.model}</span>
