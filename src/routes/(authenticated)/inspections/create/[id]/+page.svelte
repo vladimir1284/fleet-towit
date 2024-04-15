@@ -14,6 +14,7 @@
 	let showPreview: boolean = false;
 
 	const openModalToSign = (field_id: number) => {
+		console.log(field_id);
 		openSignModal = true;
 		fieldId = field_id;
 
@@ -209,13 +210,13 @@
 											<img
 												class="w-full h-full"
 												id={`preview_${field.id}`}
-												src={$form[`field_${fieldId}`]}
+												src={$form[`field_${field.id}`]}
 												alt="Signature preview"
 											/>
 										</div>
 
 										<Button
-											color={$form[`field_${fieldId}`] && !pad.isEmpty() ? 'green' : 'blue'}
+											color={$form[`field_${field.id}`] ? 'green' : 'blue'}
 											on:click={() => openModalToSign(field.id)}>Touch to sign</Button
 										>
 									{/if}
