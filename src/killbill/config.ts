@@ -57,5 +57,4 @@ export class Config implements ConfigurationParameters {
 }
 
 export const apiConfig = new Configuration(new Config());
-
 export const pris = new PrismaClient();

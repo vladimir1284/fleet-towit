@@ -9,17 +9,8 @@
 		TableBodyRow,
 		TableHead,
 		TableHeadCell,
-		Modal,
 		Badge
 	} from 'flowbite-svelte';
-	import { onMount } from 'svelte';
-	import type { PageData } from '../$types';
-	import { tenantActor } from '$lib/store/context-store';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
-	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
-	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
-	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
-	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 	import { getKillBillData } from '@killbill/temp-api-rq';
 
 	export let data: any;
