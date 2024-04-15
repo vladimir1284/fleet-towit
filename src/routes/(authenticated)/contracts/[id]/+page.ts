@@ -1,9 +1,8 @@
-/** @type {import('./$types').PageLoad} */
-import type { Load } from '@sveltejs/kit';
 import { error } from '@sveltejs/kit';
-import { tenantActor } from '$lib/store/context-store';
+import { loadFromSessionStorage } from '$lib/store/context-store';
 import { superValidate } from 'sveltekit-superforms/server';
-import type { PageServerLoad } from './$types.js';
+import type { PageServerLoad } from './$types';
+import { zod } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
 
 const fixSchema = z.object({
@@ -29,16 +28,15 @@ const clientSchema = z.object({
 	id: z.number().optional()
 });
 
-export const load: Load = (async ({ params, fetch }) => {
-	await tenantActor.send({ type: 'tenant.init', value: 'currentTenant' });
-	const currentTenant = await tenantActor.getSnapshot().context.currentTenant;
+export const load = (async ({ params, fetch }) => {
+	const currentTenant = loadFromSessionStorage('currentTenant');
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
 	const contract_id = params.id;
 	let contract;
 
-	const form = await superValidate(fixSchema);
-	const stageForm = await superValidate(stageSchema);
-	const clientform = await superValidate(clientSchema);
+	const form = await superValidate(zod(fixSchema));
+	const stageForm = await superValidate(zod(stageSchema));
+	const clientform = await superValidate(zod(clientSchema));
 
 	if (!contract_id) throw error(404, { message: 'Contract not found' });
 

@@ -3,11 +3,11 @@
 	import { Card, Alert } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import type { PageData } from '../$types';
-	import { tenantActor } from '$lib/store/context-store';
+	import { loadFromSessionStorage } from '$lib/store/context-store';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 	import { reqInvoiceApi, reqPaymentApi, reqAccountApi } from '@killbill/requests';
 	import { customReqInvoiceApi, customReqPaymentApi } from '@killbill/custom-requests';
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
+	const currentTenant = loadFromSessionStorage('currentTenant');
 	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
 
 	export let data: PageData;

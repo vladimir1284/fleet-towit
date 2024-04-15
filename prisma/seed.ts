@@ -90,7 +90,7 @@ async function main() {
 	// Contracts
 	await seedContract(prisma, createdClientsIds, createdPlansIds, createdVehiclesIds);
 	//Trackers
-	await seedTracker(prisma, createdVehiclesIds)
+	await seedTracker(prisma, createdVehiclesIds);
 }
 
 main()

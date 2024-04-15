@@ -11,16 +11,26 @@
 		TableHeadCell,
 		Modal,
 		Alert,
-		Badge
+		Badge,
+		Indicator
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import type { PageData } from '../$types';
-	import { getContext } from 'svelte';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
+	import { loadFromSessionStorage } from '$lib/store/context-store';
+	import {
+		TrashBinSolid,
+		FileEditSolid,
+		RotateOutline,
+		EyeOutline,
+		AnnotationSolid,
+		CashOutline
+	} from 'flowbite-svelte-icons';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
-	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
+	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
+	import PaymentInvoiceForm from '$lib/components/forms-components/payments/PaymentInvoiceForm.svelte';
+	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
 
 	export let data: PageData;
 	let message = '';
@@ -35,23 +45,29 @@
 	let createModal = false;
 	let deleteModal = false;
 	let updateModal = false;
-	let detailModal = false;
+	let makingPaymentModal: boolean = false;
+	let showNotesModal = false;
 	let selectedContract = undefined;
 
-	let contractStagesList = [];
+	$: {
+		contracts.forEach((c) => {
+			if (c.notes) c.RemStatus = getContractRemainderStatus(c.notes);
+		});
+	}
 
-	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+	const currentTenant = loadFromSessionStorage('currentTenant');
+	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+
 	onMount(async () => {
 		try {
-			const clientsResponse = await fetch(`/api/tenants/${$currentTenant.id}/client`, { headers });
-			const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
+			const clientsResponse = await fetch(`/api/tenants/${currentTenant.id}/client`, { headers });
+			const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 				headers
 			});
-			const vehiclesResponse = await fetch(`/api/tenants/${$currentTenant.id}/vehicles`, {
+			const vehiclesResponse = await fetch(`/api/tenants/${currentTenant.id}/vehicles`, {
 				headers
 			});
-			const rentalPlansResponse = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan`, {
+			const rentalPlansResponse = await fetch(`/api/tenants/${currentTenant.id}/rentalPlan`, {
 				headers
 			});
 
@@ -79,7 +95,7 @@
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
@@ -94,7 +110,7 @@
 		editModal = event.detail;
 		handleAlert('Contract edited succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
@@ -109,7 +125,7 @@
 		updateModal = event.detail;
 		handleAlert('Contract updated succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
@@ -124,29 +140,25 @@
 		deleteModal = event.detail;
 		handleAlert('Contract deleted succesfully!');
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
+		const contractsResponse = await fetch(`/api/tenants/${currentTenant.id}/contracts`, {
 			headers
 		});
 		contracts = [...(await contractsResponse.json())];
 	}
 
-	async function handleDetail(contract) {
-		const request = await fetch(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`);
-		contractStagesList = await request.json();
+	async function handleShowNotes(contract) {
 		selectedContract = contract;
-		detailModal = true;
-	}
-	$: if (!detailModal) {
-		handleCloseDetailModal();
+		showNotesModal = true;
 	}
 
-	async function handleCloseDetailModal() {
-		contractStagesList = [];
+	async function handleShowMakePaymentModal(contract) {
+		selectedContract = contract;
+		makingPaymentModal = true;
+	}
 
-		const contractsResponse = await fetch(`/api/tenants/${$currentTenant.id}/contracts`, {
-			headers
-		});
-		contracts = [...(await contractsResponse.json())];
+	async function handleCloseMakePaymentModal(event) {
+		makingPaymentModal = false;
+		handleAlert('');
 	}
 </script>
 
@@ -176,16 +188,19 @@
 		<UpdateStage {data} {selectedContract} on:formvalid={handleCloseUpdateModal} />
 	</Modal>
 
-	<Modal title={'Contract #' + selectedContract?.id} size="xl" padding="md" bind:open={detailModal}>
-		<DetailContract
-			{data}
-			{selectedContract}
-			{contractStagesList}
-			on:formvalid={handleCloseDetailModal}
+	<Modal size="xs" padding="md" bind:open={makingPaymentModal}>
+		<PaymentInvoiceForm
+			data={data?.PaymentInvoiceForm}
+			on:formvalid={handleCloseMakePaymentModal}
 		/>
 	</Modal>
 
-	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
+	<!-- Notes Modal -->
+	{#if selectedContract}
+		<ViewContractNotes bind:open={showNotesModal} bind:selectedContract {data} />
+	{/if}
+
+	<Card size="xl" padding="md" class="flex w-full mt-5">
 		<Table>
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
@@ -205,7 +220,23 @@
 			<TableBody class="divide-y">
 				{#each contracts as contract}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">
+						<TableBodyCell class="text-center relative">
+							{#if contract.RemStatus && contract.RemStatus.status > -1}
+								<Indicator
+									placement="center-left"
+									size="lg"
+									class="ml-2 p-2"
+									color={contract.RemStatus.color}
+								>
+									<span class="text-white text-xs">
+										{#if contract.RemStatus.count < 10}
+											{contract.RemStatus.count}
+										{:else}
+											9+
+										{/if}
+									</span>
+								</Indicator>
+							{/if}
 							{contract.vehicle.type + '-' + contract.vehicle.make + '-' + contract.vehicle.model}
 						</TableBodyCell>
 						<TableBodyCell class="text-center">
@@ -216,10 +247,27 @@
 							<Badge color="blue" rounded class="px-2.5 py-0.5">{contract.stage.stage}</Badge>
 						</TableBodyCell>
 						<TableBodyCell class="flex w-40 justify-between">
-							<EyeOutline class="text-gray-400" on:click={() => handleDetail(contract)} />
-							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(contract)} />
-							<RotateOutline class="text-gray-400" on:click={() => handleUpdateStage(contract)} />
-							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(contract.id)} />
+							<a href={`/contracts/${contract.id}`}>
+								<EyeOutline class="mx-1 text-gray-400" />
+							</a>
+							<CashOutline
+								class="mx-1 text-gray-400"
+								on:click={() => handleShowMakePaymentModal(contract)}
+							/>
+							<AnnotationSolid
+								class="mx-1 text-gray-400"
+								on:click={() => handleShowNotes(contract)}
+							/>
+							<FileEditSolid class="mx-1 text-gray-400" on:click={() => handleEdit(contract)} />
+							<RotateOutline
+								class="mx-1 text-gray-400"
+								on:click={() => handleUpdateStage(contract)}
+							/>
+							<TrashBinSolid
+								title="asd"
+								class="mx-1 text-red-500"
+								on:click={() => handleDelete(contract.id)}
+							/>
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}

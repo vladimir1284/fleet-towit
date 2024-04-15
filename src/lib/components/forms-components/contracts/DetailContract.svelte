@@ -1,9 +1,7 @@
 <script async lang="ts">
 	//@ts-nocheck
 	import { onMount } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
-	import { Badge, Label, Button, GradientButton } from 'flowbite-svelte';
-	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
+	import { loadFromSessionStorage } from '$lib/store/context-store';
 	import { Modal } from 'flowbite-svelte';
 	import {
 		TruckOutline,
@@ -11,16 +9,16 @@
 		UserOutline,
 		ClipboardListOutline
 	} from 'flowbite-svelte-icons';
-	import { getContext } from 'svelte';
 	import UpdateStage from './UpdateStage.svelte';
 	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
-	import { Badge, Label, Timeline, TimelineItem } from 'flowbite-svelte';
+	import { Badge, Label, GradientButton, Button } from 'flowbite-svelte';
 	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
-	import ClientForm from '../clients/ClientForm.svelte';
-	import UpdateStage from './UpdateStage.svelte';
 	import ContractTimeline from './ContractTimeline.svelte';
 	import PaymentInvoiceForm from '../payments/PaymentInvoiceForm.svelte';
+
+	const currentTenant = loadFromSessionStorage('currentTenant');
+	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
 
 	export let data: any;
 	export let selectedContract: Array<object> = [];
@@ -61,11 +59,11 @@
 
 	async function updateContractData() {
 		const contractData = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`,
+			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}`,
 			{ headers }
 		);
 		const contractStages = await fetch(
-			`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`,
+			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}/stage`,
 			{ headers }
 		);
 		selectedContract = await contractData.json();

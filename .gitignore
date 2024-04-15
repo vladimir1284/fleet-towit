@@ -29,4 +29,3 @@ prisma/migrations/*
 .vscode/settings.json
 yarn.lock
 yarn-error.log
-yarn.lock

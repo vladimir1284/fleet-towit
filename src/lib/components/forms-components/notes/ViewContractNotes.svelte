@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tenantActor } from '$lib/store/context-store';
+	import { loadFromSessionStorage } from '$lib/store/context-store';
 	import { GradientButton, Modal, Spinner, Timeline, TimelineItem } from 'flowbite-svelte';
 	import { PlusSolid } from 'flowbite-svelte-icons';
 	import CreateContractNote from './CreateContractNote.svelte';
@@ -12,7 +12,7 @@
 		id: number;
 	}
 
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
+	const currentTenant = loadFromSessionStorage('currentTenant');
 	const tenant = currentTenant?.id;
 
 	export let selectedContract: Contract | undefined = undefined;

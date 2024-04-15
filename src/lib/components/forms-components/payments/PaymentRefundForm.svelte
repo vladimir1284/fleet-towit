@@ -2,7 +2,7 @@
 	// @ts-nocheck
 	import { z } from 'zod';
 	import { createEventDispatcher } from 'svelte';
-	import { tenantActor } from '$lib/store/context-store';
+	import { loadFromSessionStorage } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Radio } from 'flowbite-svelte';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
@@ -19,7 +19,7 @@
 	export let maxAmount = 999999999999; // aun no lo tengo
 	export let minAmount = 0;
 	const dispatch = createEventDispatcher();
-	const currentTenant = tenantActor.getSnapshot().context.currentTenant;
+	const currentTenant = loadFromSessionStorage('currentTenant');
 
 	const fixSchema = z.object({
 		amount: z
