@@ -71,9 +71,7 @@ export const actions = {
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.cards);
 
-			const formData = await request.formData();
-
-			const form = await superValidate(formData, zod(schema));
+			const form = await superValidate(request, zod(schema));
 
 			if (!form.valid) {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });
@@ -86,7 +84,8 @@ export const actions = {
 				inspectionId: inspectionId
 			});
 
-			if (response) redirect(PERMANENT_REDIRECT_STATUS, '/inspections/');
+			if (response)
+				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/exception-report/${response.id}`);
 		}
 	}
 } satisfies Actions;

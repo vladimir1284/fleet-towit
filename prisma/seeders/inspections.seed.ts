@@ -179,6 +179,88 @@ const seedInspection = async (prisma, tenantsId: number[]) => {
 									}
 								]
 							}
+						},
+						// Firmas
+						{
+							name: 'Firmas',
+							fields: {
+								create: [
+									{
+										name: 'Firma del inspector',
+										type: 'SIGNATURE'
+									},
+									{
+										name: 'Nombre del rentador',
+										type: 'TEXT'
+									},
+									{
+										name: 'Firma del rentador',
+										type: 'SIGNATURE'
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		});
+
+		await prisma.customForm.create({
+			data: {
+				name: 'Nuevos Campos',
+				tenantId: tenantId,
+				cards: {
+					create: [
+						{
+							name: 'Tarjeta con nuevos campos',
+							fields: {
+								create: [
+									{
+										name: 'Imagen',
+										type: 'IMAGE'
+									},
+									{
+										name: 'Firma',
+										type: 'SIGNATURE'
+									},
+									{
+										name: 'Correo',
+										type: 'EMAIL'
+									},
+									{
+										name: 'Teléfono',
+										type: 'PHONE'
+									},
+									{
+										name: 'Fecha',
+										type: 'DATE'
+									},
+									{
+										name: 'Hora',
+										type: 'TIME'
+									}
+								]
+							}
+						},
+						// Firmas
+						{
+							name: 'Firmas',
+							fields: {
+								create: [
+									{
+										name: 'Firma del inspector',
+										type: 'SIGNATURE'
+									},
+									{
+										name: 'Nombre del rentador',
+										type: 'TEXT'
+									},
+									{
+										name: 'Firma del rentador',
+										type: 'SIGNATURE'
+									}
+								]
+							}
 						}
 					]
 				}
