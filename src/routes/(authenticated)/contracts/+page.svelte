@@ -23,7 +23,13 @@
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline, AnnotationSolid } from 'flowbite-svelte-icons';
+	import {
+		TrashBinSolid,
+		FileEditSolid,
+		RotateOutline,
+		EyeOutline,
+		AnnotationSolid
+	} from 'flowbite-svelte-icons';
 
 	export let data: PageData;
 	let message = '';
@@ -43,6 +49,7 @@
 	let selectedContract = undefined;
 
 	let contractStagesList = [];
+	let contractNotesList = [];
 
 	const currentTenant = getContext('currentTenant');
 
@@ -129,17 +136,25 @@
 	}
 
 	async function handleDetail(contract) {
-		axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`)
-        .then(response => {
-            contractStagesList = response.data;
-            selectedContract = contract;
-			detailModal = true;
-        })
-        .catch(error => {
-            console.error('Error fetching contract stages:', error);
-        });
+		await axios
+			.all([
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/notes`)
+			])
+			.then(
+				axios.spread((contractStagesResponse, contractNotesResponse) => {
+					selectedContract = contract;
+					contractStagesList = contractStagesResponse.data;
+					contractNotesList = contractNotesResponse.data;
+
+					detailModal = true;
+				})
+			)
+			.catch((error) => {
+				console.error('Error fetching contract data:', error);
+			});
 	}
-	
+
 	$: if (!detailModal) {
 		handleCloseDetailModal();
 	}
@@ -165,7 +180,6 @@
 {#if loading}
 	<p>Loading...</p>
 {:else}
-
 	{#if selectedContract}
 		<ViewContractNotes {data} bind:open={showNotesModal} bind:selectedContract />
 	{/if}
@@ -198,6 +212,7 @@
 			{data}
 			{selectedContract}
 			{contractStagesList}
+			{contractNotesList}
 			on:formvalid={handleCloseDetailModal}
 		/>
 	</Modal>

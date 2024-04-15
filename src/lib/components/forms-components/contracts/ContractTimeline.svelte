@@ -1,85 +1,165 @@
 <script async lang="ts">
 	//@ts-nocheck
 	import { Timeline, TimelineItem } from 'flowbite-svelte';
-	import { getKillBillData } from '@killbill/temp-api-rq';
+	import { reqInvoiceApi, reqPaymentApi } from '@killbill/requests';
 	import { Modal } from 'flowbite-svelte';
-	import { FileEditSolid, EyeOutline } from 'flowbite-svelte-icons';
-	import DetailInvoice from '$lib/components/forms-components/contracts/DetailInvoice.svelte';
+	import {
+		FileInvoiceSolid,
+		DotsHorizontalOutline,
+		EyeOutline,
+		CalendarWeekSolid,
+		AnnotationSolid,
+		CashOutline
+	} from 'flowbite-svelte-icons';
+	import DetailInvoice from '$lib/components/forms-components/invoices/DetailInvoice.svelte';
+	import DetailPayment from '$lib/components/forms-components/payments/DetailPayment.svelte';
+	import { formatTimelineDate } from '$lib/helpers/dates';
+	import { createEventDispatcher } from 'svelte';
+	import NoteCard from '../notes/NoteCard.svelte';
 
-	export let TimelineData: any = [];
-	let detailModal = false;
-	let editModal = false;
+	const dispatch = createEventDispatcher();
+	export let timelineData: any = [];
+	export let sessionData: any;
+	let detailInvoiceModal = false;
+	let detailPaymentModal = false;
 	let selectedInvoice = undefined;
+	let selectedPayment = undefined;
 	let loading = false;
 
-	const formatDate = (date: Date | string) => {
-		if (!date) {
-			return undefined;
-		}
-		return new Date(date).toLocaleDateString('en-us', {
-			weekday: 'long',
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
+	async function handleInvoiceDetail(invoice) {
+		selectedInvoice = await reqInvoiceApi.getInvoice({
+			invoiceId: invoice.invoice_id,
+			withChildrenItems: true,
+			audit: 'MINIMAL'
 		});
-	};
-
-	async function handleDetail(invoice) {
-		selectedInvoice = await getKillBillData(`/invoices/${invoice.invoice_id}`);
-		detailModal = true;
+		detailInvoiceModal = true;
+	}
+	async function handlePaymentDetail(payment) {
+		selectedPayment = await reqPaymentApi.getPayment({
+			paymentId: payment.payment_id,
+			withAttempts: true,
+			withPluginInfo: true
+		});
+		detailPaymentModal = true;
 	}
 
-	async function handleEdit(invoice) {
-		selectedInvoice = invoice;
-		editModal = true;
+	$: if (!detailInvoiceModal) {
+		handleCloseDetailInvoiceModal();
+	}
+	$: if (!detailPaymentModal) {
+		handleCloseDetailPaymentModal();
 	}
 
-	$: if (!detailModal) {
-		handleCloseDetailModal();
-	}
-	$: if (!editModal) {
-		handleCloseDetailModal();
-	}
-	async function handleCloseDetailModal() {}
-	async function handleCloseEditModal() {}
+	async function handleCloseDetailInvoiceModal() {}
+	async function handleCloseDetailPaymentModal() {}
 </script>
 
 <Modal
 	title={'Invoice #' + selectedInvoice?.invoiceNumber}
 	size="xl"
 	padding="md"
-	bind:open={detailModal}
+	bind:open={detailInvoiceModal}
 >
-	<DetailInvoice currentInvoice={selectedInvoice} />
+	<DetailInvoice
+		on:reListTimeline={() => {
+			dispatch('reListTimeline');
+		}}
+		currentInvoice={selectedInvoice}
+	/>
+</Modal>
+
+<Modal
+	title={'Payment #' + selectedPayment?.paymentNumber}
+	size="xl"
+	padding="md"
+	bind:open={detailPaymentModal}
+>
+	<DetailPayment currentPayment={selectedPayment} />
 </Modal>
 
 {#if loading}
 	<p>Loading...</p>
 {:else}
-	<Timeline>
-		{#each TimelineData as data}
-			<TimelineItem title={data.stage} date={formatDate(data.date)}>
-				<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
+	<Timeline order="vertical">
+		{#each timelineData as data}
+			<TimelineItem title={data?.stage ?? ''} date={formatTimelineDate(data.date || data.createdDate)}>
+				<svelte:fragment slot="icon">
 					{#if data.invoice_id}
-						Amount: {typeof data.amount == 'number' && data.amount == 0
-							? '$' + data.amount
-							: 'No amount provided'} <br />
-						Balance: {typeof data.balance == 'number' && data.balance == 0
-							? '$' + data.balance
-							: 'No balance provided'} <br />
-						<EyeOutline class="text-gray-400 inline" on:click={() => handleDetail(data)} />
-						<FileEditSolid class="text-gray-400 inline" on:click={() => handleEdit(data)} />
+						<span
+							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-primary-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+						>
+							<FileInvoiceSolid color="blue" class="w-3 h-3" />
+						</span>
+					{:else if data.payment_id}
+						<span
+							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-red-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+						>
+							<CashOutline color="red" class="w-3 h-3" />
+						</span>
+					{:else if data.Subject}
+						<span
+							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-green-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+						>
+							<AnnotationSolid color="green" class="w-3 h-3" />
+						</span>
 					{:else}
-						Reason: {data.reason || 'No reason provided'} <br />
-						Comment: {data.comments || 'No comment provided'}
+						<span
+							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-purple-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+						>
+							<CalendarWeekSolid color="purple" class="w-3 h-3" />
+						</span>
 					{/if}
+				</svelte:fragment>
+
+				<p class="relative text-base font-normal text-gray-500 dark:text-gray-400">
+					{#if data.stage}
+						Reason: {data.reason ?? '-'} <br />
+						Comment: {data.comments ?? '-'}
+					{/if}
+					{#if data.Subject}
+						<NoteCard data={sessionData} note={data}/>
+					{/if}
+					{#if data.invoice_id}
+						<EyeOutline
+							class="absolute -top-6 right-0 text-gray-400 inline"
+							on:click={() => handleInvoiceDetail(data)}
+						/>
+						{#if data.amount}
+							Amount: <strong> ${data.amount}</strong><br />
+						{/if}
+						{#if data.balance}
+							Balance: <strong> ${data.balance}</strong><br />
+						{/if}
+					{:else if data.payment_id}
+						<EyeOutline
+							class="absolute -top-6 right-0 text-gray-400 inline"
+							on:click={() => handlePaymentDetail(data)}
+						/>
+						{#if data.auth_amount}
+							Auth Amount : <strong> ${data.auth_amount}</strong><br />
+						{/if}
+						{#if data.capture_balance}
+							Capture Balance : <strong> ${data.capture_balance}</strong><br />
+						{/if}
+						{#if data.refund_balance}
+							Refund Balance : <strong> ${data.refund_balance}</strong><br />
+						{/if}
+					{/if}
+				</p>
+			</TimelineItem>
+		{:else}
+			<TimelineItem title="Empty list">
+				<svelte:fragment slot="icon">
+					<span
+						class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-primary-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+					>
+						<DotsHorizontalOutline color="blue" class="w-3 h-3" />
+					</span>
+				</svelte:fragment>
+				<p class="relative text-base font-normal text-gray-500 dark:text-gray-400">
+					Nothing to show here ...
 				</p>
 			</TimelineItem>
 		{/each}
 	</Timeline>
-	<!-- {#if showAlert}
-		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
-			{message}
-		</Alert>
-	{/if} -->
 {/if}

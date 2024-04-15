@@ -9,7 +9,7 @@ import { apiConfig } from './config';
 export async function syncKillBill() {
 	console.log('sync killbill');
 
-	await syncTenants();
+	// await syncTenants();
 	await syncRentalPlans();
 	await syncClients();
 	await syncContracts();
