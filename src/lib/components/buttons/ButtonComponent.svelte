@@ -6,13 +6,7 @@
 	export let pill: boolean = false;
 	export let placeholder: any;
 	export let styles: string = '';
-	export let size: 
-		| "xs" 
-		| "sm" 
-		| "lg" 
-		| "xl" 
-		| "md" 
-		| undefined = undefined;
+	export let size: 'xs' | 'sm' | 'lg' | 'xl' | 'md' | undefined = undefined;
 	export let color:
 		| 'blue'
 		| 'red'

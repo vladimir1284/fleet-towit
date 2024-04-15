@@ -35,15 +35,16 @@
 			}
 		);
 
-        await axios.get(parsedQueryParams)
-            .then((response) => {
-                const { data: untainedTenantParts } = response.data;
-                return untainedTenantParts;
-            })
-            .catch((error) => {
-                console.error('Error fetching parts:', error);
-                return $writablePartStore;
-            });
+		await axios
+			.get(parsedQueryParams)
+			.then((response) => {
+				const { data: untainedTenantParts } = response.data;
+				return untainedTenantParts;
+			})
+			.catch((error) => {
+				console.error('Error fetching parts:', error);
+				return $writablePartStore;
+			});
 	};
 
 	$: promise = searchPartRecords(partSearchPattern);

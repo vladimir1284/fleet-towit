@@ -17,28 +17,27 @@
 	const load = async () => {
 		const url = `/api/vehicles/${vin}/${categoryName}/`;
 
-        try {
-            const response = await axios.get(url);
-            records = response.data.records;
-            nickname = response.data.nickname;
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            throw new Error('Not reloaded');
-        }
-
+		try {
+			const response = await axios.get(url);
+			records = response.data.records;
+			nickname = response.data.nickname;
+		} catch (error) {
+			console.error('Error fetching data:', error);
+			throw new Error('Not reloaded');
+		}
 	};
 
 	const remove = async (id: string) => {
 		try {
-            const url = `/api/vehicles/${vin}/${categoryName}/${id}`;
-            await axios.delete(url);
+			const url = `/api/vehicles/${vin}/${categoryName}/${id}`;
+			await axios.delete(url);
 
-            await load();
-        } catch (error) {
-            console.error('Error removing item:', error);
-            // Consider a more user friendly way to handle errors, such as displaying a message in the UI
-            alert(error.message); // This line is commented out as it's not recommended to use alerts for error handling in production applications
-        }
+			await load();
+		} catch (error) {
+			console.error('Error removing item:', error);
+			// Consider a more user friendly way to handle errors, such as displaying a message in the UI
+			alert(error.message); // This line is commented out as it's not recommended to use alerts for error handling in production applications
+		}
 	};
 
 	const create = async () => {

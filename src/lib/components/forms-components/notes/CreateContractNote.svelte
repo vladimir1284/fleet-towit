@@ -11,19 +11,17 @@
 	import { EditOutline, PaperClipOutline, CloseOutline } from 'flowbite-svelte-icons';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
-	
 	export let data;
 	export let tenant: number = 0;
 	export let selectedNote: Note | null = null;
 	export let selectedContract: any = undefined;
-	
+
 	const dispatch = createEventDispatcher();
 	let actionURL = `/api/tenants/${tenant}/contracts/${selectedContract.id}/notes`;
 	let today = new Date().toISOString().split('T')[0];
 	let attachFile = false;
 	let remainder = false;
 	let fileSize = 0;
-
 
 	onMount(async () => {
 		if ($form.file) {
@@ -40,7 +38,7 @@
 	});
 
 	if (selectedNote) {
-		console.log(selectedNote)
+		console.log(selectedNote);
 		$form.id = selectedNote.id;
 		$form.subject = selectedNote.Subject;
 		$form.body = selectedNote.Body;
@@ -124,7 +122,6 @@
 					<PaperClipOutline class="text-gray-400" />
 				</Label>
 			</ButtonComponent>
-			
 		{:else}
 			<ButtonComponent
 				placeholder=""
@@ -145,7 +142,6 @@
 				</Label>
 			</ButtonComponent>
 		{/if}
-
 	</div>
 
 	<div class="border-t-red-500 flex justify-end mt-5">

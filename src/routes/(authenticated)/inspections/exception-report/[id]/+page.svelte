@@ -14,21 +14,21 @@
 
 	const makePdf = async () => {
 		try {
-            const response = await axios.get(`/api/inspections/pdf/${data.inspection.id}`, {
-                responseType: 'blob'
-            });
+			const response = await axios.get(`/api/inspections/pdf/${data.inspection.id}`, {
+				responseType: 'blob'
+			});
 
-            const url = URL.createObjectURL(new Blob([response.data]));
-            const element = document.createElement('a');
-            element.href = url;
-            element.setAttribute('download', 'inspection.pdf');
-            document.body.appendChild(element);
-            element.click();
+			const url = URL.createObjectURL(new Blob([response.data]));
+			const element = document.createElement('a');
+			element.href = url;
+			element.setAttribute('download', 'inspection.pdf');
+			document.body.appendChild(element);
+			element.click();
 
-            document.body.removeChild(element);
-        } catch (error) {
-            console.error('Error downloading PDF:', error);
-        }
+			document.body.removeChild(element);
+		} catch (error) {
+			console.error('Error downloading PDF:', error);
+		}
 
 		/*
 			const req = await fetch(`/api/inspections/pdf/${data.inspection.id}`);

@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { PartManagement } from '$lib/features/list-part/components';
 	import { setPartListContext, setPartCreationWizardContext } from '$lib/context/part.context';
-	
-	export let data;
 
+	export let data;
 
 	const { initialParts, superValidatedPartWizard } = data;
 
@@ -15,6 +14,6 @@
 
 <div class="container grid grid-cols-12">
 	<div class="col-start-3 col-span-9">
-		<PartManagement  />
+		<PartManagement />
 	</div>
 </div>

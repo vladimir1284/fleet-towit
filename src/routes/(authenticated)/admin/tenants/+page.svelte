@@ -78,7 +78,7 @@
 			})
 			.finally(() => {
 				showUsers = true;
-			})
+			});
 	}
 
 	async function handleCloseModal(event) {

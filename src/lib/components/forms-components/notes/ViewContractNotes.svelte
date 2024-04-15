@@ -19,7 +19,7 @@
 	export let open = false;
 	export let data: PageData;
 
-	let	actionURL = `/api/tenants/${$currentTenant.id}/contracts/${selectedContract?.id}/notes`;
+	let actionURL = `/api/tenants/${$currentTenant.id}/contracts/${selectedContract?.id}/notes`;
 
 	let loading = false;
 	let creating = false;

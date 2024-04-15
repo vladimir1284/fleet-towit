@@ -14,4 +14,4 @@ export const getAllVehicles = async (instance: PrismaClient) => {
 		return { ...v, plate: v.plates[0] || undefined };
 	});
 	return vehiclesWithActualPlate;
-}
+};

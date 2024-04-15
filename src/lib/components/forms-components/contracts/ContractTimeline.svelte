@@ -82,7 +82,10 @@
 {:else}
 	<Timeline order="vertical">
 		{#each timelineData as data}
-			<TimelineItem title={data?.stage ?? ''} date={formatTimelineDate(data.date || data.createdDate)}>
+			<TimelineItem
+				title={data?.stage ?? ''}
+				date={formatTimelineDate(data.date || data.createdDate)}
+			>
 				<svelte:fragment slot="icon">
 					{#if data.invoice_id}
 						<span
@@ -117,7 +120,7 @@
 						Comment: {data.comments ?? '-'}
 					{/if}
 					{#if data.Subject}
-						<NoteCard data={sessionData} note={data}/>
+						<NoteCard data={sessionData} note={data} />
 					{/if}
 					{#if data.invoice_id}
 						<EyeOutline

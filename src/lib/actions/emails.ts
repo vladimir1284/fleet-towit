@@ -13,7 +13,12 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-export async function sendWelcomeEmail(email: string, tenantName: string, role: string, origin: string) {
+export async function sendWelcomeEmail(
+	email: string,
+	tenantName: string,
+	role: string,
+	origin: string
+) {
 	const mailOptions = {
 		from: EMAIL_FROM,
 		to: email,

@@ -36,7 +36,6 @@
 	let updateStage: boolean = false;
 	let makePaymentModal: boolean = false;
 
-
 	const reListTimeline = () => {
 		timelineData = [];
 
@@ -55,7 +54,6 @@
 		// ordenar el array timelineData según su fecha
 		timelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
 	};
-
 
 	async function updateContractData() {
 		await axios
