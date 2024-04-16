@@ -56,6 +56,9 @@
 				})
 				.catch((error) => {
 					console.log('Error fetching contract data', error);
+					if (error.response.status === 404) {
+						selectedContract = error.response.data
+					}
 				});
 		} else {
 			selectedContract = undefined;
@@ -150,7 +153,7 @@
 	}
 
 	function findPlateID(plate) {
-		let selectedPlate = plates.filter((_plate) => _plate['plate'] === plate?.toUpperCase());
+		let selectedPlate = plates.filter((_plate) => _plate['plate'].toUpperCase() === plate?.toUpperCase());
 		if (selectedPlate.length) {
 			return selectedPlate[0].id;
 		} else {

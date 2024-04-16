@@ -74,7 +74,7 @@
 	
 	<Card class="flex-grow flex-row mx-2 p-2 gap-2 relative" size="xl" padding="none">
 		{#if note.user.image}
-			<Avatar src={note.user.image} size="sm"></Avatar>
+			<Avatar src={`https://minios3.crabdance.com/develop/users/${note.user.id}/${note.user.image}`} size="sm"></Avatar>
 		{:else}
 			<Avatar size="sm"></Avatar>
 		{/if}

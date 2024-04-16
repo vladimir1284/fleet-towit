@@ -8,9 +8,11 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data: PageData;
-	let imageUrl: any;
+	let imageUrl: any = undefined
 	let image: string = '';
 	let editModal = false;
+
+	const actionUrl = '/api/tenants/users/profile';
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
@@ -50,7 +52,7 @@
 </script>
 
 <Modal bind:open={editModal} size="xs">
-	<form use:enhance class="flex flex-col space-y-6" method="POST" enctype="multipart/form-data">
+	<form use:enhance class="flex flex-col space-y-6" method="POST" enctype="multipart/form-data" action={actionUrl}>
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white">Edit your profile information</h3>
 		<div class="flex justify-between max-w-[50em] min-w-full items-start">
 			<Label class="space-y-2" size="xl">
@@ -59,9 +61,9 @@
 					class="min-w-[10.5em] min-h-[1em]"
 					id="avatar"
 					size="xl"
-					src={data.session.user?.image
+					src={imageUrl || (data.session.user?.image
 						? `https://minios3.crabdance.com/develop/users/${data.session.user?.id}/${data.session.user?.image}`
-						: undefined}
+						: undefined)}
 				/>
 			</Label>
 			<input type="hidden" name="id" bind:value={$form.id} />
