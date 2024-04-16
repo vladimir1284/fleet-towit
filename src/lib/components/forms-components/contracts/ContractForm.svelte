@@ -7,9 +7,9 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
-	export let clients: [];
-	export let vehicles: [];
-	export let rentalPlans: [];
+	export let clients: Array<object>;
+	export let vehicles: Array<object>;
+	export let rentalPlans: Array<object>;
 	export let selectedContract: any = undefined;
 
 	let clientsSelector: any = [];

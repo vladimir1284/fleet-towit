@@ -36,7 +36,6 @@
 	let updateStage: boolean = false;
 	let makePaymentModal: boolean = false;
 
-
 	const reListTimeline = () => {
 		timelineData = [];
 
@@ -53,29 +52,23 @@
 			paymentsFilter = false;
 		}
 		// ordenar el array timelineData según su fecha
-		timelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
+		timelineData.sort((a, b) => new Date(b.date || b.createdDate) - new Date(a.date || b.createdDate));
 	};
-
 
 	async function updateContractData() {
 		await axios
-			.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`)
-			.then((contractDataResponse) => {
-				selectedContract = contractDataResponse.data;
-				return axios.get(
-					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
-				);
-			})
-			.then((contractStagesResponse) => {
-				contractStagesList = contractStagesResponse.data;
-				return axios.get(
-					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/notes`
-				);
-			})
-			.then((contractNotesResponse) => {
-				contractNotesList = contractNotesResponse.data;
-				reListTimeline();
-			})
+			.all([
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/notes`)
+			])
+			.then(
+				axios.spread((contractDataResponse, contractStagesResponse, contractNotesResponse) => {
+					selectedContract = contractDataResponse.data;
+					contractStagesList = contractStagesResponse.data;
+					contractNotesList = contractNotesResponse.data;
+				})
+			)
 			.catch((error) => {
 				console.error('Error fetching contract data:', error);
 			});

@@ -1,17 +1,18 @@
 <script async lang="ts">
-	//@ts-nocheck
 	import { Card, Alert } from 'flowbite-svelte';
-	import { onMount } from 'svelte';
-	import type { PageData } from '../$types';
-	import { loadFromSessionStorage } from '$lib/store/context-store';
+	import { onMount, getContext } from 'svelte';
+	import type { PageData } from './$types';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 	import { reqInvoiceApi, reqPaymentApi, reqAccountApi } from '@killbill/requests';
 	import { customReqInvoiceApi, customReqPaymentApi } from '@killbill/custom-requests';
-	const currentTenant = loadFromSessionStorage('currentTenant');
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+	import axios from 'axios';
+
+
+	const currentTenant = getContext('currentTenant');
 
 	export let data: PageData;
-	export let selectedContract: object = data.contract;
+	export let selectedContract: any = data.contract;
+	console.log(selectedContract);
 
 	let loading: boolean = true;
 	let showAlert: boolean = false;
@@ -36,7 +37,7 @@
 		}
 	});
 
-	async function getInvoicesList(contract, limit = 100) {
+	async function getInvoicesList(contract: object, limit = 100) {
 		try {
 			// let res = await reqAccountApi.getInvoicesForAccount({ accountId: '20b5a43d-246b-42c3-949f-f4f6dba392f0' }); // TODO listar los invoices del account de la suscription
 			const invoices = await customReqInvoiceApi.getLatestInvoices({
@@ -73,14 +74,14 @@
 		}
 	}
 
-	async function getPaymentsList(contract, limit = 100) {
+	async function getPaymentsList(contract: object, limit = 100) {
 		try {
 			// await reqAccountApi.getPaymentsForAccount({ accountId: '20b5a43d-246b-42c3-949f-f4f6dba392f0' });  // TODO listar los payments del account de la suscription
 			const payments = await customReqPaymentApi.getLatestPayments({
 				limit: limit,
 				audit: 'MINIMAL'
 			});
-			contractPaymentsList = await payments.map(
+			contractPaymentsList = payments.map(
 				({
 					paymentId,
 					authAmount,
@@ -88,8 +89,7 @@
 					refundedAmount,
 					creditedAmount,
 					transactions,
-					auditLogs,
-					...rest
+					auditLogs
 				}) => {
 					const lastTransaction =
 						transactions.length > 0 ? transactions[transactions.length - 1] : {};
@@ -125,7 +125,7 @@
 	async function getStagesList(contract, limit = 100) {
 		try {
 			const stages = await fetch(
-				`/api/tenants/${currentTenant.id}/contracts/${contract.id}/stage?limit=${limit}`
+				`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage?limit=${limit}`
 			);
 			contractStagesList = await stages.json();
 
@@ -139,7 +139,11 @@
 
 	async function getNotesList(contract, limit = 100) {
 		try {
-			contractNotesList = [];
+			await axios
+				.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/notes`)
+				.then((resp) => {
+					contractNotesList = resp.data;
+				});
 		} catch (error) {
 			console.error('Error getting notes:', error);
 		}
@@ -157,7 +161,7 @@
 {#if loading}
 	<p>Loading...</p>
 {:else}
-	<Card size="xl" padding="md" class="flex w-full mt-5">
+	<div class="flex w-auto mt-5 bg-white p-5 m-5 rounded-3xl">
 		<DetailContract
 			{data}
 			{selectedContract}
@@ -166,7 +170,7 @@
 			{contractPaymentsList}
 			{contractNotesList}
 		/>
-	</Card>
+	</div>
 	{#if showAlert}
 		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
 			{message}

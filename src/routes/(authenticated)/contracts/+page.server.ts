@@ -34,11 +34,33 @@ const noteSchema = z.object({
 	file: z.instanceof(Array<File>).optional()
 });
 
+const paymentInvoiceSchema = z.object({
+	amount: z.string().refine(
+		(value) => {
+			const num = parseFloat(value);
+			const regex = /^\d*\.?\d+$/; // Expresión regular para números decimales positivos
+			return regex.test(value) && num >= 0 && num <= 999999999;
+		},
+		{
+			message: `Amount must be a number between ${0} and ${999999999}`
+		}
+	),
+	comment: z.string()
+});
+
 export const load = (async () => {
 	const form = await superValidate(zod(fixSchema));
 	const stageForm = await superValidate(zod(stageSchema));
 	const clientform = await superValidate(zod(clientSchema));
 	const noteForm = await superValidate(zod(noteSchema));
+	const paymentInvoiceForm = await superValidate(zod(paymentInvoiceSchema));
 
-	return { form: form, stageForm: stageForm, clientForm: clientform, noteForm: noteForm };
+
+	return {
+		form: form,
+		stageForm: stageForm,
+		clientForm: clientform,
+		noteForm: noteForm,
+		paymentInvoiceForm
+	};
 }) satisfies PageServerLoad;

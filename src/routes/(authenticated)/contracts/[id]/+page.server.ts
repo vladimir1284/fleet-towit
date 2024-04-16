@@ -1,9 +1,8 @@
-import { error } from '@sveltejs/kit';
-import { loadFromSessionStorage } from '$lib/store/context-store';
 import { superValidate } from 'sveltekit-superforms/server';
 import type { PageServerLoad } from './$types';
 import { zod } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
+import { getContract } from '$lib/actions/contracts';
 
 const fixSchema = z.object({
 	clientId: z.number(),
@@ -28,46 +27,21 @@ const clientSchema = z.object({
 	id: z.number().optional()
 });
 
-export const load = (async ({ params, fetch }) => {
-	const currentTenant = loadFromSessionStorage('currentTenant');
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
-	const contract_id = params.id;
-	let contract;
+
+
+export const load = (async ({ locals, params }) => {
+	const contract = await getContract(locals.currentInstance.currentPrismaClient, {
+		contractId: parseInt(params.id)
+	});
 
 	const form = await superValidate(zod(fixSchema));
 	const stageForm = await superValidate(zod(stageSchema));
 	const clientform = await superValidate(zod(clientSchema));
 
-	if (!contract_id) throw error(404, { message: 'Contract not found' });
-
-	try {
-		const response = await fetch(`/api/tenants/${currentTenant.id}/contracts/${contract_id}`, {
-			headers
-		});
-
-		if (!response.ok) throw new Error('Invalid Contract');
-
-		const { client, vehicle, stage, rentalPlan } = await response.json();
-		contract = {
-			client,
-			vehicle,
-			stage,
-			rentalPlan
-		};
-	} catch (e) {
-		throw error(404, { message: 'Contract not found' });
-	}
-
 	return {
-		params: {
-			id: params.id
-		},
-		contract: {
-			id: params.id,
-			...contract
-		},
 		form,
 		stageForm,
-		clientform
+		clientform,
+		contract
 	};
 }) satisfies PageServerLoad;

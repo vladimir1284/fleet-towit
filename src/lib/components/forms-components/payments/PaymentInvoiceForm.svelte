@@ -2,24 +2,19 @@
 	// @ts-nocheck
 	import { z } from 'zod';
 	import { createEventDispatcher } from 'svelte';
-	import { loadFromSessionStorage } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Checkbox } from 'flowbite-svelte';
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
-	import NameInputComponent from '$lib/components/inputs/NameInputComponent.svelte';
-	import EmailInputComponent from '$lib/components/inputs/EmailInputComponent.svelte';
-	import PhoneNumberInputComponent from '$lib/components/inputs/PhoneNumberInputComponent.svelte';
 	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
 	import { reqInvoiceApi, reqAccountApi } from '@killbill/requests';
 	import { AnnotationSolid } from 'flowbite-svelte-icons';
+	import { zod } from 'sveltekit-superforms/adapters';
 	// import { Invoice } from '@killbill/api/models/Invoice';
 	export let data;
 	export let selectedInvoice: any = null;
 	export let maxAmount = 999999999999; // aun no lo tengo
 	export let minAmount = 0;
 	const dispatch = createEventDispatcher();
-	const currentTenant = loadFromSessionStorage('currentTenant');
 
 	const fixSchema = z.object({
 		amount: z.string().refine(
@@ -34,10 +29,9 @@
 		),
 		comment: z.string()
 	});
-
-	const { form, errors, constraints, enhance } = superForm(data, {
+	const { form, errors, constraints, enhance } = superForm(data.paymentInvoiceForm, {
 		SPA: true,
-		validators: fixSchema,
+		validators: zod(fixSchema),
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -101,9 +95,9 @@
 	<div class="sm:col-span-2">
 		<TextInputComponent
 			formPointer="comment"
-			form={form.comment}
-			errors={errors.comment}
-			constraints={constraints.comment}
+			form={form}
+			errors={errors}
+			constraints={constraints}
 			placeholder="Comment"><AnnotationSolid class="w-6 h-6 inline" /></TextInputComponent
 		>
 	</div>

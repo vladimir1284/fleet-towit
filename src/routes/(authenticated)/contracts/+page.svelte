@@ -1,5 +1,4 @@
 <script lang="ts">
-	// @ts-nocheck
 	import {
 		Card,
 		GradientButton,
@@ -17,12 +16,8 @@
 	import axios from 'axios';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
-	import type { PageData } from '../$types';
-	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
-	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
+	import type { PageData } from './$types';
 	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
-	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
-	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
 	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
 	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
@@ -33,16 +28,20 @@
 		FileEditSolid,
 		RotateOutline,
 		EyeOutline,
-		AnnotationSolid
+		AnnotationSolid,
+
+		CashOutline
+
 	} from 'flowbite-svelte-icons';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
 	export let data: PageData;
 	let message = '';
-	let selectedId = '';
-	let clients = [];
-	let vehicles = [];
-	let contracts = [];
-	let rentalPlans = [];
+	let selectedId: number | undefined = undefined;
+	let clients: Array<object> = [];
+	let vehicles: Array<object> = [];
+	let contracts: Array<object> = [];
+	let rentalPlans: Array<object> = [];
 	let loading = false;
 	let showAlert = false;
 	let editModal = false;
@@ -51,7 +50,7 @@
 	let updateModal = false;
 	let makingPaymentModal: boolean = false;
 	let showNotesModal = false;
-	let selectedContract = undefined;
+	let selectedContract: object | undefined = undefined;
 
 	$: {
 		contracts.forEach((c) => {
@@ -92,7 +91,7 @@
 		loadData();
 	});
 
-	function handleAlert(text) {
+	function handleAlert(text: string) {
 		showAlert = true;
 		message = text;
 		setTimeout(() => {
@@ -100,57 +99,64 @@
 		}, 4000);
 	}
 
-	async function handleCloseModal(event) {
+	async function handleCloseModal(event: any) {
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
 
 		loadData();
 	}
 
-	async function handleEdit(contract) {
+	async function handleEdit(contract: object) {
 		selectedContract = contract;
 		editModal = true;
 	}
 
-	async function handleCloseEditModal(event) {
+	async function handleCloseEditModal(event: any) {
 		editModal = event.detail;
 		handleAlert('Contract edited succesfully!');
 
 		loadData();
 	}
 
-	async function handleUpdateStage(contract) {
+	async function handleUpdateStage(contract: any) {
 		selectedContract = contract;
 		updateModal = true;
 	}
 
-	async function handleCloseUpdateModal(event) {
+	async function handleCloseUpdateModal(event: any) {
 		updateModal = event.detail;
 		handleAlert('Contract updated succesfully!');
 
 		loadData();
 	}
 
-	async function handleDelete(contractId) {
+	async function handleDelete(contractId: number) {
 		selectedId = contractId;
 		deleteModal = true;
 	}
 
-	async function handleCloseDeleteModal(event) {
+	async function handleCloseDeleteModal(event: any) {
 		deleteModal = event.detail;
 		handleAlert('Contract deleted succesfully!');
 
 		loadData();
 	}
 
-	async function handleShowNotes(contract) {
+	async function handleShowNotes(contract: object) {
 		selectedContract = contract;
 		showNotesModal = true;
 	}
 
-	async function handleShowMakePaymentModal(contract) {
+	async function handleShowMakePaymentModal(contract: object) {
 		selectedContract = contract;
 		makingPaymentModal = true;
+	}
+
+	async function handleCloseMakePaymentModal(event: any) {
+		makingPaymentModal = event.detail;
+		handleAlert('Payment updated succesfully!');
+
+		loadData();
 	}
 
 	$: {
@@ -159,15 +165,6 @@
 		});
 	}
 
-	async function handleShowNotes(contract) {
-		selectedContract = contract;
-		showNotesModal = true;
-	}
-
-	async function handleCloseMakePaymentModal(event) {
-		makingPaymentModal = false;
-		handleAlert('');
-	}
 </script>
 
 {#if loading}
@@ -202,7 +199,7 @@
 
 	<Modal size="xs" padding="md" bind:open={makingPaymentModal}>
 		<PaymentInvoiceForm
-			data={data?.PaymentInvoiceForm}
+			data={data}
 			on:formvalid={handleCloseMakePaymentModal}
 		/>
 	</Modal>
@@ -217,9 +214,7 @@
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
 			>
-				<GradientButton shadow color="blue" on:click={() => (createModal = true)}>
-					Create Contract
-				</GradientButton>
+				<ButtonComponent color="blue" placeholder="Create Contract" onClick={() => (createModal = true)}/>
 			</caption>
 
 			<TableHead>

@@ -1,8 +1,6 @@
 <script lang="ts">
-	// @ts-nocheck
 	import {
 		Card,
-		GradientButton,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -11,17 +9,9 @@
 		TableHeadCell,
 		Badge
 	} from 'flowbite-svelte';
-	import { onMount } from 'svelte';
-	import type { PageData } from '../$types';
-	import { loadFromSessionStorage } from '$lib/store/context-store';
-	import { TrashBinSolid, FileEditSolid, RotateOutline, EyeOutline } from 'flowbite-svelte-icons';
-	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
-	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
-	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
-	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 	import { getKillBillData } from '@killbill/temp-api-rq';
 
-	export let data: any;
 	export let currentInvoice: any = undefined;
 	const totalAmount = currentInvoice.items.reduce((total, item) => total + item.amount, 0);
 	let loading = false;
@@ -31,17 +21,19 @@
 		getKillBillData(`/invoices/${currentInvoice.invoiceId}/html`, 0, 'txt')
 			.then((html) => {
 				const newWindow = window.open('', '_blank');
-				newWindow.document.write(html);
-				newWindow.document.title = `Invoice for client #${currentInvoice.invoiceNumber}`;
+				newWindow?.document.write(html);
+				if(newWindow){
+					newWindow.document.title = `Invoice for client #${currentInvoice.invoiceNumber}`;
+					// Agregar un logo
+					// const logo = newWindow.document.createElement('img');
+					// logo.src = 'url_de_tu_logo';
+					// logo.style.width = '100px';
+					// logo.style.height = 'auto';
+					// newWindow.document.body.insertBefore(logo, newWindow.document.body.firstChild);
+	
+					newWindow.document.close();
+				}
 
-				// Agregar un logo
-				// const logo = newWindow.document.createElement('img');
-				// logo.src = 'url_de_tu_logo';
-				// logo.style.width = '100px';
-				// logo.style.height = 'auto';
-				// newWindow.document.body.insertBefore(logo, newWindow.document.body.firstChild);
-
-				newWindow.document.close();
 			})
 			.catch((error) => {
 				console.error('Error al obtener la factura:', error);
@@ -59,12 +51,8 @@
 			>
 				Invoice Date: {currentInvoice.invoiceDate}<br />
 				Target Date: {currentInvoice.targetDate}<br />
-				<GradientButton shadow color="green" on:click={openInvoiceHtml}>
-					View Customer Invoice HTML
-				</GradientButton>
-				<GradientButton shadow color="blue" on:click={editInvoiceDate}>
-					Adjust Invoice Item
-				</GradientButton>
+				<ButtonComponent color="green" onClick={openInvoiceHtml} placeholder='View Customer Invoice HTML'/>
+				<ButtonComponent color="blue" onClick={editInvoiceDate} placeholder = 'Adjust Invoice Item'/>
 			</caption>
 
 			<TableHead>
@@ -101,9 +89,4 @@
 			</div>
 		</Table>
 	</Card>
-	<!-- {#if showAlert}
-		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
-			{message}
-		</Alert>
-	{/if} -->
 {/if}
