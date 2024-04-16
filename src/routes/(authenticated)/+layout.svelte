@@ -9,7 +9,7 @@
 
 	export let data: LayoutData;
 
-	if (data?.session?.user.defaultTenantUser) {
+	if (!data?.session?.user.defaultTenantUser) {
 		const currentUserTenant = data.session.user.defaultTenantUser;
 		saveToSessionStorage('currentTenant', { ...currentUserTenant.tenant, currentUserTenant });
 		goto('/dashboard');

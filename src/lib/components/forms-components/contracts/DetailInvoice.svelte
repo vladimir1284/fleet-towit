@@ -9,7 +9,6 @@
 		TableBodyRow,
 		TableHead,
 		TableHeadCell,
-		Modal,
 		Badge
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';

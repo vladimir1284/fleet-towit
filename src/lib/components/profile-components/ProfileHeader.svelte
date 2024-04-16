@@ -1,5 +1,6 @@
 <script>
 	// @ts-nocheck
+	import axios from 'axios';
 	import { getContext } from 'svelte';
 	import { signOut } from '@auth/sveltekit/client';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
@@ -20,29 +21,32 @@
 	}
 
 	async function handleChangeUserTenant(tenantUser) {
-		const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 		const formData = new FormData();
 		formData.append('tenantUserId', tenantUser.id);
 		formData.append('is_default', true);
-		const response = await fetch(`/api/tenants/${tenantUser.tenant.id}/users/${tenantUser.id}`, {
-			method: 'PATCH',
-			headers: headers,
-			body: formData
-		});
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		} else {
-			console.log('Form submitted successfully');
-			location.reload();
-			saveToSessionStorage('currentTenant', {
-				...tenantUser.tenant,
-				currentUserTenant: tenantUser
+
+		await axios
+			.patch(`/api/tenants/${tenantUser.tenant.id}/users/${tenantUser.id}`, formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				}
+			})
+			.then(() => {
+				console.log('Changed tenant user');
+				location.reload();
+				saveToSessionStorage('currentTenant', {
+					...tenantUser.tenant,
+					currentUserTenant: tenantUser
+				});
+				currentTenant.set({
+					...tenantUser.tenant,
+					currentUserTenant: tenantUser
+				});
+			})
+			.catch((error) => {
+				console.error(`HTTP error! status: ${error.response.status}`);
+				throw new Error(`HTTP error! status: ${error.response.status}`);
 			});
-			currentTenant.set({
-				...tenantUser.tenant,
-				currentUserTenant: tenantUser
-			});
-		}
 	}
 </script>
 

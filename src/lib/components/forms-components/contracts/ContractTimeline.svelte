@@ -22,8 +22,24 @@
 	let detailPaymentModal = false;
 	let selectedInvoice = undefined;
 	let selectedPayment = undefined;
+	let selectedPayment = undefined;
 	let loading = false;
 
+	async function handleInvoiceDetail(invoice) {
+		selectedInvoice = await reqInvoiceApi.getInvoice({
+			invoiceId: invoice.invoice_id,
+			withChildrenItems: true,
+			audit: 'MINIMAL'
+		});
+		detailInvoiceModal = true;
+	}
+	async function handlePaymentDetail(payment) {
+		selectedPayment = await reqPaymentApi.getPayment({
+			paymentId: payment.payment_id,
+			withAttempts: true,
+			withPluginInfo: true
+		});
+		detailPaymentModal = true;
 	async function handleInvoiceDetail(invoice) {
 		selectedInvoice = await reqInvoiceApi.getInvoice({
 			invoiceId: invoice.invoice_id,
@@ -43,10 +59,17 @@
 
 	$: if (!detailInvoiceModal) {
 		handleCloseDetailInvoiceModal();
+	$: if (!detailInvoiceModal) {
+		handleCloseDetailInvoiceModal();
 	}
 	$: if (!detailPaymentModal) {
 		handleCloseDetailPaymentModal();
+	$: if (!detailPaymentModal) {
+		handleCloseDetailPaymentModal();
 	}
+
+	async function handleCloseDetailInvoiceModal() {}
+	async function handleCloseDetailPaymentModal() {}
 
 	async function handleCloseDetailInvoiceModal() {}
 	async function handleCloseDetailPaymentModal() {}
@@ -57,7 +80,23 @@
 	size="xl"
 	padding="md"
 	bind:open={detailInvoiceModal}
+	bind:open={detailInvoiceModal}
 >
+	<DetailInvoice
+		on:reListTimeline={() => {
+			dispatch('reListTimeline');
+		}}
+		currentInvoice={selectedInvoice}
+	/>
+</Modal>
+
+<Modal
+	title={'Payment #' + selectedPayment?.paymentNumber}
+	size="xl"
+	padding="md"
+	bind:open={detailPaymentModal}
+>
+	<DetailPayment currentPayment={selectedPayment} />
 	<DetailInvoice
 		on:reListTimeline={() => {
 			dispatch('reListTimeline');
@@ -100,6 +139,23 @@
 						>
 							<AnnotationSolid color="green" class="w-3 h-3" />
 						</span>
+						<span
+							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-primary-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+						>
+							<FileInvoiceSolid color="blue" class="w-3 h-3" />
+						</span>
+					{:else if data.payment_id}
+						<span
+							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-red-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+						>
+							<CashOutline color="red" class="w-3 h-3" />
+						</span>
+					{:else if data.Subject}
+						<span
+							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-green-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
+						>
+							<AnnotationSolid color="green" class="w-3 h-3" />
+						</span>
 					{:else}
 						<span
 							class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-purple-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
@@ -107,51 +163,6 @@
 							<CalendarWeekSolid color="purple" class="w-3 h-3" />
 						</span>
 					{/if}
-				</svelte:fragment>
-
-				<p class="relative text-base font-normal text-gray-500 dark:text-gray-400">
-					{#if data.invoice_id}
-						<EyeOutline
-							class="absolute -top-6 right-0 text-gray-400 inline"
-							on:click={() => handleInvoiceDetail(data)}
-						/>
-						{#if data.amount}
-							Amount: <strong> ${data.amount}</strong><br />
-						{/if}
-						{#if data.balance}
-							Balance: <strong> ${data.balance}</strong><br />
-						{/if}
-					{:else if data.payment_id}
-						<EyeOutline
-							class="absolute -top-6 right-0 text-gray-400 inline"
-							on:click={() => handlePaymentDetail(data)}
-						/>
-						{#if data.auth_amount}
-							Auth Amount : <strong> ${data.auth_amount}</strong><br />
-						{/if}
-						{#if data.capture_balance}
-							Capture Balance : <strong> ${data.capture_balance}</strong><br />
-						{/if}
-						{#if data.refund_balance}
-							Refund Balance : <strong> ${data.refund_balance}</strong><br />
-						{/if}
-					{:else if data.note_id}{:else}{/if}
-
-					{#if data.reason}Reason: {data.reason} <br />{/if}
-					{#if data.comments}Comment: {data.comments}{/if}
-				</p>
-			</TimelineItem>
-		{:else}
-			<TimelineItem title="Empty list">
-				<svelte:fragment slot="icon">
-					<span
-						class="flex absolute -start-3 justify-center items-center w-6 h-6 bg-primary-200 rounded-full ring-2 ring-white dark:ring-gray-900 dark:bg-gray-600"
-					>
-						<DotsHorizontalOutline color="blue" class="w-3 h-3" />
-					</span>
-				</svelte:fragment>
-				<p class="relative text-base font-normal text-gray-500 dark:text-gray-400">
-					Nothing to show here ...
 				</p>
 			</TimelineItem>
 		{/each}

@@ -1,12 +1,9 @@
-import { json } from '@sveltejs/kit';
 import axios from 'axios';
+import { json } from '@sveltejs/kit';
 
 export const GET = async ({ url }) => {
 	const vin = url.searchParams.get('vin');
 	const year = url.searchParams.get('year');
-
-	console.log('VIN', vin);
-	console.log('YEAR', year);
 
 	// if (!vin || !year) {
 	//   return json({
@@ -17,7 +14,6 @@ export const GET = async ({ url }) => {
 
 	const URL = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json&modelyear=${year}`;
 
-	console.log('URL: ', URL);
 	try {
 		const response = await axios.get(URL);
 		const data = await response.data;
@@ -30,7 +26,7 @@ export const GET = async ({ url }) => {
 	} catch (error) {
 		return json({
 			code: 500,
-			message: error.message
+			message: error?.message
 		});
 	}
 };

@@ -11,16 +11,15 @@
 		TableHeadCell,
 		Modal,
 		Alert,
-		Badge,
-		Dropdown,
-		DropdownItem
+		Badge
 	} from 'flowbite-svelte';
+	import axios from 'axios';
 	import { onMount } from 'svelte';
 	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
-	import { TrashBinSolid, FileEditSolid, ArrowDownToBracketOutline } from 'flowbite-svelte-icons';
 	import TollForm from '$lib/components/forms-components/tolls/TollForm.svelte';
 	import DeleteTollForm from '$lib/components/forms-components/tolls/DeleteTollForm.svelte';
+	import { TrashBinSolid, FileEditSolid, ArrowDownToBracketOutline } from 'flowbite-svelte-icons';
 
 	export let data: PageData;
 	let tolls = [];
@@ -34,7 +33,6 @@
 	let message = '';
 
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
 
 	const formatDate = (date: Date | string) => {
 		if (!date) {
@@ -48,17 +46,22 @@
 		});
 	};
 
-	onMount(async () => {
-		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-				headers
+	async function loadData() {
+		loading = true;
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/contracts/tolls`)
+			.then((response) => {
+				tolls = [...response.data];
+				loading = false;
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+				loading = false;
 			});
-			tolls = [...(await response.json())];
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+	}
+
+	onMount(async () => {
+		loadData();
 	});
 
 	function handleAlert(text) {
@@ -72,10 +75,7 @@
 	async function handleCloseModal(event) {
 		createModal = event.detail;
 		handleAlert('Toll created succesfully!');
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-			headers
-		});
-		tolls = [...(await response.json())];
+		loadData();
 	}
 
 	async function handleEdit(toll) {
@@ -86,10 +86,7 @@
 	async function handleCloseEditModal(event) {
 		editModal = event.detail;
 		handleAlert('Toll edited succesfully!');
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-			headers
-		});
-		tolls = [...(await response.json())];
+		loadData();
 	}
 
 	async function handleDelete(toll) {
@@ -100,10 +97,7 @@
 	async function handleCloseDeleteModal(event) {
 		deleteModal = event.detail;
 		handleAlert('Toll deleted succesfully!');
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/contracts/tolls`, {
-			headers
-		});
-		tolls = [...(await response.json())];
+		loadData();
 	}
 </script>
 

@@ -89,6 +89,7 @@
 		"sveltekit-superforms": "^2.9.0",
 		"swagger-ui": "^5.11.2",
 		"tailwind-merge": "^2.2.0",
+		"uuid": "^9.0.1",
 		"xmlbuilder2": "^3.1.1",
 		"xstate": "^5.5.2",
 		"zod": "^3.22.4",

@@ -47,25 +47,34 @@ export const getRemainderStatusColor = (
 export const getContractRemainderStatus = (remainders: Array<WithRemainder>): ContractRemStatus => {
 	let status: Status = -1;
 	let count: number = 0;
-	remainders.forEach((rem) => {
-		if (!rem.remainder) return;
 
-		const s = getRemainderStatus(rem.remainder);
+	if (remainders) {
+		remainders.forEach((rem) => {
+			if (!rem.remainder) return;
 
-		if (s == status) {
-			count++;
-			return;
-		}
+			const s = getRemainderStatus(rem.remainder);
 
-		if (s > status && (s != 2 || status == -1)) {
-			status = s;
-			count = 1;
-		}
-	});
+			if (s == status) {
+				count++;
+				return;
+			}
 
-	return {
-		status,
-		color: getStatusColor(status),
-		count
-	};
+			if (s > status && (s != 2 || status == -1)) {
+				status = s;
+				count = 1;
+			}
+		});
+
+		return {
+			status,
+			color: getStatusColor(status),
+			count
+		};
+	} else {
+		return {
+			status,
+			color: getStatusColor(status),
+			count
+		};
+	}
 };

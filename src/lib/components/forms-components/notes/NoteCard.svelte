@@ -14,6 +14,7 @@
 	const dispatch = createEventDispatcher();
 
 	export let note: NoteResult;
+	export let data: any;
 
 	let deleteModal = false;
 
@@ -70,13 +71,13 @@
 </Modal>
 
 <div class="flex mb-4 w-full" id="noteBox">
-	{#if note.user.image}
-		<Avatar src={note.user.image} size="sm"></Avatar>
-	{:else}
-		<Avatar size="sm"></Avatar>
-	{/if}
-
-	<Card class="flex-grow mx-2 p-2 relative" size="xl" padding="none">
+	
+	<Card class="flex-grow flex-row mx-2 p-2 gap-2 relative" size="xl" padding="none">
+		{#if note.user.image}
+			<Avatar src={note.user.image} size="sm"></Avatar>
+		{:else}
+			<Avatar size="sm"></Avatar>
+		{/if}
 		{#if note.remainder}
 			<Indicator
 				color={getRemStatusColor()}
@@ -86,24 +87,25 @@
 				placement="top-right"
 			></Indicator>
 		{/if}
-		<div class="text-sm text-primary-500">{getUser()}</div>
-		<div class="font-bold">{note.Subject}</div>
-		<div>{note.Body}</div>
-		{#if note.file}
-			<div class="mt-2">
-				<a href={'/' + note.file} class="flex items-center text-gray-400">
-					<PaperClipOutline size="sm"></PaperClipOutline>
-					{getFileName()}
-				</a>
-			</div>
-		{/if}
+		<div class='flex-column'>
+			<div class="text-sm text-primary-500">{getUser()}</div>
+			<div class="font-bold">{note.Subject}</div>
+			<div>{note.Body}</div>
+			{#if note.file}
+				<div class="mt-2">
+					<a href={`https://minios3.crabdance.com/develop/contracts/${note.contractId}/notes/${note.id}/${note.file}`} class="flex items-center text-gray-400">
+						<PaperClipOutline size="sm"/>
+						{getFileName()}
+					</a>
+				</div>
+			{/if}
+		</div>
 	</Card>
 	<div class="flex-shrink-0 flex flex-col items-end">
 		<div class="flex-grow transition-all flex" id="controls">
-			{#if window.user.id == note.user.id}
-				<EditOutline color="red" size="sm" class="mb-2 mt-2 mr-1" on:click={onEdit}></EditOutline>
-				<TrashBinOutline color="red" size="sm" class="mb-2 mt-2" on:click={onDelete}
-				></TrashBinOutline>
+			{#if data.session.user.id == note.user.id}
+				<EditOutline color="red" size="sm" class="mb-2 mt-2 mr-1" on:click={onEdit}/>
+				<TrashBinOutline color="red" size="sm" class="mb-2 mt-2" on:click={onDelete}/>
 			{/if}
 		</div>
 		<span class="text-sm">{getTime(note.createdDate)}</span>

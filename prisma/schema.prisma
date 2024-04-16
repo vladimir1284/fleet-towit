@@ -59,6 +59,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   tenantUsers   TenantUser[]
+  notes         Note[]
 }
 
 model VerificationToken {
@@ -499,6 +500,7 @@ model Contract {
   endDate      DateTime?   
   //inspections    Inspection[]  --- doesn't exists yet
   tolls        TollDue[]
+  notes        Note[]
 }
 
 model StageUpdate {
@@ -559,4 +561,18 @@ model TrackerHeartBeatData {
   trackerId Int
 
   tracker Tracker @relation(fields: [trackerId], references: [id], onDelete: Cascade)
+}
+
+
+model Note {
+  id Int @id @default(autoincrement())
+  contract   Contract @relation(fields: [contractId], references: [id])
+  contractId Int
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  Subject String
+  Body    String
+  createdDate DateTime
+  remainder   DateTime?
+  file String?
 }

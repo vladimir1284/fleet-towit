@@ -7,6 +7,7 @@
 	import { getContext } from 'svelte';
 	import type { PageData } from '../$types';
 	import { onMount } from 'svelte';
+	import axios from 'axios';
 
 	export let data: PageData;
 	let tenants = [];
@@ -16,25 +17,32 @@
 	let editModal = false;
 	let deleteModal = false;
 	let selectedUser = undefined;
+	let loading = true;
 	let selectedId = '';
 	let message = '';
 
-	let loading = true;
-
 	const currentTenant = getContext('currentTenant');
-	const headers = { 'X-User-Tenant': $currentTenant.currentUserTenant.id };
+
+	async function loadData() {
+		loading = true;
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/users`)
+			.then(async (response) => {
+				users = response.data;
+				return axios.get('/api/tenants');
+			})
+			.then((tenantsResponse) => {
+				tenants = tenantsResponse.data;
+				loading = false;
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+				loading = false;
+			});
+	}
 
 	onMount(async () => {
-		try {
-			const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
-			users = await response.json();
-			const tenantsResponse = await fetch('/api/tenants', { headers });
-			tenants = await tenantsResponse.json();
-			loading = false;
-		} catch (error) {
-			console.error('Error:', error);
-			loading = false;
-		}
+		loadData();
 	});
 
 	function handleAlert(text) {
@@ -49,10 +57,7 @@
 		createModal = event.detail;
 		handleAlert('User created succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
-		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants', { headers });
-		tenants = await tenantsResponse.json();
+		loadData();
 	}
 
 	async function handleEdit(event) {
@@ -64,10 +69,7 @@
 		editModal = event.detail;
 		handleAlert('User edited succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
-		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants', { headers });
-		tenants = await tenantsResponse.json();
+		loadData();
 	}
 
 	async function handleDelete(event) {
@@ -79,10 +81,7 @@
 		deleteModal = event.detail;
 		handleAlert('User deleted succesfully!');
 
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/users`, { headers });
-		users = await response.json();
-		const tenantsResponse = await fetch('/api/tenants', { headers });
-		tenants = await tenantsResponse.json();
+		loadData();
 	}
 </script>
 

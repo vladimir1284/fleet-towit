@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import type { RequestHandler } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms/server';
 import { actionResult } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
+import { superValidate } from 'sveltekit-superforms/server';
 import { listClients, createClient, updateClient, deleteClient } from '$lib/actions/clients';
 
 const fixSchema = z.object({
@@ -18,7 +18,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-	const clients = await listClients();
+	const clients = await listClients(locals.currentInstance.currentPrismaClient);
 
 	return new Response(JSON.stringify(clients), { status: 200 });
 };
@@ -36,7 +36,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 	}
 
 	if (params.clientId) {
-		await updateClient({
+		await updateClient(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.clientId || '0', 10),
 			name: form.data.name,
 			email: form.data.email,
@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 			phoneNumber: form.data.phoneNumber
 		});
 	} else {
-		await createClient({
+		await createClient(locals.currentInstance.currentPrismaClient, {
 			name: form.data.name,
 			email: form.data.email,
 			tenantId: parseInt(params.tenantId || '0', 10),
@@ -60,7 +60,9 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		return new Response('Forbidden', { status: 403 });
 	}
 	try {
-		await deleteClient({ id: parseInt(params.clientId || '0', 10) });
+		await deleteClient(locals.currentInstance.currentPrismaClient, {
+			id: parseInt(params.clientId || '0', 10)
+		});
 		return new Response(null, { status: 204 });
 	} catch (error) {
 		console.error(error);

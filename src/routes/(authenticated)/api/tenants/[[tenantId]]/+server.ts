@@ -1,5 +1,4 @@
-import type { RequestHandler } from '@sveltejs/kit';
-import { actionResult } from 'sveltekit-superforms';
+import { z } from 'zod';
 import {
 	listTenants,
 	deleteTenant,
@@ -12,10 +11,11 @@ import {
 	getTenantUser,
 	getTenantOwner
 } from '$lib/actions/admin';
-import { superValidate } from 'sveltekit-superforms/server';
-import { zod } from 'sveltekit-superforms/adapters';
 import { Role } from '@prisma/client';
-import { z } from 'zod';
+import { zod } from 'sveltekit-superforms/adapters';
+import type { RequestHandler } from '@sveltejs/kit';
+import { actionResult } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms/server';
 
 const fixSchema = z.object({
 	ownerId: z.number().optional(),
@@ -56,7 +56,6 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 		});
 		const oldOwner = await getTenantOwner({ tenantId: parseInt(params.tenantId) });
 		const tenantUserToBeOwner = await getTenantUser({ tenantUserId: form.data.ownerId });
-		console.log(oldOwner);
 		if (oldOwner?.id !== tenantUserToBeOwner?.id) {
 			await updateTenantUser({
 				//@ts-expect-error It's detecting it as undefined

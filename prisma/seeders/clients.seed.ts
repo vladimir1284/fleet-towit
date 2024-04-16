@@ -1,27 +1,35 @@
-import { faker } from '@faker-js/faker';
-
-const seedClients = async (prisma, tenantsId: number[]) => {
+const seedClients = async (prisma) => {
 	console.log('Seeding clients data...');
-	const createdClientsIds = [];
+	const tenants = await prisma.tenant.findMany();
 
-	const generateClient = () => ({
-		name: faker.person.fullName(),
-		email: faker.internet.email(),
-		phoneNumber: faker.phone.number(),
-		avatar: faker.image.avatar(),
-		tenantId: faker.helpers.arrayElement(tenantsId)
+	await prisma.client.create({
+		data: {
+			name: 'Random guy 1',
+			email: 'zxczx@gmail.com',
+			phoneNumber: '+8 (737) 236-5655',
+			tenantId: tenants[1].id
+		}
 	});
 
-	const numberOfClients = 50;
-	for (let i = 0; i < numberOfClients; i++) {
-		const createdClient = await prisma.client.create({
-			data: generateClient()
-		});
-		createdClientsIds.push(createdClient.id);
-	}
+	await prisma.client.create({
+		data: {
+			name: 'Gandom ruy 2',
+			email: 'ynjuyj@gmail.com',
+			phoneNumber: '+8 (737) 236-4455',
+			tenantId: tenants[1].id
+		}
+	});
+
+	await prisma.client.create({
+		data: {
+			name: 'Guy random 3',
+			email: 'client3@gmail.com',
+			phoneNumber: '+8 (737) 986-5655',
+			tenantId: tenants[1].id
+		}
+	});
 
 	console.log('Seeding complete!');
-	return createdClientsIds;
 };
 
 export default seedClients;

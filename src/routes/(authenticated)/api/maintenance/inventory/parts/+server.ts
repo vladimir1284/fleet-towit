@@ -17,8 +17,8 @@ import type { RequestHandler } from '@sveltejs/kit';
 // GET: /api/maintenance/inventory/parts
 export const GET: RequestHandler = async ({ url, request }): Promise<Response> => {
 	try {
-		// if (locals.inventoryActionObject) {
-		// const { currentPrismaClient } = locals.inventoryActionObject
+		// if (locals.currentInstance) {
+		// const { currentPrismaClient } = locals.currentInstance
 
 		// Parameters management.
 		const constraints = queryString.parseUrl(url.toString());
@@ -53,9 +53,9 @@ export const GET: RequestHandler = async ({ url, request }): Promise<Response> =
 // POST: /api/maintenance/inventory/parts
 // export const POST: RequestHandler = async ({ request, locals }): Promise<Response> => {
 // 	try {
-// 		if (locals.inventoryActionObject) {
+// 		if (locals.currentInstance) {
 // 			const { currentTenant, currentTenantUser, currentPrismaClient } =
-// 				locals.inventoryActionObject;
+// 				locals.currentInstance;
 
 // 			// Part properties retrieval.
 // 			const partCreateInput = await request.json();

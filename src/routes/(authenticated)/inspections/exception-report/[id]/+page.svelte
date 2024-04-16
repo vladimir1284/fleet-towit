@@ -1,4 +1,6 @@
 <script lang="ts">
+	//@ts-nocheck
+	import axios from 'axios';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { Checkbox, Button } from 'flowbite-svelte';
@@ -8,21 +10,40 @@
 	const day = data.inspection.createdAt.getDate();
 	const month = data.inspection.createdAt.getMonth() + 1;
 	const year = data.inspection.createdAt.getFullYear();
-
 	const dateInspections = `${day}/${month}/${year}`;
 
 	const makePdf = async () => {
-		const req = await fetch(`/api/inspections/pdf/${data.inspection.id}`);
-		const blob = await req.blob();
+		try {
+            const response = await axios.get(`/api/inspections/pdf/${data.inspection.id}`, {
+                responseType: 'blob'
+            });
 
-		const url = URL.createObjectURL(blob);
-		const element = document.createElement('a');
-		element.href = url;
-		element.setAttribute('download', 'inspection.pdf');
-		document.body.appendChild(element);
-		element.click();
+            const url = URL.createObjectURL(new Blob([response.data]));
+            const element = document.createElement('a');
+            element.href = url;
+            element.setAttribute('download', 'inspection.pdf');
+            document.body.appendChild(element);
+            element.click();
 
-		document.body.removeChild(element);
+            document.body.removeChild(element);
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+        }
+
+		/*
+			const req = await fetch(`/api/inspections/pdf/${data.inspection.id}`);
+			const blob = await req.blob();
+
+			const url = URL.createObjectURL(blob);
+			const element = document.createElement('a');
+			element.href = url;
+			element.setAttribute('download', 'inspection.pdf');
+			document.body.appendChild(element);
+			element.click();
+
+			document.body.removeChild(element);
+
+			*/
 	};
 
 	const parseDate = (date: string) => {

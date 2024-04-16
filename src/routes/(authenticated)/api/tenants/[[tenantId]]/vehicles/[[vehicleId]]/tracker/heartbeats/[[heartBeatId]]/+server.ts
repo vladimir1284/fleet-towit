@@ -17,7 +17,7 @@ export const GET: RequestHandler = async({locals, params}) => {
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-    const instance = locals.inventoryActionObject.currentPrismaClient;
+    const instance = locals.currentInstance.currentPrismaClient;
     if (params.vehicleId) {
         const tracker = await getTrackerByVehicleId(instance, {
             vehicleId: parseInt(params.vehicleId)
@@ -36,7 +36,7 @@ export const POST: RequestHandler = async({locals, params, request}) => {
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-    const instance = locals.inventoryActionObject.currentPrismaClient;
+    const instance = locals.currentInstance.currentPrismaClient;
 
     const formData = await request.formData();
     const form = await superValidate(formData, zod(heartBeatSchema));
@@ -64,7 +64,7 @@ export const DELETE: RequestHandler = async({locals, params}) => {
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-    const instance = locals.inventoryActionObject.currentPrismaClient
+    const instance = locals.currentInstance.currentPrismaClient;
 
     if(!(params.vehicleId && params.heartBeatId)) {
         return new Response("Invalid Request", {status: 400})

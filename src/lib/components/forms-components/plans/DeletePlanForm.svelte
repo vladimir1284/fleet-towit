@@ -1,5 +1,6 @@
 <script>
 	// @ts-nocheck
+	import axios from 'axios';
 	import { createEventDispatcher, getContext } from 'svelte';
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
@@ -11,20 +12,19 @@
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
-		const response = await fetch(`/api/tenants/${$currentTenant.id}/rentalPlan/${data}`, {
-			method: 'DELETE'
-		});
-		try {
-			if (!response.ok) {
-				console.error('Failed to delete');
-				return;
-			} else {
+		loading = true;
+		await axios
+			.delete(`/api/tenants/${$currentTenant.id}/rentalPlan/${data}`)
+			.then(() => {
 				console.log('Deleted successfully');
 				dispatch('formvalid', false);
-			}
-		} finally {
-			loading = false;
-		}
+			})
+			.catch((error) => {
+				console.error('Failed to delete', error);
+			})
+			.finally(() => {
+				loading = false;
+			});
 	};
 </script>
 

@@ -1,7 +1,8 @@
 <script async lang="ts">
 	//@ts-nocheck
-	import { onMount } from 'svelte';
-	import { loadFromSessionStorage } from '$lib/store/context-store';
+	import { onMount, getContext } from 'svelte';
+	import { Badge, Label } from 'flowbite-svelte';
+	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import { Modal } from 'flowbite-svelte';
 	import {
 		TruckOutline,
@@ -9,16 +10,12 @@
 		UserOutline,
 		ClipboardListOutline
 	} from 'flowbite-svelte-icons';
-	import UpdateStage from './UpdateStage.svelte';
-	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
-	import { Badge, Label, GradientButton, Button } from 'flowbite-svelte';
 	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
-	import ContractTimeline from './ContractTimeline.svelte';
-	import PaymentInvoiceForm from '../payments/PaymentInvoiceForm.svelte';
-
-	const currentTenant = loadFromSessionStorage('currentTenant');
-	const headers = { 'X-User-Tenant': currentTenant.currentUserTenant.id };
+	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
+	import ContractTimeline from '$lib/components/forms-components/contracts/ContractTimeline.svelte';
+	import PaymentInvoiceForm from '$lib/components/forms-components/payments/PaymentInvoiceForm.svelte';
+	import axios from 'axios';
 
 	export let data: any;
 	export let selectedContract: Array<object> = [];
@@ -27,24 +24,26 @@
 	export let contractPaymentsList: Array<object> = [];
 	export let contractNotesList: Array<object> = [];
 
+	const currentTenant = getContext('currentTenant');
 	let firstFilter: boolean = true;
 	let stagesFilter: boolean = true;
 	let notesFilter: boolean = true;
 	let invoicesFilter: boolean = true;
 	let paymentsFilter: boolean = true;
 
-	let TimelineData = [];
+	let timelineData = [];
 	let editClient: boolean = false;
 	let updateStage: boolean = false;
 	let makePaymentModal: boolean = false;
 
-	const reListTimeline = () => {
-		TimelineData = [];
 
-		if (paymentsFilter) TimelineData = [...TimelineData, ...contractPaymentsList];
-		if (invoicesFilter) TimelineData = [...TimelineData, ...contractInvoicesList];
-		if (notesFilter) TimelineData = [...TimelineData, ...contractNotesList];
-		if (stagesFilter) TimelineData = [...TimelineData, ...contractStagesList];
+	const reListTimeline = () => {
+		timelineData = [];
+
+		if (paymentsFilter) timelineData = [...timelineData, ...contractPaymentsList];
+		if (invoicesFilter) timelineData = [...timelineData, ...contractInvoicesList];
+		if (notesFilter) timelineData = [...timelineData, ...contractNotesList];
+		if (stagesFilter) timelineData = [...timelineData, ...contractStagesList];
 
 		if (firstFilter) {
 			firstFilter = false;
@@ -53,22 +52,33 @@
 			invoicesFilter = false;
 			paymentsFilter = false;
 		}
-		// ordenar el array TimelineData según su fecha
-		TimelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
+		// ordenar el array timelineData según su fecha
+		timelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
 	};
 
+
 	async function updateContractData() {
-		const contractData = await fetch(
-			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}`,
-			{ headers }
-		);
-		const contractStages = await fetch(
-			`/api/tenants/${currentTenant.id}/contracts/${selectedContract.id}/stage`,
-			{ headers }
-		);
-		selectedContract = await contractData.json();
-		contractStagesList = await contractStages.json();
-		reListTimeline();
+		await axios
+			.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`)
+			.then((contractDataResponse) => {
+				selectedContract = contractDataResponse.data;
+				return axios.get(
+					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
+				);
+			})
+			.then((contractStagesResponse) => {
+				contractStagesList = contractStagesResponse.data;
+				return axios.get(
+					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/notes`
+				);
+			})
+			.then((contractNotesResponse) => {
+				contractNotesList = contractNotesResponse.data;
+				reListTimeline();
+			})
+			.catch((error) => {
+				console.error('Error fetching contract data:', error);
+			});
 	}
 
 	async function handleCloseEditClientModal(event) {
@@ -107,70 +117,67 @@
 <div id="contractDetails">
 	<div class="flex flex-row mb-5">
 		<div class="min-w-[75%]">
-			<GradientButton
+			<ButtonComponent
 				disabled
 				color="green"
-				on:click={() => {
+				placeholder="Pay Last Pending Invoice"
+				onClick={() => {
 					makePaymentModal = true;
-				}}>Pay Last Pending Invoice</GradientButton
-			>
+				}}
+			/>
 		</div>
 		<div class="min-w-[25%] flex justify-center pt-3">
-			<Button
+			<ButtonComponent
 				color={stagesFilter ? 'purple' : 'light'}
 				size="xs"
-				class="py-1 mx-1"
+				styles="py-1 mx-1"
 				outline
 				pill
-				on:click={() => {
+				placeholder="stage"
+				onClick={() => {
 					stagesFilter = !stagesFilter;
 					reListTimeline();
 				}}
-			>
-				stage
-			</Button>
+			/>
 
-			<Button
+			<ButtonComponent
 				color={notesFilter ? 'green' : 'light'}
 				size="xs"
-				class="py-1 mx-1"
+				styles="py-1 mx-1"
 				outline
 				pill
-				on:click={() => {
+				placeholder="notes"
+				onClick={() => {
 					notesFilter = !notesFilter;
 					reListTimeline();
 				}}
-			>
-				notes
-			</Button>
+			/>
 
-			<Button
+			<ButtonComponent
 				color={invoicesFilter ? 'blue' : 'light'}
 				size="xs"
-				class="py-1 mx-1"
+				styles="py-1 mx-1"
 				outline
 				pill
-				on:click={() => {
+				placeholder="invoices"
+				onClick={() => {
 					invoicesFilter = !invoicesFilter;
 					reListTimeline();
 				}}
-			>
-				invoices
-			</Button>
+			/>
 
-			<Button
+			<ButtonComponent
 				color={paymentsFilter ? 'red' : 'light'}
 				size="xs"
-				class="py-1 mx-1"
+				styles="py-1 mx-1"
 				outline
 				pill
-				on:click={() => {
+				placeholder="payments"
+				onClick={() => {
 					paymentsFilter = !paymentsFilter;
 					reListTimeline();
 				}}
-			>
-				payments
-			</Button>
+			/>
 		</div>
 	</div>
 	<div class="flex flex-row justify-between h-[40em] overflow-y-auto">
@@ -245,7 +252,7 @@
 
 						<svelte:fragment slot="h3">Vehicle</svelte:fragment>
 						<svelte:fragment slot="paragraph">
-							<Label class="my-3 w-max">Plate: {selectedContract.vehicle.plate}</Label>
+							<Label class="my-3 w-max">Plate: {selectedContract.vehicle.plates[0].plate}</Label>
 							<Label class="my-3 w-max">Make: {selectedContract.vehicle.make}</Label>
 							<Label class="my-3 w-max">Type: {selectedContract.vehicle.type}</Label>
 							<Label class="my-3 w-max">Vin: {selectedContract.vehicle.vin}</Label>
@@ -257,7 +264,7 @@
 			</div>
 		</div>
 		<div class="overflow-y-scroll h-[100%] min-w-[25%] px-3.5 pt-2">
-			<ContractTimeline {TimelineData} on:reListTimeline={reListTimeline} />
+			<ContractTimeline sessionData={data} {timelineData} on:reListTimeline={reListTimeline} />
 		</div>
 	</div>
 </div>

@@ -159,12 +159,6 @@ export const load: PageServerLoad = async () => {
 				: []
 			: Object.keys(data);
 
-		console.log('HEADERS:', headers);
-
-		// console.log('MORE DETAILS\n' + JSON.stringify(vehicles.map(vehicle => vehicle['moreDetails']), null, 4))
-
-		// console.log('VEHICLES:', JSON.stringify(vehicles, null, 4))
-
 		return {
 			data: {
 				headers,

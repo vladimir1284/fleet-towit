@@ -1,21 +1,14 @@
-import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
-import type { Card, CustomForm, CustomField, CheckOption } from '@prisma/client';
-import { Page } from '$lib/pagination';
-
-interface CustomFields extends CustomField {
-	checkOptions: CheckOption[];
-}
-
-interface Cards extends Card {
-	fields: CustomFields[];
-}
+import type { CustomForm, PrismaClient } from '@prisma/client';
 
 /*
  * Create new custom form
  */
-export const createCustomForm = async ({ tenantId, name }: { tenantId: number; name: string }) => {
-	const newForm = await tenantPrisma(tenantId).customForm.create({
+export const createCustomForm = async (
+	instance: PrismaClient,
+	{ tenantId, name }: { tenantId: number; name: string }
+) => {
+	const newForm = await instance.customForm.create({
 		data: {
 			name: name,
 			tenantId: tenantId
@@ -28,14 +21,15 @@ export const createCustomForm = async ({ tenantId, name }: { tenantId: number; n
 /*
  *  Set isActive to false
  */
-export const deleteCustomForm = async ({
-	tenantId,
-	formId
-}: {
-	formId: number;
-	tenantId: number;
-}) => {
-	await tenantPrisma(tenantId).customForm.update({
+export const deleteCustomForm = async (
+	instance: PrismaClient,
+	{
+		formId
+	}: {
+		formId: number;
+	}
+) => {
+	await instance.customForm.update({
 		where: {
 			id: formId
 		},
@@ -48,51 +42,44 @@ export const deleteCustomForm = async ({
 /*
  *  Return all custom forms
  */
-export const fetchCustomFormsByTenant = async ({
-	tenantId,
-	page_number,
-	results = 5
-}: {
-	tenantId: number;
-	page_number: number;
-	results?: number;
-}) => {
-	const customForms = await tenantPrisma(tenantId).customForm.findMany({
-		skip: (page_number - 1) * results,
-		take: results,
+export const fetchCustomFormsByTenant = async (
+	instance: PrismaClient,
+	{ tenantId }: { tenantId: number }
+) => {
+	const tenant = await instance.tenant.findFirst({
 		where: {
-			tenantId: tenantId,
-			isActive: true
+			id: tenantId
 		},
+
 		include: {
-			cards: true
-		},
-		orderBy: {
-			createdAt: 'desc'
+			customForms: {
+				include: {
+					cards: true
+				},
+
+				where: {
+					isActive: true
+				}
+			}
 		}
 	});
 
-	const count = await tenantPrisma(tenantId).customForm.count({
-		where: {
-			tenantId: tenantId,
-			isActive: true
-		}
-	});
-
-	return new Page(customForms, count, results, page_number).toJSON();
+	return tenant?.customForms || [];
 };
 
 /*
  *  Retrieve 1 custom form by id
  */
-export const retrieveCustomFormById = async ({
-	tenantId,
-	formId
-}: {
-	tenantId: number;
-	formId: number;
-}) => {
-	const customForm = await tenantPrisma(tenantId).customForm.findUnique({
+export const retrieveCustomFormById = async (
+	instance: PrismaClient,
+	{
+		tenantId
+	}: {
+		tenantId: number;
+		formId: number;
+	}
+) => {
+	const customForm = await instance.customForm.findUnique({
 		where: {
 			id: formId,
 			tenantId: tenantId
@@ -114,15 +101,17 @@ export const retrieveCustomFormById = async ({
 	return customForm;
 };
 
-export const cloneCustomForm = async ({
-	form,
-	tenantId
-}: {
-	form: CustomForm;
-	tenantId: number;
-}) => {
+// FIXME
+export const cloneCustomForm = async (
+	instance: PrismaClient,
+	{
+		form
+	}: {
+		form: CustomForm;
+	}
+) => {
 	// deactivate old form
-	await tenantPrisma(tenantId).customForm.update({
+	await instance.customForm.update({
 		where: {
 			id: form.id
 		},
@@ -134,7 +123,7 @@ export const cloneCustomForm = async ({
 	// copy data
 	const cloneCustomForm = JSON.parse(JSON.stringify(form));
 
-	const cloneCards = cloneCustomForm.cards.map((card: Cards) => {
+	const cloneCards = cloneCustomForm.cards.map((card) => {
 		return {
 			name: card.name,
 			fields: {
@@ -151,7 +140,7 @@ export const cloneCustomForm = async ({
 		};
 	});
 
-	const newForm = await tenantPrisma(tenantId).customForm.create({
+	const newForm = await instance.customForm.create({
 		data: {
 			name: cloneCustomForm.name,
 			tenantId: cloneCustomForm.tenantId,
@@ -179,16 +168,17 @@ export const cloneCustomForm = async ({
 /*
  *  Rename custom form
  */
-export const renameCustomForm = async ({
-	formId,
-	newName,
-	tenantId
-}: {
-	formId: number;
-	newName: string;
-	tenantId: number;
-}) => {
-	await tenantPrisma(tenantId).customForm.update({
+export const renameCustomForm = async (
+	instance: PrismaClient,
+	{
+		formId,
+		newName
+	}: {
+		formId: number;
+		newName: string;
+	}
+) => {
+	await instance.customForm.update({
 		where: {
 			id: formId
 		},
@@ -202,17 +192,18 @@ export const renameCustomForm = async ({
 /*
  * add card to custom form
  */
-export const addCardToForm = async ({
-	tenantId,
-	cardName,
-	formId,
-	fields
-}: {
-	tenantId: number;
-	cardName: string;
-	formId: number;
-	fields: string;
-}) => {
+export const addCard = async (
+	instance: PrismaClient,
+	{
+		cardName,
+		formId,
+		fields
+	}: {
+		cardName: string;
+		formId: number;
+		fields: string;
+	}
+) => {
 	const parseFields = JSON.parse(fields);
 
 	const createCustomField = [];
@@ -220,8 +211,7 @@ export const addCardToForm = async ({
 	for (const field of parseFields) {
 		const customField = {
 			name: field.labelName,
-			type: field.type,
-			required: field.required
+			type: field.type
 		};
 
 		if (field.type === FormFieldType.SINGLE_CHECK) {
@@ -233,53 +223,19 @@ export const addCardToForm = async ({
 		createCustomField.push(customField);
 	}
 
-	try {
-		await tenantPrisma(tenantId).card.create({
-			data: {
-				formId: formId,
-				name: cardName,
-				fields: {
-					create: createCustomField
-				}
+	await instance.card.create({
+		data: {
+			formId: formId,
+			name: cardName,
+			fields: {
+				create: createCustomField
 			}
-		});
-	} catch (err) {
-		console.log(err);
-	}
-};
-
-/*
- * 	delete custom field
- */
-export const deleteCard = async ({
-	cardId,
-	formId,
-	tenantId
-}: {
-	cardId: number;
-	formId: number;
-	tenantId: number;
-}) => {
-	// this step is for security , checking the tenant is the owner
-	// of this custom form
-	const customForm = await tenantPrisma(tenantId).customForm.findFirst({
-		where: {
-			id: formId,
-			tenantId: tenantId
 		}
 	});
-
-	if (customForm) {
-		await tenantPrisma(tenantId).card.delete({
-			where: {
-				id: cardId,
-				formId: customForm.id
-			}
-		});
-	}
 };
 
-export const updateCard = async ({
+
+export const updateCard = async (instance: PrismaClient, {
 	tenantId,
 	cardName,
 	cardId,
@@ -293,7 +249,7 @@ export const updateCard = async ({
 	const parseFields = JSON.parse(fields);
 
 	if (cardId) {
-		await tenantPrisma(tenantId).card.update({
+		await instance.card.update({
 			where: {
 				id: cardId
 			},
@@ -305,7 +261,7 @@ export const updateCard = async ({
 			}
 		});
 
-		await tenantPrisma(tenantId).customField.deleteMany({
+		await instance.customField.deleteMany({
 			where: {
 				cardId: cardId,
 				id: {
@@ -327,7 +283,7 @@ export const updateCard = async ({
 
 		// update old fields
 		if (customField.id) {
-			const cf = await tenantPrisma(tenantId).customField.update({
+			const cf = await instance.customField.update({
 				where: {
 					id: customField.id
 				},
@@ -342,7 +298,7 @@ export const updateCard = async ({
 			});
 
 			const updateCheck = async (id: number, name: string) => {
-				await tenantPrisma(tenantId).checkOption.update({
+				await instance.checkOption.update({
 					where: {
 						id: id
 					},
@@ -361,7 +317,7 @@ export const updateCard = async ({
 					await updateCheck(cf.checkOptions[1].id, field.pointFail);
 					// if not has checkOptions create
 				} else {
-					await tenantPrisma(tenantId).customField.update({
+					await instance.customField.update({
 						where: {
 							id: customField.id
 						},
@@ -383,7 +339,7 @@ export const updateCard = async ({
 				// delete checkOptions
 			} else {
 				for (const checkoption of cf.checkOptions) {
-					await tenantPrisma(tenantId).checkOption.delete({
+					await instance.checkOption.delete({
 						where: {
 							id: checkoption.id
 						}
@@ -392,7 +348,7 @@ export const updateCard = async ({
 			}
 			// create new fields
 		} else {
-			await tenantPrisma(tenantId).customField.create({
+			await instance.customField.create({
 				data: {
 					cardId: cardId,
 					name: customField.name,
@@ -413,5 +369,37 @@ export const updateCard = async ({
 				}
 			});
 		}
+	}
+};
+
+/*
+ * 	delete custom field
+ */
+export const deleteCard = async (
+	instance: PrismaClient,
+	{
+		cardId,
+		formId,
+		tenantId
+	}: {
+		cardId: number;
+		formId: number;
+		tenantId: number;
+	}
+) => {
+	const customForm = await instance.customForm.findFirst({
+		where: {
+			id: formId,
+			tenantId: tenantId
+		}
+	});
+
+	if (customForm) {
+		await instance.card.delete({
+			where: {
+				id: cardId,
+				formId: customForm.id
+			}
+		});
 	}
 };

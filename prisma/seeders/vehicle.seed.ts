@@ -1,9 +1,9 @@
-import { CostCategory } from '@prisma/client';
-
 const seedVehicles = async (prisma) => {
 	console.log('Seeding vehicles data...');
+	const vehicleIds = [];
+
 	try {
-		await prisma.vehicle.create({
+		const vehicle1 = await prisma.vehicle.create({
 			data: {
 				type: 'Car',
 				year: 2023,
@@ -39,7 +39,9 @@ const seedVehicles = async (prisma) => {
 			}
 		});
 
-		await prisma.vehicle.create({
+		vehicleIds.push(vehicle1.id);
+
+		const vehicle2 = await prisma.vehicle.create({
 			data: {
 				type: 'Car',
 				year: 2024,
@@ -74,7 +76,9 @@ const seedVehicles = async (prisma) => {
 			}
 		});
 
-		await prisma.vehicle.create({
+		vehicleIds.push(vehicle2.id);
+
+		const vehicle3 = await prisma.vehicle.create({
 			data: {
 				type: 'SUV',
 				year: 2022,
@@ -110,7 +114,9 @@ const seedVehicles = async (prisma) => {
 			}
 		});
 
-		await prisma.vehicle.create({
+		vehicleIds.push(vehicle3.id);
+
+		const vehicle4 = await prisma.vehicle.create({
 			data: {
 				type: 'Motorcycle',
 				year: 2023,
@@ -144,11 +150,29 @@ const seedVehicles = async (prisma) => {
 				}
 			}
 		});
+
+		vehicleIds.push(vehicle4.id);
+
+		vehicleIds.forEach(async (id) => {
+			await prisma.vehiclePlate.create({
+				data: {
+					plate: `ABC${id}123`,
+					assignDate: new Date(),
+					isActive: true,
+					vehicle: {
+						connect: {
+							id: id
+						}
+					}
+				}
+			});
+		});
 	} catch (error) {
 		console.log(error);
 	}
 
 	console.log('Seeding complete!');
+	return vehicleIds;
 };
 
 export default seedVehicles;
