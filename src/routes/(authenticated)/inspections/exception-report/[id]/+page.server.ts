@@ -19,25 +19,20 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 
 	if (inspectionId) {
-		try {
-			const tenantUserId = session.user.defaultTenantUser.tenantId;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-			const inspection = await retrieveInspectionById({
-				tenantId: tenantUserId,
-				id: inspectionId
-			});
+		const inspection = await retrieveInspectionById({
+			tenantId: tenantUserId,
+			id: inspectionId
+		});
 
-			if (!inspection) redirect_to_back();
+		if (!inspection) redirect_to_back();
 
-			// if inspection not have responses
-			if (!inspection?.responses.length)
-				return redirect(PERMANENT_REDIRECT_STATUS, `/inspections/create/${inspection?.id}`);
+		// if inspection not have responses
+		if (!inspection?.responses.length)
+			return redirect(PERMANENT_REDIRECT_STATUS, `/inspections/create/${inspection?.id}`);
 
-			return { inspection, FormFieldType };
-		} catch (err) {
-			console.log(err);
-			redirect_to_back();
-		}
+		return { inspection, FormFieldType };
 	}
 
 	redirect_to_back();

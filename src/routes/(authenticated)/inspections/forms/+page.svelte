@@ -19,9 +19,16 @@
 		Modal,
 		Label,
 		Input,
-		PaginationItem
+		PaginationItem,
+		Tooltip
 	} from 'flowbite-svelte';
-	import { ArrowLeftSolid, ArrowRightSolid } from 'flowbite-svelte-icons';
+	import {
+		ArrowLeftSolid,
+		ArrowRightSolid,
+		EditOutline,
+		FileExportOutline,
+		FileImportOutline
+	} from 'flowbite-svelte-icons';
 
 	let searchTerm = '';
 	let createFormModal = false;
@@ -31,8 +38,9 @@
 </script>
 
 <section class="flex flex-col w-full sm:w-2/3 p-4 gap-4">
-	<div class="flex justify-end">
+	<div class="flex gap-4 justify-end">
 		<Button color="blue" on:click={() => (createFormModal = true)}>Create new form</Button>
+		<Button color="blue">Import Form</Button>
 	</div>
 
 	<!-- pagination buttons -->
@@ -60,22 +68,29 @@
 			<TableHeadCell>Action</TableHeadCell>
 		</TableHead>
 		<TableBody>
-			{#if data.customForms}
-				{#each data.customForms as form}
-					<TableBodyRow>
-						<TableBodyCell>{form.name}</TableBodyCell>
-						<TableBodyCell>{form.cards.length}</TableBodyCell>
-						<TableBodyCell>
-							{form.createdAt.getDate()} /
-							{form.createdAt.getMonth() + 1} /
-							{form.createdAt.getFullYear()}
-						</TableBodyCell>
-						<TableBodyCell><a href={`forms/${form.id}`}>Edit</a></TableBodyCell>
-					</TableBodyRow>
-				{/each}
-			{:else}
-				No data
-			{/if}
+			{#each data.customForms as form}
+				<TableBodyRow>
+					<TableBodyCell>{form.name}</TableBodyCell>
+					<TableBodyCell>{form.cards.length}</TableBodyCell>
+					<TableBodyCell>
+						{form.createdAt.getDate()} /
+						{form.createdAt.getMonth() + 1} /
+						{form.createdAt.getFullYear()}
+					</TableBodyCell>
+					<TableBodyCell>
+						<div class="flex gap-4">
+							<!-- edit form -->
+							<Button size="xs" href={`forms/${form.id}`} color="alternative"
+								><EditOutline /></Button
+							>
+							<Tooltip>Edit form</Tooltip>
+							<!-- export form as json -->
+							<Button size="xs" color="alternative"><FileExportOutline /></Button>
+							<Tooltip>Export form as file</Tooltip>
+						</div>
+					</TableBodyCell>
+				</TableBodyRow>
+			{/each}
 		</TableBody>
 	</Table>
 	<Modal title="Create new form" bind:open={createFormModal} autoclose={false}>

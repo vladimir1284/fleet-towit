@@ -3,23 +3,22 @@ import { bypassRLS, forTenant, forUser } from './rls_prisma';
 //import { KillBillPExt } from '../killbill/prisma_ext';
 //import { KILLBILL } from '$env/static/private';
 
-export let _prisma: PrismaClient;
+export let prisma: PrismaClient;
 
 declare global {
 	const prisma: undefined | PrismaClient;
 }
 
 if (process.env.NODE_ENV === 'production') {
-	_prisma = new PrismaClient();
+	prisma = new PrismaClient();
 } else {
 	if (!global.prisma) {
 		global.prisma = new PrismaClient();
 	}
 
-	_prisma = global.prisma;
+	prisma = global.prisma;
 }
 
-export let prisma = _prisma;
 /*
 if (KILLBILL) {
 	console.log('Kill Bill live sync!');
