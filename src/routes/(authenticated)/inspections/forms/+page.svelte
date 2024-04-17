@@ -60,18 +60,22 @@
 			<TableHeadCell>Action</TableHeadCell>
 		</TableHead>
 		<TableBody>
-			{#each data.customForms as form}
-				<TableBodyRow>
-					<TableBodyCell>{form.name}</TableBodyCell>
-					<TableBodyCell>{form.cards.length}</TableBodyCell>
-					<TableBodyCell>
-						{form.createdAt.getDate()} /
-						{form.createdAt.getMonth() + 1} /
-						{form.createdAt.getFullYear()}
-					</TableBodyCell>
-					<TableBodyCell><a href={`forms/${form.id}`}>Edit</a></TableBodyCell>
-				</TableBodyRow>
-			{/each}
+			{#if data.customForms}
+				{#each data.customForms as form}
+					<TableBodyRow>
+						<TableBodyCell>{form.name}</TableBodyCell>
+						<TableBodyCell>{form.cards.length}</TableBodyCell>
+						<TableBodyCell>
+							{form.createdAt.getDate()} /
+							{form.createdAt.getMonth() + 1} /
+							{form.createdAt.getFullYear()}
+						</TableBodyCell>
+						<TableBodyCell><a href={`forms/${form.id}`}>Edit</a></TableBodyCell>
+					</TableBodyRow>
+				{/each}
+			{:else}
+				No data
+			{/if}
 		</TableBody>
 	</Table>
 	<Modal title="Create new form" bind:open={createFormModal} autoclose={false}>
