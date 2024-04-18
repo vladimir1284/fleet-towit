@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, redirect, error } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
@@ -9,9 +9,9 @@ import {
 	deleteCustomForm,
 	renameCustomForm,
 	cloneCustomForm,
-	deleteCard,
-	addCard,
-	updateCard
+	deleteCardForm,
+	addCardToForm,
+	updateCardForm
 } from '$lib/actions/custom-forms';
 import {
 	PERMANENT_REDIRECT_STATUS,
@@ -52,61 +52,61 @@ const verifySession = async (locals: any) => {
 	return session;
 };
 
-const redirect_to_back = () => redirect(PERMANENT_REDIRECT_STATUS, `/inspections/forms/`);
-
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = await verifySession(locals);
 
 	const formId = Number(params.id);
 
 	if (formId) {
-		try {
-			const tenantUserId = session.user.defaultTenantUser.tenantId;
+		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-			const customForm = await retrieveCustomFormById(locals.currentInstance.currentPrismaClient, {
-				tenantId: tenantUserId,
-				formId: formId
+		const customForm = await retrieveCustomFormById(locals.currentInstance.currentPrismaClient, {
+			tenantId: tenantUserId,
+			formId: formId
+		});
+
+		const addCardForm = await superValidate(zod(addCardSchema));
+		const updateCardForm = await superValidate(zod(updateCardSchema));
+
+		if (!customForm) {
+			error(404, {
+				message: 'Not found'
 			});
+		}
 
-			const addCardForm = await superValidate(zod(addCardSchema));
-			const updateCardForm = await superValidate(zod(updateCardSchema));
+		// if the form has inspections then the form will be cloned
+		// and the user will be redirected to its path
 
-			if (!customForm) redirect_to_back();
-
-			// if the form has inspections then the form will be cloned
-			// and the user will be redirected to its path
-
-			if (customForm?.inspections.length) {
-				const cloneForm = await cloneCustomForm(locals.currentInstance.currentPrismaClient, {
-					form: customForm
-				});
-
-				return {
-					// forms
-					addCardForm,
-					updateCardForm,
-					// data
-					redirect_to: cloneForm.id,
-					customForm: cloneForm,
-					FormFieldType
-				};
-			}
+		if (customForm?.inspections.length) {
+			const cloneForm = await cloneCustomForm(locals.currentInstance.currentPrismaClient, {
+				form: customForm,
+				tenantId: tenantUserId
+			});
 
 			return {
 				// forms
 				addCardForm,
 				updateCardForm,
 				// data
-				customForm,
+				redirect_to: cloneForm.id,
+				customForm: cloneForm,
 				FormFieldType
 			};
-		} catch (error) {
-			console.log(error);
-			redirect_to_back();
 		}
+
+		return {
+			// forms
+			addCardForm,
+			updateCardForm,
+			// data
+			customForm,
+			FormFieldType
+		};
 	}
 
-	redirect_to_back();
+	error(404, {
+		message: 'Not found'
+	});
 };
 
 export const actions = {
@@ -114,6 +114,7 @@ export const actions = {
 	 * action to delete form
 	 */
 	deleteForm: async ({ request, locals }) => {
+		const session = await verifySession(locals);
 
 		const form = await superValidate(request, zod(deleteFormSchema));
 
@@ -122,10 +123,11 @@ export const actions = {
 		}
 
 		await deleteCustomForm(locals.currentInstance.currentPrismaClient, {
+			tenantId: session.user.defaultTenantUser.tenantId,
 			formId: form.data.form_id
 		});
 
-		redirect_to_back();
+		redirect(PERMANENT_REDIRECT_STATUS, `/inspections/forms/`);
 	},
 
 	/*
@@ -140,10 +142,8 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		const tenantUserId = session.user.defaultTenantUser.tenantId;
-
 		await renameCustomForm(locals.currentInstance.currentPrismaClient, {
-			tenantId: tenantUserId,
+			tenantId: session.user.defaultTenantUser.tenantId,
 			formId: form.data.form_id,
 			newName: form.data.new_form_name
 		});
@@ -160,10 +160,9 @@ export const actions = {
 		if (!form.valid) {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
-		const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-		await addCard(locals.currentInstance.currentPrismaClient, {
-			tenantId: tenantUserId,
+		await addCardToForm(locals.currentInstance.currentPrismaClient, {
+			tenantId: session.user.defaultTenantUser.tenantId,
 			cardName: form.data.card_name,
 			formId: form.data.form_id,
 			fields: form.data.fields
@@ -182,10 +181,8 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		const tenantUserId = session.user.defaultTenantUser.tenantId;
-
-		await deleteCard(locals.currentInstance.currentPrismaClient, {
-			tenantId: tenantUserId,
+		await deleteCardForm(locals.currentInstance.currentPrismaClient, {
+			tenantId: session.user.defaultTenantUser.tenantId,
 			formId: form.data.form_id,
 			cardId: form.data.card_id
 		});
@@ -195,7 +192,7 @@ export const actions = {
 	 *  update card to custom form
 	 */
 	updateCard: async ({ request, locals }) => {
-		const session = await verifySession(locals);
+		await verifySession(locals);
 
 		const form = await superValidate(request, zod(updateCardSchema));
 
@@ -203,10 +200,7 @@ export const actions = {
 			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 		}
 
-		const tenantUserId = session.user.defaultTenantUser.tenantId;
-
-		await updateCard({
-			tenantId: tenantUserId,
+		await updateCardForm(locals.currentInstance.currentPrismaClient, {
 			cardName: form.data.card_name,
 			cardId: form.data.card_id,
 			fields: form.data.fields

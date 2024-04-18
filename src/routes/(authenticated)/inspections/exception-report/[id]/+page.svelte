@@ -3,7 +3,7 @@
 	import axios from 'axios';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
-	import { Checkbox, Button } from 'flowbite-svelte';
+	import { Checkbox, Button, Spinner } from 'flowbite-svelte';
 
 	export let data: PageData;
 
@@ -12,8 +12,11 @@
 	const year = data.inspection.createdAt.getFullYear();
 	const dateInspections = `${day}/${month}/${year}`;
 
+	let loadinPdf = false;
+
 	const makePdf = async () => {
 		try {
+			loadinPdf = true;
 			const response = await axios.get(`/api/inspections/pdf/${data.inspection.id}`, {
 				responseType: 'blob'
 			});
@@ -30,20 +33,7 @@
 			console.error('Error downloading PDF:', error);
 		}
 
-		/*
-			const req = await fetch(`/api/inspections/pdf/${data.inspection.id}`);
-			const blob = await req.blob();
-
-			const url = URL.createObjectURL(blob);
-			const element = document.createElement('a');
-			element.href = url;
-			element.setAttribute('download', 'inspection.pdf');
-			document.body.appendChild(element);
-			element.click();
-
-			document.body.removeChild(element);
-
-			*/
+		loadinPdf = false;
 	};
 
 	const parseDate = (date: string) => {
@@ -83,7 +73,14 @@
 </script>
 
 <section class="flex flex-col gap-4 p-4 w-2/3">
-	<Button class="w-max" on:click={makePdf}>Download pdf</Button>
+	<Button class="w-max" on:click={makePdf}>
+		{#if loadinPdf}
+			<Spinner class="me-3" size="4" />Loading ...
+		{:else}
+			Download pdf
+		{/if}
+	</Button>
+
 	<div class="flex flex-col gap-4 bg-white rounded-lg shadow p-4 w-full">
 		<div class="flex flex-wrap justify-between">
 			<h2 class="font-semibold">

@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from './$types';
-import { redirect, fail } from '@sveltejs/kit';
+import { redirect, fail, error } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { FormFieldType } from '@prisma/client';
@@ -24,32 +24,32 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const inspectionId = Number(params.id);
 
 	if (inspectionId) {
-		try {
-			const tenantUserId = session.user.defaultTenantUser.tenantId;
+		const inspection = await retrieveInspectionById(locals.currentInstance.currentPrismaClient, {
+			tenantId: session.user.defaultTenantUser.tenantId,
+			id: inspectionId
+		});
 
-			const inspection = await retrieveInspectionById({
-				tenantId: tenantUserId,
-				id: inspectionId
+		if (!inspection) {
+			error(404, {
+				message: 'Not found'
 			});
-
-			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
-
-			// if inspection have responses redirect
-			if (inspection.responses.length > 0) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
-
-			// generate schema
-			const schema = generateValidationSchema(inspection.customForm.cards);
-
-			const form = await superValidate(zod(schema));
-
-			return { inspection, FormFieldType, form };
-		} catch (error) {
-			console.log(error);
-			redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
 		}
+
+		// if inspection have responses redirect to read
+		if (inspection.responses.length > 0)
+			redirect(PERMANENT_REDIRECT_STATUS, `/inspections/exception-report/${inspectionId}`);
+
+		// generate schema
+		const schema = generateValidationSchema(inspection.customForm.cards);
+
+		const form = await superValidate(zod(schema));
+
+		return { inspection, FormFieldType, form };
 	}
 
-	redirect(PERMANENT_REDIRECT_STATUS, `/inspections/`);
+	error(404, {
+		message: 'Not found'
+	});
 };
 
 export const actions = {
@@ -59,14 +59,16 @@ export const actions = {
 		const inspectionId = Number(params.id);
 
 		if (inspectionId) {
-			const tenantUserId = session.user.defaultTenantUser.tenantId;
-
-			const inspection = await retrieveInspectionById({
-				tenantId: tenantUserId,
+			const inspection = await retrieveInspectionById(locals.currentInstance.currentPrismaClient, {
+				tenantId: session.user.defaultTenantUser.tenantId,
 				id: inspectionId
 			});
 
-			if (!inspection) redirect(PERMANENT_REDIRECT_STATUS, `/inspections/register/`);
+			if (!inspection) {
+				error(404, {
+					message: 'Not found'
+				});
+			}
 
 			// generate schema
 			const schema = generateValidationSchema(inspection.customForm.cards);
@@ -77,15 +79,24 @@ export const actions = {
 				return fail(MISSING_SECURITY_HEADER_STATUS, { form });
 			}
 
-			const response = await createResponseToInspection({
-				form_data: form.data,
-				userId: session.user.id,
-				tenantId: tenantUserId,
-				inspectionId: inspectionId
-			});
+			const response = await createResponseToInspection(
+				locals.currentInstance.currentPrismaClient,
+				{
+					form_data: form.data,
+					userId: session.user.id,
+					inspectionId: inspectionId
+				}
+			);
 
 			if (response)
+				// redirect to read inspections
 				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/exception-report/${response.id}`);
 		}
+	} ,
+
+	validateResponse: async ({ locals, request, params }) => {
+
+
+		console.log("Validando form")
 	}
 } satisfies Actions;
