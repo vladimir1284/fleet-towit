@@ -28,18 +28,17 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	}
 
 	const users = await listTenantUsers(locals.currentInstance.currentPrismaClient, {
-		tenantId: parseInt(params.tenantId, 10)
+		tenantId: parseInt(params.tenantId)
 	});
 	return new Response(JSON.stringify(users), { status: 200 });
 };
 
-export const POST: RequestHandler = async ({ locals, params, request }) => {
+export const POST: RequestHandler = async ({ locals, params, request, url }) => {
 	const session = await locals.getSession();
 	const formData = await request.formData();
 	if (!session?.user) {
 		return new Response('Forbidden', { status: 403 });
 	}
-
 	const form = await superValidate(formData, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
@@ -52,8 +51,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			email: form.data.email,
 			role: Role[form.data.role]
 		});
+
 		const tenant = await bypassPrisma.tenant.findUnique({ where: { id: form.data.tenantId } });
-		await sendWelcomeEmail(form.data.email, tenant?.name ?? '', form.data.role);
+		await sendWelcomeEmail(form.data.email, tenant?.name ?? '', form.data.role, url.origin);
 	} else {
 		await updateTenantUser(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.userId, 10),

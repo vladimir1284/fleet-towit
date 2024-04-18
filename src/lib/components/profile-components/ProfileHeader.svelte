@@ -34,10 +34,6 @@
 			.then(() => {
 				console.log('Changed tenant user');
 				location.reload();
-				saveToSessionStorage('currentTenant', {
-					...tenantUser.tenant,
-					currentUserTenant: tenantUser
-				});
 				currentTenant.set({
 					...tenantUser.tenant,
 					currentUserTenant: tenantUser
