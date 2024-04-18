@@ -4,8 +4,7 @@
 	import { getContext } from 'svelte';
 	import { signOut } from '@auth/sveltekit/client';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
-	import { ChevronDownOutline } from 'flowbite-svelte-icons';
-	import { saveToSessionStorage } from '$lib/store/context-store';
+	import { ChevronLeftOutline } from 'flowbite-svelte-icons';
 	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
@@ -63,11 +62,10 @@
 		</div>
 		{#if userData.tenantUsers.length}
 			<DropdownItem class="cursor-pointer">
-				{$currentTenant.name}<ChevronDownOutline
-					class="w-3 h-3 ms-2 text-primary-800 dark:text-white inline"
-				/>
+				<ChevronLeftOutline class="w-3 h-3 ms-2 text-primary-800 dark:text-white inline" />
+				Current: {$currentTenant.name}
 			</DropdownItem>
-			<Dropdown class="w-44 z-20">
+			<Dropdown placement="left-start" class="w-44 z-20">
 				{#each userData?.tenantUsers as tenantUser}
 					<DropdownItem on:click={handleChangeUserTenant(tenantUser)}>
 						{tenantUser.tenant.name} as {tenantUser.role}
