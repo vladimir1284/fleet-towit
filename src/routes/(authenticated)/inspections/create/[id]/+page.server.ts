@@ -92,11 +92,30 @@ export const actions = {
 				// redirect to read inspections
 				redirect(PERMANENT_REDIRECT_STATUS, `/inspections/exception-report/${response.id}`);
 		}
-	} ,
+	},
 
 	validateResponse: async ({ locals, request, params }) => {
+		const session = await verifySession(locals);
 
+		const inspectionId = Number(params.id);
 
-		console.log("Validando form")
+		const inspection = await retrieveInspectionById(locals.currentInstance.currentPrismaClient, {
+			tenantId: session.user.defaultTenantUser.tenantId,
+			id: inspectionId
+		});
+
+		if (!inspection) {
+			error(404, {
+				message: 'Not found'
+			});
+		}
+		// generate schema
+		const schema = generateValidationSchema(inspection.customForm.cards);
+
+		const form = await superValidate(request, zod(schema));
+
+		if (!form.valid) {
+			return fail(MISSING_SECURITY_HEADER_STATUS, { form });
+		}
 	}
 } satisfies Actions;

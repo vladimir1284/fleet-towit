@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
+	import { enhance, applyAction } from '$app/forms';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Button, Input, Label, Checkbox, Radio, Textarea, Modal, Helper } from 'flowbite-svelte';
 	import * as signaturePad from 'signature_pad';
@@ -12,9 +13,9 @@
 	let pad;
 	let fieldId: number;
 	let showPreview: boolean = false;
+	let isValidResponse: boolean = false;
 
 	const openModalToSign = (field_id: number) => {
-		console.log(field_id);
 		openSignModal = true;
 		fieldId = field_id;
 
@@ -52,8 +53,12 @@
 </script>
 
 <section class="flex flex-col items-end gap-4 w-2/4 p-4">
-	<Button class="w-max" on:click={() => (showPreview = !showPreview)}
-		>{showPreview ? 'Form' : 'Preview'}</Button
+	<Button
+		class="w-max"
+		on:click={() => {
+			showPreview = !showPreview;
+			isValidResponse = false;
+		}}>{showPreview ? 'Form' : 'Preview'}</Button
 	>
 
 	<div class="bg-white w-full rounded-lg shadow">
@@ -63,8 +68,15 @@
 		<form
 			class="flex flex-col gap-4 p-4 min-w-72"
 			method="post"
-			action="?/createResponse"
+			action={isValidResponse ? '?/createResponse' : '?/validateResponse'}
 			enctype="multipart/form-data"
+			use:enhance={() => {
+				showPreview = true;
+				return async ({ result }) => {
+					if (result.type === 'success') isValidResponse = true;
+					else await applyAction(result);
+				};
+			}}
 		>
 			<!-- hidde inputs -->
 			<div class={showPreview ? 'hidden' : 'flex flex-col gap-4'}>
@@ -230,14 +242,20 @@
 				{/each}
 			</div>
 
-			{#if showPreview}
+			{#if isValidResponse}
 				<div class="grid grid-cols-2 gap-4">
-					<Button type="button" on:click={() => (showPreview = false)}>Back to edit</Button>
+					<Button
+						type="button"
+						on:click={() => {
+							showPreview = false;
+							isValidResponse = false;
+						}}>Back to edit</Button
+					>
 					<Button type="submit">Confirm</Button>
 				</div>
 				<Helper>If you are satisfied with the result, click confirm</Helper>
 			{:else}
-				<Button type="button" on:click={() => (showPreview = true)}>Create</Button>
+				<Button type="submit">Create</Button>
 			{/if}
 		</form>
 	</div>

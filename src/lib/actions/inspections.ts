@@ -1,20 +1,23 @@
-import { tenantPrisma } from '$lib/prisma';
 import { minioClient } from '$lib/minio';
 import { Page } from '$lib/pagination';
+import type { PrismaClient } from '@prisma/client';
 
 /*
  *	Get all inspections
  */
-export const fetchInspections = async ({
-	tenantId,
-	page_number,
-	results = 5
-}: {
-	tenantId: number;
-	page_number: number;
-	results?: number;
-}) => {
-	const inspections = await tenantPrisma(tenantId).inspection.findMany({
+export const fetchInspections = async (
+	instance: PrismaClient,
+	{
+		tenantId,
+		page_number,
+		results = 5
+	}: {
+		tenantId: number;
+		page_number: number;
+		results?: number;
+	}
+) => {
+	const inspections = await instance.inspection.findMany({
 		skip: (page_number - 1) * results,
 		take: results,
 		where: {
@@ -29,7 +32,7 @@ export const fetchInspections = async ({
 		}
 	});
 
-	const count = await tenantPrisma(tenantId).inspection.count({
+	const count = await instance.inspection.count({
 		where: {
 			tenantId: tenantId
 		}
@@ -41,8 +44,11 @@ export const fetchInspections = async ({
 /*
  *  Helper
  */
-export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: number }) => {
-	const customForms = await tenantPrisma(tenantId).customForm.findMany({
+export const fetchListFormsAndVehicles = async (
+	instance: PrismaClient,
+	{ tenantId }: { tenantId: number }
+) => {
+	const customForms = await instance.customForm.findMany({
 		where: {
 			tenantId: tenantId,
 			isActive: true
@@ -50,7 +56,7 @@ export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: number
 	});
 	const listCustomForm = customForms.map((el) => ({ value: el.id, name: el.name }));
 
-	const vehicles = await tenantPrisma(tenantId).vehicle.findMany();
+	const vehicles = await instance.vehicle.findMany();
 	const listVehicles = vehicles.map((el) => ({ value: el.id, name: el.type }));
 
 	return { listCustomForm, listVehicles };
@@ -59,18 +65,21 @@ export const fetchListFormsAndVehicles = async ({ tenantId }: { tenantId: number
 /*
  *	Create inspections
  */
-export const createInspection = async ({
-	tenantId,
-	userId,
-	formId,
-	vehicleId
-}: {
-	tenantId: number;
-	userId: string;
-	formId: number;
-	vehicleId: number;
-}) => {
-	const tenantUser = await tenantPrisma(tenantId).tenantUser.findFirst({
+export const createInspection = async (
+	instance: PrismaClient,
+	{
+		tenantId,
+		userId,
+		formId,
+		vehicleId
+	}: {
+		tenantId: number;
+		userId: string;
+		formId: number;
+		vehicleId: number;
+	}
+) => {
+	const tenantUser = await instance.tenantUser.findFirst({
 		where: {
 			userId: userId
 		}
@@ -78,7 +87,7 @@ export const createInspection = async ({
 
 	if (!tenantUser) return;
 
-	const newInspection = await tenantPrisma(tenantId).inspection.create({
+	const newInspection = await instance.inspection.create({
 		data: {
 			tenantId: tenantId,
 			tenantUserId: tenantUser.id,
@@ -93,16 +102,20 @@ export const createInspection = async ({
 /*
  *	Retrieve inspection
  */
-export const retrieveInspectionById = async ({
-	tenantId,
-	id
-}: {
-	tenantId: number;
-	id: number;
-}) => {
-	const inspection = await tenantPrisma(tenantId).inspection.findFirst({
+export const retrieveInspectionById = async (
+	instance: PrismaClient,
+	{
+		id,
+		tenantId
+	}: {
+		tenantId: number;
+		id: number;
+	}
+) => {
+	const inspection = await instance.inspection.findFirst({
 		where: {
-			id: id
+			id: id,
+			tenantId: tenantId
 		},
 		include: {
 			customForm: {
@@ -142,18 +155,19 @@ const urltoFile = async (url: string, filename: string) => {
 	return new File([buff], filename, { type: mimeType });
 };
 
-export const createResponseToInspection = async ({
-	form_data,
-	userId,
-	tenantId,
-	inspectionId
-}: {
-	form_data: object;
-	userId: string;
-	tenantId: number;
-	inspectionId: number;
-}) => {
-	const tenantUser = await tenantPrisma(tenantId).tenantUser.findFirst({
+export const createResponseToInspection = async (
+	instance: PrismaClient,
+	{
+		form_data,
+		userId,
+		inspectionId
+	}: {
+		form_data: object;
+		userId: string;
+		inspectionId: number;
+	}
+) => {
+	const tenantUser = await instance.tenantUser.findFirst({
 		where: {
 			userId: userId
 		}
@@ -221,7 +235,7 @@ export const createResponseToInspection = async ({
 		}
 	}
 
-	const response = await tenantPrisma(tenantId).inspection.update({
+	const response = await instance.inspection.update({
 		where: {
 			id: inspectionId
 		},
