@@ -12,11 +12,9 @@
 
 	$: if ($currentTenant == undefined) {
 		if (data?.session?.user?.defaultTenantUser) {
-			console.log('llegaste aqui')
 			const currentUserTenant = data.session.user.defaultTenantUser;
 			currentTenant.set({ ...currentUserTenant.tenant, currentUserTenant });
 		} else {
-			console.log('llegaste al esle ')
 			goto('/signin');
 		}
 

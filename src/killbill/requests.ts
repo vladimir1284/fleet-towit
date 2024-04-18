@@ -30,6 +30,7 @@ import type {} from '@prisma/client';
 import { Configuration } from './api/runtime';
 import { Config, apiConfig, pris } from './config';
 import { getTenantKS } from './tenants/tenants';
+import { loadFromSessionStorage } from '$lib/store/context-store';
 
 // funcion de prueba mientras el tenant sea necesario y el xstate machine no me funcione
 function getCurrentTenantBySessionStorage(): object {
@@ -57,6 +58,7 @@ function getCurrentTenantBySessionStorage(): object {
 async function initializeApi<T>(apiConstructor: new (config: Configuration) => T): Promise<T> {
 	return new apiConstructor(apiConfig);
 
+	// const currentTenant: any | null = loadFromSessionStorage('currentTenant');
 	const currentTenant: any | null = getCurrentTenantBySessionStorage();
 
 	const tenant: any | null = await pris.tenant.findFirst({

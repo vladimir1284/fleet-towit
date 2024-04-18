@@ -29,7 +29,7 @@
 		id: z.number().optional()
 	});
 
-	const { form, errors, constraints, enhance } = superForm(data, {
+	const { form, errors, constraints, enhance } = superForm(data.clientForm, {
 		validators: zod(fixSchema),
 		onSubmit: async (event) => {
 			$form.email = $form.email.trim();

@@ -2,8 +2,9 @@
 	// @ts-nocheck
 	import { z } from 'zod';
 	import { createEventDispatcher } from 'svelte';
+	import { loadFromSessionStorage } from '$lib/store/context-store';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
+	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
 	import { reqPaymentApi } from '@killbill/requests';
@@ -49,10 +50,8 @@
 	async function handleSubmit(event) {
 		event.preventDefault();
 
-		// const formData = new FormData(event.target);
 		const { auditLogs, ...otherData } = selectedPayment;
 		const payment: PaymentTransaction = {
-			// ...otherData,
 			amount: $form.amount
 		};
 
@@ -83,11 +82,6 @@
 	use:enhance
 >
 	<input hidden name="id" bind:value={$form.id} />
-	<!-- <input hidden name="tenantId" bind:value={$form.tenantId} /> -->
-	<!-- <div class="sm:col-span-2 px-2 pb-2">
-		<Radio name="invoice_adjustment" class="pb-2">No Invoice Adjustment</Radio>
-		<Radio name="invoice_adjustment">Invoice Item Adjustment</Radio>
-	</div> -->
 	<div class="sm:col-span-2">
 		<AmountInputComponent formPointer="amount" {form} {errors} {constraints} placeholder="Amount" />
 	</div>
