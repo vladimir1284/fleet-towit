@@ -20,8 +20,11 @@
 	import TrackersForm from '$lib/components/forms-components/trackers/TrackersForm.svelte';
 	import DeleteTrackersForm from '$lib/components/forms-components/trackers/DeleteTrackersForm.svelte';
 	import PopupDisplayer from '$lib/components/forms-components/trackers/PopupDisplayer.svelte';
+	import MarkerDisplayer from '$lib/components/forms-components/trackers/MarkerDisplayer.svelte';
+	import TrackerInfoDisplayer from '$lib/components/forms-components/trackers/TrackerInfoDisplayer.svelte';
 	import HeartBeatForm from '$lib/components/forms-components/trackers/HeartBeatForm.svelte';
-	import DeleteHeartBeatForm from '$lib/components/forms-components/trackers/DeleteHeartBeatForm.svelte'
+	import DeleteHeartBeatForm from '$lib/components/forms-components/trackers/DeleteHeartBeatForm.svelte';
+	import ControlDisplayer from '$lib/components/forms-components/trackers/ControlDisplayer.svelte';
 
 	import type { PageData } from '../$types';
 	import { onMount, getContext } from 'svelte';
@@ -29,8 +32,11 @@
 
 	let map;
 	const popup = L.popup();
-	const markerLayer = L.layerGroup()
+	const legend = new L.Control({ position: 'bottomleft' });
+	let legendComponent = null;
+	const markerLayer = L.layerGroup();
 	let markersList = [];
+	let icons: string[] = [];
 	const initialView = L.latLng(39.8283, -98.5795);
 
 	const initMap = (container: HTMLElement) => {
@@ -39,70 +45,129 @@
 			attribution: `&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>,
 	        &copy;<a href="https://carto.com/attributions" target="_blank">CARTO</a>`
 		}).addTo(map);
-		map.on('click', onMapClick)
-		markerLayer.addTo(map)
+		map.on('click', onMapClick);
+		markerLayer.addTo(map);
+	};
+
+	legend.onAdd = () => {
+		const container = L.DomUtil.create('div');
+		legendComponent = new ControlDisplayer({
+			target: container,
+			props: {
+				icons
+			}
+		});
+		return container;
+	};
+
+	legend.onRemove = () => {
+		if (legendComponent) {
+			legendComponent.$destroy();
+			legendComponent = null;
+		}
 	};
 
 	const onMapClick = (e) => {
 		if (selectedTracker) {
-			initialData = e.latlng
-			
-			popup
-			.setLatLng(e.latlng)
-			.setContent(() => {
-				const container = L.DomUtil.create('div')
-				new PopupDisplayer({
-				target: container,
-				props: {
-					data: e.latlng
-				}
-				}).$on('actioned', () => {
-					createHeartBeat = selectedTracker
-				})
-				return container
-			})
-			.openOn(map)
-		}
-	}
+			initialData = e.latlng;
 
-	const createMarkers = (objectsArray) => {
-		const newMarkers = []
-			objectsArray.forEach((obj) => {
-				const marker = L.marker(L.latLng(obj.latitude, obj.longitude))
-				newMarkers.push(marker)
-			})
-		return newMarkers
-	}
+			popup
+				.setLatLng(e.latlng)
+				.setContent(() => {
+					const container = L.DomUtil.create('div');
+					new PopupDisplayer({
+						target: container,
+						props: {
+							data: e.latlng
+						}
+					}).$on('actioned', () => {
+						createHeartBeat = selectedTracker;
+					});
+					return container;
+				})
+				.openOn(map);
+		}
+	};
+
+	const createMarkers = (objectsArray, enablePopup = true) => {
+		icons = [];
+		const newMarkers = [];
+		objectsArray.forEach((obj) => {
+			if (!icons.includes(obj.vehicle.type)) icons.push(obj.vehicle.type);
+			const markerContainer = L.DomUtil.create('div', 'w-fit');
+			new MarkerDisplayer({
+				target: markerContainer,
+				props: {
+					type: obj.vehicle.type
+				}
+			});
+			const icon = L.divIcon({
+				html: markerContainer,
+				className: 'map-marker w-fit',
+				iconSize: [24, 48],
+				popupAnchor: [0, -48],
+				iconAnchor: [12, 48]
+			});
+
+			const marker = L.marker(L.latLng(obj.latitude, obj.longitude), { icon });
+			if (enablePopup) {
+				marker.bindPopup(() => {
+					const container = L.DomUtil.create('div');
+					new TrackerInfoDisplayer({
+						target: container,
+						props: {
+							data: obj
+						}
+					});
+					return container;
+				});
+			} else {
+				marker.on('click', () => {
+					selectedTracker = obj.vehicle;
+				});
+			}
+			newMarkers.push(marker);
+		});
+		return newMarkers;
+	};
 
 	$: {
 		markerLayer.clearLayers();
 		markersList.forEach((_marker) => {
-			markerLayer.addLayer(_marker)
-		})
-		
+			markerLayer.addLayer(_marker);
+			if (markersList.length === 1) {
+				_marker.openPopup();
+			}
+		});
+		legend.remove();
+		if (map) {
+			legend.addTo(map);
+		}
 	}
 
 	$: {
 		if (!selectedTracker) {
-			const objects = []
+			const objects = [];
 			vehicles.forEach((vehicle) => {
 				if (vehicle.tracker?.heartBeats[0]) {
-					const hb = vehicle.tracker?.heartBeats[0]
-					objects.push(hb)
+					const hb = vehicle.tracker?.heartBeats[0];
+					objects.push({ ...hb, vehicle });
 				}
-			})
-			markersList = createMarkers(objects)
+			});
+			markersList = createMarkers(objects, false);
 			if (popup.isOpen()) {
-				popup.close()
+				popup.close();
 			}
 		} else {
-			const pos =  selectedTracker.tracker?.heartBeats[0];
+			const pos = selectedTracker.tracker?.heartBeats[0];
 			if (pos) {
-				markersList = createMarkers([selectedTracker.tracker.heartBeats[0]])
-				map.panTo(L.latLng(pos.latitude, pos.longitude))
-				visibleHeartBeatId = pos.id
+				markersList = createMarkers([
+					{ ...selectedTracker.tracker.heartBeats[0], vehicle: selectedTracker }
+				]);
+				map.panTo(L.latLng(pos.latitude, pos.longitude));
+				visibleHeartBeatId = pos.id;
 			} else {
-				markersList = []
+				markersList = [];
 			}
 		}
 	}
@@ -115,8 +180,8 @@
 	let selectedTracker: any;
 	let visibleHeartBeatId: number | undefined = undefined;
 	let initialData: any;
-	let createHeartBeat: any = false
-	let deleteHeartBeat: any = false
+	let createHeartBeat: any = false;
+	let deleteHeartBeat: any = false;
 
 	const currentTenant = getContext('currentTenant');
 	const updateData = async () => {
@@ -127,7 +192,7 @@
 
 	$: {
 		if (selectedTracker) {
-			selectedTracker = vehicles.find(v => v.id === selectedTracker.id)
+			selectedTracker = vehicles.find((v) => v.id === selectedTracker.id);
 		}
 	}
 
@@ -148,36 +213,48 @@
 		await updateData();
 	};
 
-	const closeHeartBeatModal = async(event) => {
-		createHeartBeat = event.detail
-		popup.close()
-		await updateData()
-	}
-	const closeDeleteHeartBeatModal = async(event) => {
-		deleteHeartBeat = event.detail
-		await updateData()
-	}
-
+	const closeHeartBeatModal = async (event) => {
+		createHeartBeat = event.detail;
+		popup.close();
+		await updateData();
+	};
+	const closeDeleteHeartBeatModal = async (event) => {
+		deleteHeartBeat = event.detail;
+		await updateData();
+	};
 </script>
 
 <Modal bind:open={createModal} size="xs">
 	<TrackersForm {data} selectedVehicle={createModal} on:formvalid={closeCreateModal} />
 </Modal>
 <Modal bind:open={editModal} size="xs">
-	<TrackersForm {data} selectedVehicle={editModal} selectedTracker={editModal.tracker} on:formvalid={closeEditModal} />
+	<TrackersForm
+		{data}
+		selectedVehicle={editModal}
+		selectedTracker={editModal.tracker}
+		on:formvalid={closeEditModal}
+	/>
 </Modal>
 <Modal bind:open={deleteModal} size="xs">
 	<DeleteTrackersForm vehicleId={deleteModal.id} on:formvalid={closeDeleteModal} />
 </Modal>
 
 <Modal bind:open={createHeartBeat} size="xs">
-	<HeartBeatForm {data} selectedVehicle={createHeartBeat} {initialData} on:formvalid={closeHeartBeatModal}/>
+	<HeartBeatForm
+		{data}
+		selectedVehicle={createHeartBeat}
+		{initialData}
+		on:formvalid={closeHeartBeatModal}
+	/>
 </Modal>
 
 <Modal bind:open={deleteHeartBeat} size="xs">
-	<DeleteHeartBeatForm vehicleId={deleteHeartBeat.vehicleId} heartBeatId={deleteHeartBeat.heartBeatId} on:formvalid={closeDeleteHeartBeatModal} />
+	<DeleteHeartBeatForm
+		vehicleId={deleteHeartBeat.vehicleId}
+		heartBeatId={deleteHeartBeat.heartBeatId}
+		on:formvalid={closeDeleteHeartBeatModal}
+	/>
 </Modal>
-
 
 <Card size="xl" padding="none" class="flex w-full md:w-[80%] mt-5">
 	<div id="map" class="flex w-full h-[20rem] rounded-md z-0" use:initMap />
@@ -202,30 +279,34 @@
 							<TableBodyCell class="text-center">{vehicle.tracker?.name || '-'}</TableBodyCell>
 							<TableBodyCell class="flex w-40 justify-between">
 								{#if vehicle.tracker}
-								{#if selectedTracker?.id === vehicle.id}
-								<EyeOutline class="text-blue-400"/>
-								{:else}
-								<EyeOutline
+									{#if selectedTracker?.id === vehicle.id}
+										<EyeOutline class="text-blue-400" />
+									{:else}
+										<EyeOutline
 											class="text-gray-400"
-										on:click={() => {
-											selectedTracker = vehicle;
-											const firstHeartBeat = vehicle.tracker?.heartBeats[0];
-											if (firstHeartBeat) {
-												markersList = createMarkers([firstHeartBeat]);
-												visibleHeartBeatId = firstHeartBeat.id
-											} else {
-												markersList =  [];
-											}
-										}}
-									/>
-								{/if}
-									<FileEditSolid class="text-gray-400"
+											on:click={() => {
+												selectedTracker = vehicle;
+												const firstHeartBeat = vehicle.tracker?.heartBeats[0];
+												if (firstHeartBeat) {
+													markersList = createMarkers([
+														{ ...firstHeartBeat, vehicle: selectedTracker }
+													]);
+													visibleHeartBeatId = firstHeartBeat.id;
+												} else {
+													markersList = [];
+												}
+											}}
+										/>
+									{/if}
+									<FileEditSolid
+										class="text-gray-400"
 										on:click={() => {
 											selectedTracker = false;
 											editModal = vehicle;
-										}} 
+										}}
 									/>
-									<TrashBinSolid class="text-red-500" 
+									<TrashBinSolid
+										class="text-red-500"
 										on:click={() => {
 											selectedTracker = false;
 											deleteModal = vehicle;
@@ -252,7 +333,7 @@
 				transition:slide={{ duration: 300, axis: 'x' }}
 			>
 				<div class="flex flex-row ml-5 align-center">
-					<Heading tag='h4'>{selectedTracker.tracker.name}</Heading>
+					<Heading tag="h4">{selectedTracker.tracker.name}</Heading>
 					<Button
 						outline
 						class="w-10 h-10"
@@ -266,48 +347,59 @@
 				</div>
 				<div class="flex overflow-y-auto h-[9rem] ml-5">
 					{#if selectedTracker.tracker.heartBeats.length}
-					<Table>
-						<TableHead>
-							<TableHeadCell class="text-center">TIMESTAMP</TableHeadCell>
-							<TableHeadCell class="text-center">LAT</TableHeadCell>
-							<TableHeadCell class="text-center">LONG</TableHeadCell>
-							<TableHeadCell class="text-center"></TableHeadCell>
-						</TableHead>
-						<TableBody>
-							{#each selectedTracker.tracker.heartBeats as heartBeat }
-								<TableBodyRow>
-									<TableBodyCell>{heartBeat.timeStamp}</TableBodyCell>
-									<TableBodyCell>{heartBeat.latitude}</TableBodyCell>
-									<TableBodyCell>{heartBeat.longitude}</TableBodyCell>
-									<TableBodyCell class="flex w-[fit-content] justify-between">
-										{#if heartBeat.id === visibleHeartBeatId}
-										<EyeOutline class="text-blue-400 m-2" on:click={() => {
-											map.panTo(L.latLng(heartBeat.latitude, heartBeat.longitude))
-										}} />
-										{:else}
-										<EyeOutline class="text-gray-400 m-2" on:click={() => {
-											visibleHeartBeatId = heartBeat.id
-											markersList = createMarkers([heartBeat])
-											map.panTo(L.latLng(heartBeat.latitude, heartBeat.longitude))
-										}} />
-										{/if}
-										<TrashBinSolid class="text-red-500 m-2" on:click={() => {
-											deleteHeartBeat = {
-												vehicleId: selectedTracker.id,
-												heartBeatId: heartBeat.id
-											}
-										}}/>
-									</TableBodyCell>
-								</TableBodyRow>
-							{/each}
-						</TableBody>
-					</Table>
+						<Table>
+							<TableHead>
+								<TableHeadCell class="text-center">TIMESTAMP</TableHeadCell>
+								<TableHeadCell class="text-center">LAT</TableHeadCell>
+								<TableHeadCell class="text-center">LONG</TableHeadCell>
+								<TableHeadCell class="text-center"></TableHeadCell>
+							</TableHead>
+							<TableBody>
+								{#each selectedTracker.tracker.heartBeats as heartBeat}
+									<TableBodyRow>
+										<TableBodyCell>{heartBeat.timeStamp}</TableBodyCell>
+										<TableBodyCell>{heartBeat.latitude}</TableBodyCell>
+										<TableBodyCell>{heartBeat.longitude}</TableBodyCell>
+										<TableBodyCell class="flex w-[fit-content] justify-between">
+											{#if heartBeat.id === visibleHeartBeatId}
+												<EyeOutline
+													class="text-blue-400 m-2"
+													on:click={() => {
+														map.panTo(L.latLng(heartBeat.latitude, heartBeat.longitude));
+													}}
+												/>
+											{:else}
+												<EyeOutline
+													class="text-gray-400 m-2"
+													on:click={() => {
+														visibleHeartBeatId = heartBeat.id;
+														markersList = createMarkers([
+															{ ...heartBeat, vehicle: selectedTracker }
+														]);
+														map.panTo(L.latLng(heartBeat.latitude, heartBeat.longitude));
+													}}
+												/>
+											{/if}
+											<TrashBinSolid
+												class="text-red-500 m-2"
+												on:click={() => {
+													deleteHeartBeat = {
+														vehicleId: selectedTracker.id,
+														heartBeatId: heartBeat.id
+													};
+												}}
+											/>
+										</TableBodyCell>
+									</TableBodyRow>
+								{/each}
+							</TableBody>
+						</Table>
 					{:else}
 						No positions yet
 					{/if}
 				</div>
 				<small class="text-center md:min-w-[max-content] ml-5"
-				>Click on the map to add new position</small
+					>Click on the map to add new position</small
 				>
 			</div>
 		{/if}

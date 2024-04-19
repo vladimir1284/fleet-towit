@@ -2,17 +2,17 @@
 	// @ts-nocheck
 	import axios from 'axios';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { signOut } from '@auth/sveltekit/client';
-	import { ChevronDownSolid } from 'flowbite-svelte-icons';
-	import { ChevronDownOutline } from 'flowbite-svelte-icons';
-	import { saveToSessionStorage } from '$lib/store/context-store';
-	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
+	import { ChevronLeftOutline } from 'flowbite-svelte-icons';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
+	import { Avatar, Dropdown, DropdownItem, Badge } from 'flowbite-svelte';
 
 	/**
 	 * @type {{ id: number; name: null; email: any; defaultTenantUser: { tenant: { name: any; }; }[]; image: any; }}
 	 */
 	export let userData;
+	export let notifications = [1];
 
 	const currentTenant = getContext('currentTenant');
 
@@ -34,10 +34,6 @@
 			.then(() => {
 				console.log('Changed tenant user');
 				location.reload();
-				saveToSessionStorage('currentTenant', {
-					...tenantUser.tenant,
-					currentUserTenant: tenantUser
-				});
 				currentTenant.set({
 					...tenantUser.tenant,
 					currentUserTenant: tenantUser
@@ -52,12 +48,21 @@
 
 <div class="flex">
 	<ButtonComponent
-		styles="flex text-black justify-between focus:ring-0 w-20 h-10"
-		color="none"
-		placeholder={userData && userData.name !== null ? userData.name : '-'}
+		pill
+		styles="!p-1 focus:ring-0"
+		color="light"
+		id="avatar_with_name"
+		placeholder={userData && userData.name !== null ? userData.name : userData.email}
 	>
-		<ChevronDownSolid class="w-3 h-3 ms-2 text-black dark:text-white" />
+		<Avatar
+			class="me-2"
+			src={userData.image
+				? `https://minios3.crabdance.com/develop/users/${userData.id}/${userData.image}`
+				: undefined}
+			dot={notifications.length > 0 ? { color: 'red' } : undefined}
+		/>
 	</ButtonComponent>
+
 	<Dropdown>
 		<div slot="header" class="px-4 py-2">
 			<span class="block text-sm text-gray-900 dark:text-white">{userData.email}</span>
@@ -67,11 +72,10 @@
 		</div>
 		{#if userData.tenantUsers.length}
 			<DropdownItem class="cursor-pointer">
-				{$currentTenant.name}<ChevronDownOutline
-					class="w-3 h-3 ms-2 text-primary-800 dark:text-white inline"
-				/>
+				<ChevronLeftOutline class="w-3 h-3 ms-2 text-primary-800 dark:text-white inline" />
+				Current: {$currentTenant.name}
 			</DropdownItem>
-			<Dropdown class="w-44 z-20">
+			<Dropdown placement="left-start" class="w-44 z-20">
 				{#each userData?.tenantUsers as tenantUser}
 					<DropdownItem on:click={handleChangeUserTenant(tenantUser)}>
 						{tenantUser.tenant.name} as {tenantUser.role}
@@ -82,15 +86,33 @@
 				{/each}
 			</Dropdown>
 		{/if}
-		<DropdownItem>Dashboard</DropdownItem>
-		<DropdownItem href="/profile">Profile</DropdownItem>
-		<DropdownItem on:click={handleSignOut}>Sign out</DropdownItem>
+
+		<DropdownItem class="flex flex-row ">
+			Notifications
+			{#if notifications.length > 0}
+				<div class="flex relative">
+					<div
+						class="inline-flex relative -top-1 -start-0.5  w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"
+					/>
+				</div>
+			{/if}
+		</DropdownItem>
+
+		<DropdownItem
+			on:click={() => {
+				goto('/dashboard');
+			}}
+		>
+			Dashboard
+		</DropdownItem>
+
+		<DropdownItem
+			on:click={() => {
+				goto('/profile');
+			}}
+		>
+			Profile
+		</DropdownItem>
+		<DropdownItem slot="footer" on:click={handleSignOut}>Sign out</DropdownItem>
 	</Dropdown>
-	<Avatar
-		class="hidden sm:flex"
-		rounded
-		src={userData.image
-			? `https://minios3.crabdance.com/develop/users/${userData.id}/${userData.image}`
-			: undefined}
-	/>
 </div>

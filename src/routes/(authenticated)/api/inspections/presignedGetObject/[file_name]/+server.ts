@@ -2,12 +2,7 @@ import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { minioClient } from '$lib/minio';
 
-export const GET: RequestHandler = async ({ locals, params, url }) => {
-	const session = await locals.getSession();
-	if (!session?.user) {
-		return new Response('Forbidden', { status: 403 });
-	}
-
+export const GET: RequestHandler = async ({ params, url }) => {
 	if (!params.file_name) {
 		throw error(404, {
 			message: 'File not found'

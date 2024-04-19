@@ -1,13 +1,18 @@
 import { PrismaClient } from '@prisma/client';
 import { Configuration, type ConfigurationParameters } from './api/runtime';
+// import {
+// 	KILLBILL_BASE_URL,
+// 	KILLBILL_USERNAME,
+// 	KILLBILL_PASSWORD,
+// 	KILLBILL_API_KEY,
+// 	KILLBILL_API_SECRET
+// } from '$env/static/private';
 
 const KILLBILL_BASE_URL = 'http://killbill.towithouston.com';
 const KILLBILL_USERNAME = 'admin';
 const KILLBILL_PASSWORD = 'password';
-const KILLBILL_API_KEY = 'test2';
-const KILLBILL_API_SECRET = 'secret';
-// const KILLBILL_API_KEY = 't_test';
-// const KILLBILL_API_SECRET = 'CzjU~009BxA\\';
+const KILLBILL_API_KEY = 't_test';
+const KILLBILL_API_SECRET = 'CzjU~009BxA\\';
 
 // export const config = {
 // 	basePath: KILLBILL_BASE_URL,

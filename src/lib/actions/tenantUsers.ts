@@ -9,15 +9,28 @@ export const createTenantUser = async (
 	instance: PrismaClient,
 	{ role, tenantId, email }: createTenantUserType
 ) => {
+	let tenantUser = undefined;
+	let defaultTenantUser = true;
 	let user = await bypassPrisma.user.findUnique({ where: { email: email } });
 	if (!user) {
 		user = await bypassPrisma.user.create({ data: { email: email } });
+	} else {
+		const rest = await instance.tenantUser.count({ 
+			where: { 
+				userId: user.id,
+				is_default: true
+			} 
+		});
+		if(rest > 0) {
+			defaultTenantUser = false;
+		}
 	}
-	const tenantUser = await instance.tenantUser.create({
+	tenantUser = await instance.tenantUser.create({
 		data: {
 			role,
 			tenantId,
-			userId: user.id
+			userId: user.id,
+			is_default: defaultTenantUser
 		}
 	});
 	return tenantUser;
@@ -47,6 +60,15 @@ export const deleteTenantUser = async (instance: PrismaClient, { id }: { id: num
 	const rest = await instance.tenantUser.findMany({ where: { userId: tenantUser?.userId } });
 	if (!rest.length && tenantUser) {
 		await bypassPrisma.user.delete({ where: { id: tenantUser.userId } });
+	} else if (tenantUser?.is_default) {
+		await bypassPrisma.tenantUser.update({
+			where: {
+				id: rest[0].id
+			},
+			data: {
+				is_default: true
+			}
+		});
 	}
 };
 

@@ -17,6 +17,15 @@ const getVehicle = async (instance: PrismaClient, vin: string) => {
 					where: {
 						isActive: true
 					}
+				},
+				tracker: {
+					include: {
+						heartBeats: {
+							orderBy: {
+								timeStamp: 'desc'
+							}
+						}
+					}
 				}
 			}
 		});

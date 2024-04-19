@@ -1,8 +1,7 @@
 <script lang="ts">
-	// @ts-nocheck
+	//@ts-nocheck
 	import {
 		Card,
-		GradientButton,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -11,45 +10,50 @@
 		TableHeadCell,
 		Modal,
 		Alert,
-		Badge
+		Badge,
+		Indicator
 	} from 'flowbite-svelte';
 	import axios from 'axios';
-	import { onMount } from 'svelte';
-	import { getContext } from 'svelte';
-	import type { PageData } from '../$types';
-	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
-	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
-	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
-	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
-	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
-	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 	import {
 		TrashBinSolid,
 		FileEditSolid,
 		RotateOutline,
 		EyeOutline,
-		AnnotationSolid
+		AnnotationSolid,
+		CashOutline
 	} from 'flowbite-svelte-icons';
+	import type { PageData } from './$types';
+	import { onMount, getContext } from 'svelte';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
+	import { getContractRemainderStatus } from '$lib/actions/contracts_notes_status';
+	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
+	import ContractForm from '$lib/components/forms-components/contracts/ContractForm.svelte';
+	import ViewContractNotes from '$lib/components/forms-components/notes/ViewContractNotes.svelte';
+	import PaymentInvoiceForm from '$lib/components/forms-components/payments/PaymentInvoiceForm.svelte';
+	import DeleteContractForm from '$lib/components/forms-components/contracts/DeleteContractForm.svelte';
 
 	export let data: PageData;
-	let message = '';
-	let selectedId = '';
-	let clients = [];
-	let vehicles = [];
-	let contracts = [];
-	let rentalPlans = [];
-	let loading = false;
-	let showAlert = false;
-	let editModal = false;
-	let createModal = false;
-	let deleteModal = false;
-	let updateModal = false;
-	let detailModal = false;
+	let message: string = '';
+	let selectedId: number | undefined = undefined;
+	let clients: Array<object> = [];
+	let vehicles: Array<object> = [];
+	let contracts: Array<object> = [];
+	let rentalPlans: Array<object> = [];
+	let loading: boolean = false;
+	let showAlert: boolean = false;
+	let editModal: boolean = false;
+	let createModal: boolean = false;
+	let deleteModal: boolean = false;
+	let updateModal: boolean = false;
+	let makingPaymentModal: boolean = false;
 	let showNotesModal = false;
-	let selectedContract = undefined;
+	let selectedContract: object | undefined = undefined;
 
-	let contractStagesList = [];
-	let contractNotesList = [];
+	$: {
+		contracts.forEach((contract: any) => {
+			if (contract.notes) contract.RemStatus = getContractRemainderStatus(contract.notes);
+		});
+	}
 
 	const currentTenant = getContext('currentTenant');
 
@@ -84,7 +88,7 @@
 		loadData();
 	});
 
-	function handleAlert(text) {
+	function handleAlert(text: string) {
 		showAlert = true;
 		message = text;
 		setTimeout(() => {
@@ -92,88 +96,70 @@
 		}, 4000);
 	}
 
-	async function handleCloseModal(event) {
+	async function handleCloseModal(event: any) {
 		createModal = event.detail;
 		handleAlert('Contract created succesfully!');
 
 		loadData();
 	}
 
-	async function handleEdit(contract) {
+	async function handleEdit(contract: object) {
 		selectedContract = contract;
 		editModal = true;
 	}
 
-	async function handleCloseEditModal(event) {
+	async function handleCloseEditModal(event: any) {
 		editModal = event.detail;
 		handleAlert('Contract edited succesfully!');
 
 		loadData();
 	}
 
-	async function handleUpdateStage(contract) {
+	async function handleUpdateStage(contract: any) {
 		selectedContract = contract;
 		updateModal = true;
 	}
 
-	async function handleCloseUpdateModal(event) {
+	async function handleCloseUpdateModal(event: any) {
 		updateModal = event.detail;
 		handleAlert('Contract updated succesfully!');
 
 		loadData();
 	}
 
-	async function handleDelete(contractId) {
+	async function handleDelete(contractId: number) {
 		selectedId = contractId;
 		deleteModal = true;
 	}
 
-	async function handleCloseDeleteModal(event) {
+	async function handleCloseDeleteModal(event: any) {
 		deleteModal = event.detail;
 		handleAlert('Contract deleted succesfully!');
 
 		loadData();
 	}
 
-	async function handleDetail(contract) {
-		await axios
-			.all([
-				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage`),
-				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/notes`)
-			])
-			.then(
-				axios.spread((contractStagesResponse, contractNotesResponse) => {
-					selectedContract = contract;
-					contractStagesList = contractStagesResponse.data;
-					contractNotesList = contractNotesResponse.data;
-
-					detailModal = true;
-				})
-			)
-			.catch((error) => {
-				console.error('Error fetching contract data:', error);
-			});
-	}
-
-	$: if (!detailModal) {
-		handleCloseDetailModal();
-	}
-
-	$: {
-		contracts.forEach((contract) => {
-			contract.RemStatus = getContractRemainderStatus(contract.notes);
-		});
-	}
-
-	async function handleShowNotes(contract) {
+	async function handleShowNotes(contract: object) {
 		selectedContract = contract;
 		showNotesModal = true;
 	}
 
-	async function handleCloseDetailModal() {
-		contractStagesList = [];
+	async function handleShowMakePaymentModal(contract: object) {
+		selectedContract = contract;
+		makingPaymentModal = true;
+	}
+
+	async function handleCloseMakePaymentModal(event: any) {
+		makingPaymentModal = event.detail;
+		handleAlert('Payment updated succesfully!');
 
 		loadData();
+	}
+
+	$: {
+		contracts.forEach((contract: any) => {
+			contract.RemStatus = getContractRemainderStatus(contract.notes);
+		});
 	}
 </script>
 
@@ -207,24 +193,25 @@
 		<UpdateStage {data} {selectedContract} on:formvalid={handleCloseUpdateModal} />
 	</Modal>
 
-	<Modal title={'Contract #' + selectedContract?.id} size="xl" padding="md" bind:open={detailModal}>
-		<DetailContract
-			{data}
-			{selectedContract}
-			{contractStagesList}
-			{contractNotesList}
-			on:formvalid={handleCloseDetailModal}
-		/>
+	<Modal size="xs" padding="md" bind:open={makingPaymentModal}>
+		<PaymentInvoiceForm {data} on:formvalid={handleCloseMakePaymentModal} />
 	</Modal>
 
-	<Card size="xl" padding="md" class="flex w-full max-h-[33rem] md:w-auto mt-5">
+	<!-- Notes Modal -->
+	{#if selectedContract}
+		<ViewContractNotes bind:open={showNotesModal} bind:selectedContract {data} />
+	{/if}
+
+	<Card size="xl" padding="md" class="flex w-full mt-5">
 		<Table>
 			<caption
 				class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800"
 			>
-				<GradientButton shadow color="blue" on:click={() => (createModal = true)}>
-					Create Contract
-				</GradientButton>
+				<ButtonComponent
+					color="blue"
+					placeholder="Create Contract"
+					onClick={() => (createModal = true)}
+				/>
 			</caption>
 
 			<TableHead>
@@ -237,7 +224,23 @@
 			<TableBody class="divide-y">
 				{#each contracts as contract}
 					<TableBodyRow>
-						<TableBodyCell class="text-center">
+						<TableBodyCell class="text-center relative">
+							{#if contract.RemStatus && contract.RemStatus.status > -1}
+								<Indicator
+									placement="center-left"
+									size="lg"
+									class="ml-2 p-2"
+									color={contract.RemStatus.color}
+								>
+									<span class="text-white text-xs">
+										{#if contract.RemStatus.count < 10}
+											{contract.RemStatus.count}
+										{:else}
+											9+
+										{/if}
+									</span>
+								</Indicator>
+							{/if}
 							{contract.vehicle.type + '-' + contract.vehicle.make + '-' + contract.vehicle.model}
 						</TableBodyCell>
 						<TableBodyCell class="text-center">
@@ -248,11 +251,26 @@
 							<Badge color="blue" rounded class="px-2.5 py-0.5">{contract.stage.stage}</Badge>
 						</TableBodyCell>
 						<TableBodyCell class="flex w-40 justify-between">
-							<EyeOutline class="text-gray-400" on:click={() => handleDetail(contract)} />
-							<AnnotationSolid class="text-gray-400" on:click={() => handleShowNotes(contract)} />
-							<FileEditSolid class="text-gray-400" on:click={() => handleEdit(contract)} />
-							<RotateOutline class="text-gray-400" on:click={() => handleUpdateStage(contract)} />
-							<TrashBinSolid class="text-red-500" on:click={() => handleDelete(contract.id)} />
+							<a href={`/contracts/${contract.id}`}>
+								<EyeOutline class="mx-1 text-gray-400" />
+							</a>
+							<CashOutline
+								class="mx-1 text-gray-400"
+								on:click={() => {console.log('Pay some old invoice')}}
+							/>
+							<AnnotationSolid
+								class="mx-1 text-gray-400"
+								on:click={() => handleShowNotes(contract)}
+							/>
+							<FileEditSolid class="mx-1 text-gray-400" on:click={() => handleEdit(contract)} />
+							<RotateOutline
+								class="mx-1 text-gray-400"
+								on:click={() => handleUpdateStage(contract)}
+							/>
+							<TrashBinSolid
+								class="mx-1 text-red-500"
+								on:click={() => handleDelete(contract.id)}
+							/>
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}

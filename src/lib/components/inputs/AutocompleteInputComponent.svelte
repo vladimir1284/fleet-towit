@@ -37,7 +37,7 @@
 		filterPointer: string,
 		filterCriteria: string
 	): any[] {
-		return suggestions.filter((suggestion) => suggestion[filterCriteria]?.includes(filterPointer));
+		return suggestions.filter((suggestion) => suggestion[filterCriteria]?.toUpperCase().includes(filterPointer));
 	}
 </script>
 

@@ -15,11 +15,10 @@
 	} from 'flowbite-svelte';
 	import { transform } from './transformation/transform';
 	import type { TransformRule } from './transformation/types';
-	import { EditOutline, PlusSolid, TrashBinOutline } from 'flowbite-svelte-icons';
+	import { PlusSolid, TrashBinSolid } from 'flowbite-svelte-icons';
 	import EditRecord from './EditRecord.svelte';
 	import type { MoreDetailsButton } from './types';
 	import { goto } from '$app/navigation';
-	import path from 'path';
 
 	export let title: string = '';
 	export let records: Object[] = [];
@@ -34,7 +33,6 @@
 
 	let headers = records.length ? Object.keys(records[0]) : [];
 
-	console.log(headers);
 	let showEditModal = false;
 	let recordToEdit;
 </script>
@@ -68,7 +66,7 @@
 						</TableHeadCell>
 					{/if}
 				{/each}
-				<TableHeadCell>Options</TableHeadCell>
+				<TableHeadCell/>
 			</TableHead>
 			<TableBody>
 				{#each records as record}
@@ -80,26 +78,20 @@
 						{/each}
 						<TableBodyCell class="flex gap-2">
 							{#if moreDetailsButton}
-								<Button
-									class="flex gap-2"
+								<svelte:component
+									this={moreDetailsButton.icon}
+									class="text-gray-400"
 									on:click={() => {
 										goto(record.moreDetailsRoute);
 									}}
-								>
-									<svelte:component this={moreDetailsButton.icon} />
-									<span>{moreDetailsButton.text}</span>
-								</Button>
+								/>
 							{/if}
-							<Button>
-								<EditOutline class="pointer-events-none" />
-							</Button>
-							<Button
+							<TrashBinSolid
+								class="text-red-500"
 								on:click={() => {
 									remove(record.id);
 								}}
-							>
-								<TrashBinOutline class="pointer-events-none" />
-							</Button>
+							/>
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}

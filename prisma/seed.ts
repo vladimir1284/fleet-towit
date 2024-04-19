@@ -10,6 +10,14 @@ import seedTracker from './seeders/trackers.seed';
 const prisma = bypassPrisma;
 
 async function main() {
+	try {
+		await prisma.$executeRaw`TRUNCATE TABLE "User", "Tenant", "Vehicle", "Client", "Inspection", "RentalPlan", "Contract", "Tracker" CASCADE;`;
+		console.log('Db clean.');
+	} catch (error) {
+		console.error(`Error on clean db: ${error.message}`);
+		return;
+	}
+
 	const usersData = [
 		{ email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, is_default: true },
 		{ email: 'gsg2604@gmail.com', userRole: Role.ADMIN, is_default: true },
@@ -66,16 +74,11 @@ async function main() {
 	for (const userData of usersData) {
 		const array = [tenantId, testTenantId];
 		for (let index = 0; index < array.length; index++) {
-			const existingUser = await prisma.tenantUser.findFirst({
-				where: {
-					tenantId: array[index],
-					user: { email: userData.email }
-				}
-			});
-
-			if (!existingUser) {
-				await createTenantUser({ ...userData, tenantId: array[index] });
+			let { email, userRole, is_default } = userData;
+			if(index === 1){
+				is_default = false
 			}
+			await createTenantUser({ email, tenantId: array[index], userRole, is_default });
 		}
 	}
 

@@ -1,8 +1,6 @@
 <script lang="ts">
-	// @ts-nocheck
 	import {
 		Card,
-		GradientButton,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -12,10 +10,10 @@
 		Badge
 	} from 'flowbite-svelte';
 	import { getKillBillData } from '@killbill/temp-api-rq';
+	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
 
-	export let data: any;
 	export let currentInvoice: any = undefined;
-	const totalAmount = currentInvoice.items.reduce((total, item) => total + item.amount, 0);
+	const totalAmount = currentInvoice.items.reduce((total: number, item: {amount: number}) => total + item.amount, 0);
 	let loading = false;
 
 	const editInvoiceDate = () => {};
@@ -23,17 +21,12 @@
 		getKillBillData(`/invoices/${currentInvoice.invoiceId}/html`, 0, 'txt')
 			.then((html) => {
 				const newWindow = window.open('', '_blank');
-				newWindow.document.write(html);
-				newWindow.document.title = `Invoice for client #${currentInvoice.invoiceNumber}`;
+				newWindow?.document.write(html);
+				if(newWindow){
+					newWindow.document.title = `Invoice for client #${currentInvoice.invoiceNumber}`;
+					newWindow.document.close();
+				}
 
-				// Agregar un logo
-				// const logo = newWindow.document.createElement('img');
-				// logo.src = 'url_de_tu_logo';
-				// logo.style.width = '100px';
-				// logo.style.height = 'auto';
-				// newWindow.document.body.insertBefore(logo, newWindow.document.body.firstChild);
-
-				newWindow.document.close();
 			})
 			.catch((error) => {
 				console.error('Error al obtener la factura:', error);
@@ -51,12 +44,8 @@
 			>
 				Invoice Date: {currentInvoice.invoiceDate}<br />
 				Target Date: {currentInvoice.targetDate}<br />
-				<GradientButton shadow color="green" on:click={openInvoiceHtml}>
-					View Customer Invoice HTML
-				</GradientButton>
-				<GradientButton shadow color="blue" on:click={editInvoiceDate}>
-					Adjust Invoice Item
-				</GradientButton>
+				<ButtonComponent color="green" onClick={openInvoiceHtml} placeholder='View Customer Invoice HTML'/>
+				<ButtonComponent color="blue" onClick={editInvoiceDate} placeholder = 'Adjust Invoice Item'/>
 			</caption>
 
 			<TableHead>
@@ -84,7 +73,6 @@
 			</TableBody>
 
 			<div class="p-5 text-end text-md text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-				<!-- INVOICE TOTAL: ${currentInvoice.amount} ({currentInvoice.currency})<br /> -->
 				<strong>INVOICE TOTAL:</strong> ${totalAmount} ({currentInvoice.currency})<br />
 				<strong>RESULTING AVAILABLE CREDITS:</strong> ${currentInvoice.refundAdj} ({currentInvoice.currency})<br
 				/>
@@ -93,9 +81,4 @@
 			</div>
 		</Table>
 	</Card>
-	<!-- {#if showAlert}
-		<Alert class="fixed bottom-0 right-0 m-4 z-1" color="green" dismissable>
-			{message}
-		</Alert>
-	{/if} -->
 {/if}

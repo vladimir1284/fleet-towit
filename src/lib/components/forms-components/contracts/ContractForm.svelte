@@ -7,9 +7,9 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 
 	export let data;
-	export let clients: [];
-	export let vehicles: [];
-	export let rentalPlans: [];
+	export let clients: Array<object>;
+	export let vehicles: Array<object>;
+	export let rentalPlans: Array<object>;
 	export let selectedContract: any = undefined;
 
 	let clientsSelector: any = [];
@@ -19,7 +19,7 @@
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant.id}/contracts`;
 
-	const { form, errors, constraints, enhance } = superForm(data.form, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -107,6 +107,7 @@
 		<div class="flex sm:col-span-2 justify-center items-center">
 			<SubmitButtonComponent
 				placeholder={!selectedContract ? 'Create contract' : 'Update contract'}
+				loading={$delayed}
 				styles="w-40"
 			/>
 		</div>

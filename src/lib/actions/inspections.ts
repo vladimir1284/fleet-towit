@@ -1,4 +1,5 @@
-import { fetchCustomFormsByTenant } from '$lib/actions/custom-forms';
+import { Page } from '$lib/pagination';
+import { minioClient } from '$lib/minio';
 import type { PrismaClient } from '@prisma/client';
 
 /*
@@ -6,9 +7,19 @@ import type { PrismaClient } from '@prisma/client';
  */
 export const fetchInspections = async (
 	instance: PrismaClient,
-	{ tenantId }: { tenantId: number }
+	{
+		tenantId,
+		page_number,
+		results = 5
+	}: {
+		tenantId: number;
+		page_number: number;
+		results?: number;
+	}
 ) => {
 	const inspections = await instance.inspection.findMany({
+		skip: (page_number - 1) * results,
+		take: results,
 		where: {
 			tenantId: tenantId
 		},
@@ -21,7 +32,13 @@ export const fetchInspections = async (
 		}
 	});
 
-	return inspections;
+	const count = await instance.inspection.count({
+		where: {
+			tenantId: tenantId
+		}
+	});
+
+	return new Page(inspections, count, results, page_number).toJSON();
 };
 
 /*
@@ -31,7 +48,12 @@ export const fetchListFormsAndVehicles = async (
 	instance: PrismaClient,
 	{ tenantId }: { tenantId: number }
 ) => {
-	const customForms = await fetchCustomFormsByTenant(instance, { tenantId: tenantId });
+	const customForms = await instance.customForm.findMany({
+		where: {
+			tenantId: tenantId,
+			isActive: true
+		}
+	});
 	const listCustomForm = customForms.map((el) => ({ value: el.id, name: el.name }));
 
 	const vehicles = await instance.vehicle.findMany();
@@ -83,8 +105,8 @@ export const createInspection = async (
 export const retrieveInspectionById = async (
 	instance: PrismaClient,
 	{
-		tenantId,
-		id
+		id,
+		tenantId
 	}: {
 		tenantId: number;
 		id: number;
@@ -92,7 +114,8 @@ export const retrieveInspectionById = async (
 ) => {
 	const inspection = await instance.inspection.findFirst({
 		where: {
-			id: id
+			id: id,
+			tenantId: tenantId
 		},
 		include: {
 			customForm: {
@@ -124,17 +147,23 @@ export const retrieveInspectionById = async (
 /*
  * Create inspections response
  */
+
+const urltoFile = async (url: string, filename: string) => {
+	const mimeType = (url.match(/^data:([^;]+);/) || '')[1];
+	const req = await fetch(url);
+	const buff = await req.arrayBuffer();
+	return new File([buff], filename, { type: mimeType });
+};
+
 export const createResponseToInspection = async (
 	instance: PrismaClient,
 	{
 		form_data,
 		userId,
-		tenantId,
 		inspectionId
 	}: {
 		form_data: object;
 		userId: string;
-		tenantId: number;
 		inspectionId: number;
 	}
 ) => {
@@ -168,10 +197,39 @@ export const createResponseToInspection = async (
 			// add note to response
 		} else if (key.includes('note')) {
 			data.map((el) => (el.fieldId === fieldId ? (el.note = value) : el));
+
+			// upload file to minio
+		} else if (value instanceof File) {
+			const buff = Buffer.from(await value.arrayBuffer());
+
+			await minioClient.putObject('develop', `/inspections/${inspectionId}/${value.name}`, buff);
+
+			data.push({
+				fieldId: fieldId,
+				content: value.name,
+				tenantUserId: tenantUser.id
+			});
+			// convert from base 64 to file then upload image to minio
+		} else if (/^data:image\/png;base64,([A-Za-z0-9+/=])+$/.test(value)) {
+			const signature = await urltoFile(value, `signature-${fieldId}.png`);
+
+			const buff = Buffer.from(await signature.arrayBuffer());
+
+			await minioClient.putObject(
+				'develop',
+				`/inspections/${inspectionId}/${signature.name}`,
+				buff
+			);
+
+			data.push({
+				fieldId: fieldId,
+				content: signature.name,
+				tenantUserId: tenantUser.id
+			});
 		} else {
 			data.push({
 				fieldId: fieldId,
-				content: value.toString(),
+				content: value || value === 0 ? value.toString() : value,
 				tenantUserId: tenantUser.id
 			});
 		}

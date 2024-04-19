@@ -7,6 +7,15 @@ export const getAllVehicles = async (instance: PrismaClient) => {
 				where: {
 					isActive: true
 				}
+			},
+			tracker: {
+				include: {
+					heartBeats: {
+						orderBy: {
+							timeStamp: 'desc'
+						}
+					}
+				}
 			}
 		}
 	});

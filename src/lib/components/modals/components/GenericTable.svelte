@@ -34,6 +34,9 @@
 	 */
 
 	const createVehicle = (data) => {};
+
+	$: console.log('DATA: ',data)
+	$: console.log('RULES: ',rules)
 </script>
 
 <div>
@@ -69,7 +72,8 @@
 							<TableBodyCell><p>{transform(String(record[key].value), rules)}</p></TableBodyCell>
 						{:else}
 							<TableBodyCell>
-								<Button
+								<button
+									class="bg-black radius-0"
 									on:click={() => {
 										showMoreDetails = true;
 									}}
@@ -87,7 +91,7 @@
 											<Icon.EyeSolid class="pointer-events-none" />
 										{/if}
 									</div>
-								</Button>
+								</button>
 							</TableBodyCell>
 						{/if}
 					{/each}

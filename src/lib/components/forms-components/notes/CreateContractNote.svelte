@@ -31,7 +31,7 @@
 		}
 	});
 
-	const { form, errors, constraints, enhance } = superForm(data.noteForm, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.noteForm, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('noteCreated');
@@ -150,6 +150,6 @@
 
 	<div class="border-t-red-500 flex justify-end mt-5">
 		<ButtonComponent onClick={cancel} color="red" styles="mr-2" placeholder="Cancel" />
-		<SubmitButtonComponent styles="mr-2" placeholder="Save" />
+		<SubmitButtonComponent styles="mr-2" placeholder="Save" loading={$delayed} />
 	</div>
 </form>

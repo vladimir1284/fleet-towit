@@ -1,21 +1,20 @@
 <script async lang="ts">
 	//@ts-nocheck
-	import { onMount, getContext } from 'svelte';
-	import { Badge, Label } from 'flowbite-svelte';
-	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
-	import { Modal } from 'flowbite-svelte';
+	import axios from 'axios';
 	import {
 		TruckOutline,
 		DollarOutline,
 		UserOutline,
 		ClipboardListOutline
 	} from 'flowbite-svelte-icons';
-	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
+	import { onMount, getContext } from 'svelte';
+	import { Modal, Badge, Label } from 'flowbite-svelte';
+	import { FeatureDefault, FeatureItem } from 'flowbite-svelte-blocks';
 	import ButtonComponent from '$lib/components/buttons/ButtonComponent.svelte';
+	import ClientForm from '$lib/components/forms-components/clients/ClientForm.svelte';
 	import UpdateStage from '$lib/components/forms-components/contracts/UpdateStage.svelte';
 	import ContractTimeline from '$lib/components/forms-components/contracts/ContractTimeline.svelte';
 	import PaymentInvoiceForm from '$lib/components/forms-components/payments/PaymentInvoiceForm.svelte';
-	import axios from 'axios';
 
 	export let data: any;
 	export let selectedContract: Array<object> = [];
@@ -36,7 +35,6 @@
 	let updateStage: boolean = false;
 	let makePaymentModal: boolean = false;
 
-
 	const reListTimeline = () => {
 		timelineData = [];
 
@@ -45,37 +43,25 @@
 		if (notesFilter) timelineData = [...timelineData, ...contractNotesList];
 		if (stagesFilter) timelineData = [...timelineData, ...contractStagesList];
 
-		if (firstFilter) {
-			firstFilter = false;
-			stagesFilter = false;
-			notesFilter = false;
-			invoicesFilter = false;
-			paymentsFilter = false;
-		}
+		
 		// ordenar el array timelineData según su fecha
-		timelineData.sort((a, b) => new Date(b.date) - new Date(a.date));
+		timelineData.sort((a, b) => new Date(b.date || b.createdDate) - new Date(a.date || b.createdDate));
 	};
-
 
 	async function updateContractData() {
 		await axios
-			.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`)
-			.then((contractDataResponse) => {
-				selectedContract = contractDataResponse.data;
-				return axios.get(
-					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`
-				);
-			})
-			.then((contractStagesResponse) => {
-				contractStagesList = contractStagesResponse.data;
-				return axios.get(
-					`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/notes`
-				);
-			})
-			.then((contractNotesResponse) => {
-				contractNotesList = contractNotesResponse.data;
-				reListTimeline();
-			})
+			.all([
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}`),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/stage`),
+				axios.get(`/api/tenants/${$currentTenant.id}/contracts/${selectedContract.id}/notes`)
+			])
+			.then(
+				axios.spread((contractDataResponse, contractStagesResponse, contractNotesResponse) => {
+					selectedContract = contractDataResponse.data;
+					contractStagesList = contractStagesResponse.data;
+					contractNotesList = contractNotesResponse.data;
+				})
+			)
 			.catch((error) => {
 				console.error('Error fetching contract data:', error);
 			});
@@ -98,23 +84,23 @@
 
 <Modal bind:open={editClient} size="xs" title="Update Client">
 	<ClientForm
-		data={data?.clientForm}
+		data={data}
 		selectedClient={selectedContract.client}
 		on:formvalid={handleCloseEditClientModal}
 	/>
 </Modal>
 <Modal bind:open={updateStage} title="Update Stage" size="xs">
 	<UpdateStage
-		data={data?.stageForm}
+		data={data}
 		{selectedContract}
 		on:formvalid={handleCloseUpdateStageModal}
 	/>
 </Modal>
 <Modal bind:open={makePaymentModal} size="xs" title="Pay Last Pending Invoie">
-	<PaymentInvoiceForm data={data?.PaymentInvoiceForm} on:formvalid={reListTimeline} />
+	<PaymentInvoiceForm data={data} on:formvalid={reListTimeline} />
 </Modal>
 
-<div id="contractDetails">
+<div id="contractDetails" class="w-full">
 	<div class="flex flex-row mb-5">
 		<div class="min-w-[75%]">
 			<ButtonComponent
@@ -180,8 +166,8 @@
 			/>
 		</div>
 	</div>
-	<div class="flex flex-row justify-between h-[40em] overflow-y-auto">
-		<div class="min-w-[75%] p-1 mb-8 lg:mb-12">
+	<div class="flex flex-row justify-between h-[35em] overflow-y-auto">
+		<div class="flex-row p-1 mb-8 lg:mb-12">
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<FeatureDefault>
 					<FeatureItem>
@@ -263,7 +249,7 @@
 				</FeatureDefault>
 			</div>
 		</div>
-		<div class="overflow-y-scroll h-[100%] min-w-[25%] px-3.5 pt-2">
+		<div class="grow overflow-y-scroll h-full w-auto px-3.5 pt-2">
 			<ContractTimeline sessionData={data} {timelineData} on:reListTimeline={reListTimeline} />
 		</div>
 	</div>

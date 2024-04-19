@@ -13,7 +13,6 @@ const createFormSchema = z.object({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
 	return session;
 };
 
@@ -22,10 +21,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const form = await superValidate(zod(createFormSchema));
 
-	const tenantUserId = session.user.defaultTenantUser.tenantId;
-
 	const results = await fetchCustomFormsByTenant(locals.currentInstance.currentPrismaClient, {
-		tenantId: tenantUserId,
+		tenantId: session.user.defaultTenantUser.tenantId,
+		page_number: Number(url.searchParams.get('page')) || 1
 	});
 
 	const customForms = results.data;

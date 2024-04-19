@@ -52,7 +52,15 @@ export const getContract = async (
 		include: {
 			client: true,
 			rentalPlan: true,
-			vehicle: true,
+			vehicle: {
+				include: {
+					plates: {
+						where: {
+							isActive: true
+						}
+					}
+				}
+			},
 			stage: {
 				include: {
 					previousStage: true
@@ -185,7 +193,15 @@ export const getContractByDateRange = async (
 		include: {
 			stage: true,
 			client: true,
-			vehicle: true
+			vehicle: {
+				include: {
+					plates: {
+						where: {
+							isActive: true
+						}
+					}
+				}
+			}
 		}
 	});
 	return contract;

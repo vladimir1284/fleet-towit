@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
 import { sequence } from '@sveltejs/kit/hooks';
-import { handleErrorWithSentry, sentryHandle } from '@sentry/sveltekit';
+import { handleErrorWithSentry } from '@sentry/sveltekit';
 // import * as Sentry from '@sentry/sveltekit';
 import { type Handle } from '@sveltejs/kit';
 import { SvelteKitAuth } from '@auth/sveltekit';
@@ -22,6 +22,7 @@ import EmailProvider from '@auth/core/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
 import { getTenantUsers } from '$lib/actions/tenantUsers';
+import { redirect } from '@sveltejs/kit';
 const prisma = new PrismaClient();
 
 import { getAdminTenant } from '$lib/actions/admin';
@@ -66,7 +67,7 @@ const handleAuth = (async (...args) => {
 				event.locals.session = session;
 				return session;
 			},
-			async redirect({ url, baseUrl }) {
+			async redirect({ baseUrl }) {
 				return baseUrl;
 			}
 		},
@@ -105,58 +106,31 @@ const handleAuth = (async (...args) => {
 // 		tracesSampleRate: 1.0
 // 	});
 // }
+const adminPaths = ['/admin'];
+const apiPaths = ['/api'];
+
+function isAdminPath(path) {
+	return adminPaths.some((adminPath) => path === adminPath || path.startsWith(adminPath + '/'));
+}
+
+function isApiPath(path) {
+	return apiPaths.some((apiPath) => path === apiPath || path.startsWith(apiPath + '/'));
+}
 
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
-	/*
-	Please decide yourself if this piece of code will be romeved or not.
-
-
-	// Remove the conditional to turn it into a generic handle.
-	if (event.url.pathname.startsWith('/api/maintenance/inventory/parts')) {
-		// Retrieve validation data.
-		const session = await event.locals.getSession();
-		const userTenantHeaderHash = event.cookies.get(USER_TENANT_HEADER);
-
-		if (!session?.user || !userTenantHeaderHash) {
-			return new Response(FORBIDDEN_ACCESS_RESPONSE, { status: 403 });
-		}
-
-		// Request header verification.
-		const user = session.user as CustomUserSession;
-		const tenantUserValidations = await Promise.all(
-			user.tenantUsers.map(async (tenantUser) => {
-				const tenantUserValidation = await bcrypt.compare(tenantUser.id, userTenantHeaderHash);
-				return tenantUserValidation ? tenantUser : false;
-			})
-		);
-		const currentUserData = tenantUserValidations.find(
-			(tenantUserValidation) => tenantUserValidation
-		);
-
-		if (!currentUserData) {
-			return new Response(BAD_REQUEST_RESPONSE, { status: 400 });
-		}
-		const adminTenant = await getAdminTenant();
-		const currentPrismaClient =
-			currentUserData.tenant.id == adminTenant?.id // currentUserData.TenantId is also correct.
-				? bypassPrisma
-				: tenantPrisma(currentUserData.tenant.id);
-
-		event.locals.inventoryActionObject = {
-			currentTenant: currentUserData.tenantId,
-			currentTenantUser: currentUserData.id,
-			currentPrismaClient: currentPrismaClient
-		};
-	}
-	*/
-
 	const session = await event.locals.getSession();
+
+	if (!session?.user && isApiPath(new URL(event.request.url).pathname)) {
+		if (ENVIRONMENT == 'Production') {
+			return new Response('Forbidden', { status: 403 });
+		}
+	}
 
 	if (session) {
 		const currentUserData = session?.user.defaultTenantUser;
 		const adminTenant = await getAdminTenant();
 		const currentPrismaClient =
-			currentUserData?.tenantId == adminTenant?.id // currentUserData.TenantId is also correct.
+			currentUserData?.tenantId == adminTenant?.id
 				? bypassPrisma
 				: tenantPrisma(currentUserData?.tenantId);
 		event.locals.currentInstance = {
@@ -164,6 +138,14 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 			currentTenantUser: currentUserData,
 			currentPrismaClient: currentPrismaClient
 		};
+
+		if (
+			!currentUserData?.tenant.isAdmin &&
+			currentUserData?.role !== 'ADMIN' &&
+			isAdminPath(new URL(event.request.url).pathname)
+		) {
+			throw redirect(302, '/dashboard');
+		}
 	}
 	const response = await resolve(event);
 	return response;
