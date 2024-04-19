@@ -20,9 +20,11 @@
 	import TrackersForm from '$lib/components/forms-components/trackers/TrackersForm.svelte';
 	import DeleteTrackersForm from '$lib/components/forms-components/trackers/DeleteTrackersForm.svelte';
 	import PopupDisplayer from '$lib/components/forms-components/trackers/PopupDisplayer.svelte';
+	import MarkerDisplayer from '$lib/components/forms-components/trackers/MarkerDisplayer.svelte';
 	import TrackerInfoDisplayer from '$lib/components/forms-components/trackers/TrackerInfoDisplayer.svelte';
 	import HeartBeatForm from '$lib/components/forms-components/trackers/HeartBeatForm.svelte';
 	import DeleteHeartBeatForm from '$lib/components/forms-components/trackers/DeleteHeartBeatForm.svelte'
+	import ControlDisplayer from '$lib/components/forms-components/trackers/ControlDisplayer.svelte';
 
 	import type { PageData } from '../$types';
 	import { onMount, getContext } from 'svelte';
@@ -30,8 +32,11 @@
 
 	let map;
 	const popup = L.popup();
+	const legend = new L.Control({position: 'bottomleft'})
+	let legendComponent = null;
 	const markerLayer = L.layerGroup()
 	let markersList = [];
+	let icons: string[] = [];
 	const initialView = L.latLng(39.8283, -98.5795);
 
 	const initMap = (container: HTMLElement) => {
@@ -42,7 +47,26 @@
 		}).addTo(map);
 		map.on('click', onMapClick)
 		markerLayer.addTo(map)
+		legend.addTo(map)
 	};
+
+	legend.onAdd = () => {
+		const container = L.DomUtil.create('div')
+			legendComponent = new ControlDisplayer({
+			target: container,
+			props: {
+				icons
+			}
+		})
+		return container
+	}
+
+	legend.onRemove = () => {
+		if (legendComponent) {
+			legendComponent.$destroy();
+			legendComponent = null;
+		}
+	}
 
 	const onMapClick = (e) => {
 		if (selectedTracker) {
@@ -67,9 +91,25 @@
 	}
 
 	const createMarkers = (objectsArray, enablePopup = true) => {
+		icons = []
 		const newMarkers = []
 			objectsArray.forEach((obj) => {
-				const marker = L.marker(L.latLng(obj.latitude, obj.longitude))
+				if (!icons.includes(obj.vehicle.type)) icons.push(obj.vehicle.type);
+				const markerContainer = L.DomUtil.create('div', 'w-fit');
+				new MarkerDisplayer({
+					target: markerContainer,
+					props: {
+						type: obj.vehicle.type
+					}
+				})
+				const icon = L.divIcon({
+					html: markerContainer, 
+					className: 'map-marker w-fit', 
+					iconSize: [24, 48],
+					popupAnchor: [0, -48], 
+					iconAnchor: [12, 48]})
+
+				const marker = L.marker(L.latLng(obj.latitude, obj.longitude), {icon})
 				if (enablePopup) {
 					marker.bindPopup(() => {
 						const container = L.DomUtil.create('div')
@@ -95,6 +135,10 @@
 			markerLayer.addLayer(_marker)
 			if (markersList.length === 1) { _marker.openPopup() }
 		})
+		legend.remove();
+		if (map) {
+			legend.addTo(map)
+		}
 		
 	}
 
@@ -227,7 +271,7 @@
 											selectedTracker = vehicle;
 											const firstHeartBeat = vehicle.tracker?.heartBeats[0];
 											if (firstHeartBeat) {
-												markersList = createMarkers([firstHeartBeat]);
+												markersList = createMarkers([{...firstHeartBeat, vehicle: selectedTracker}]);
 												visibleHeartBeatId = firstHeartBeat.id
 											} else {
 												markersList =  [];
