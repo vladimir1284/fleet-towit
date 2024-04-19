@@ -22,6 +22,11 @@ const fixSchema = z.object({
 });
 
 export const GET: RequestHandler = async ({ locals, params }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
+
 	const users = await listTenantUsers(locals.currentInstance.currentPrismaClient, {
 		tenantId: parseInt(params.tenantId)
 	});
@@ -29,8 +34,11 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 };
 
 export const POST: RequestHandler = async ({ locals, params, request, url }) => {
+	const session = await locals.getSession();
 	const formData = await request.formData();
-
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	const form = await superValidate(formData, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
@@ -59,6 +67,10 @@ export const POST: RequestHandler = async ({ locals, params, request, url }) => 
 
 export const PATCH: RequestHandler = async ({ locals, request }) => {
 	const formData = await request.formData();
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 
 	const currentUserData = locals.currentInstance.currentTenantUser;
 	const tenantUserId = parseInt(formData.get('tenantUserId') as string, 10);
@@ -74,6 +86,10 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
 };
 
 export const DELETE: RequestHandler = async ({ locals, params }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	if (params.userId) {
 		await deleteTenantUser(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.userId)

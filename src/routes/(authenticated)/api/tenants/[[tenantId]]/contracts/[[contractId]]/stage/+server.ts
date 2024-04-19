@@ -14,6 +14,10 @@ const stageSchema = z.object({
 });
 
 export const GET: RequestHandler = async ({ locals, params }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	if (params.contractId) {
 		const stages = await getPreviousStage(locals.currentInstance.currentPrismaClient, {
 			contractId: parseInt(params.contractId)
@@ -25,6 +29,11 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 };
 
 export const POST: RequestHandler = async ({ request, params, locals }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
+
 	const form = await superValidate(request, zod(stageSchema));
 	if (!form.valid) {
 		console.log('validation fail', form);

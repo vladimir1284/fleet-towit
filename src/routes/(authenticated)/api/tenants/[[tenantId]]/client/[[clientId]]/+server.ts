@@ -14,12 +14,21 @@ const fixSchema = z.object({
 });
 
 export const GET: RequestHandler = async ({ locals }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	const clients = await listClients(locals.currentInstance.currentPrismaClient);
 
 	return new Response(JSON.stringify(clients), { status: 200 });
 };
 
 export const POST: RequestHandler = async ({ locals, request, params }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
+
 	const form = await superValidate(request, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
@@ -46,6 +55,10 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 };
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	try {
 		await deleteClient(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.clientId || '0', 10)

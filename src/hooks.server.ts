@@ -107,22 +107,13 @@ const handleAuth = (async (...args) => {
 // 	});
 // }
 const adminPaths = ['/admin'];
-const apiPaths = ['/api'];
 
 function isAdminPath(path) {
 	return adminPaths.some((adminPath) => path === adminPath || path.startsWith(adminPath + '/'));
 }
 
-function isApiPath(path) {
-	return apiPaths.some((apiPath) => path === apiPath || path.startsWith(apiPath + '/'));
-}
-
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 	const session = await event.locals.getSession();
-
-	if (!session?.user && isApiPath(new URL(event.request.url).pathname)) {
-		return new Response('Forbidden', { status: 403 });
-	}
 
 	if (session) {
 		const currentUserData = session?.user.defaultTenantUser;

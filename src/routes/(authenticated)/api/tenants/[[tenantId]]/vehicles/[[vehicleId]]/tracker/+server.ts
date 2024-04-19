@@ -10,7 +10,10 @@ const trackerSchema = z.object({
 })
 
 export const GET: RequestHandler = async({locals, params}) => {
-    
+    const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
     const instance = locals.currentInstance.currentPrismaClient;
 
     if (!params.vehicleId) {
@@ -25,6 +28,10 @@ export const GET: RequestHandler = async({locals, params}) => {
 }
 
 export const POST: RequestHandler = async({locals, params, request}) => {
+    const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
     const instance = locals.currentInstance.currentPrismaClient;
 
     const formData = await request.formData()
@@ -55,6 +62,10 @@ export const POST: RequestHandler = async({locals, params, request}) => {
 }
 
 export const DELETE: RequestHandler = async({locals, params}) => {
+    const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
     const instance = locals.currentInstance.currentPrismaClient;
     if(params.vehicleId) {
         await deleteTracker(instance, {

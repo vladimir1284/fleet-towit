@@ -24,17 +24,24 @@ const fixSchema = z.object({
 	id: z.number().optional()
 });
 
-export const GET: RequestHandler = async () => {
-
+export const GET: RequestHandler = async ({ locals }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	const tenants = await listTenants();
 	return new Response(JSON.stringify(tenants), { status: 200 });
 };
 
-export const POST: RequestHandler = async ({ request, params }) => {
+export const POST: RequestHandler = async ({ locals, request, params }) => {
+	const session = await locals.getSession();
 	const adminTenant = await getAdminTenant();
 	const allAdminTenantUsers = adminTenant
 		? await listTenantUsersOnTenant({ tenantId: adminTenant.id })
 		: [];
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	const form = await superValidate(request, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
@@ -80,8 +87,11 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	return actionResult('success', { form }, { status: 200 });
 };
 
-export const DELETE: RequestHandler = async ({ params }) => {
-
+export const DELETE: RequestHandler = async ({ params, locals }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	try {
 		await deleteTenant({ tenantId: parseInt(params.tenantId || '0', 10) });
 		return new Response(null, { status: 204 });

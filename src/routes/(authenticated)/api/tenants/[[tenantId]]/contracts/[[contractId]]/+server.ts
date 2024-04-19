@@ -26,6 +26,9 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 	let isAdmin: boolean = false;
 	const session = await locals.getSession();
 
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	if ((session?.user as any)?.defaultTenantUser?.role == 'ADMIN') {
 		isAdmin = true;
 	}
@@ -62,6 +65,11 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 };
 
 export const POST: RequestHandler = async ({ locals, request, params }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
+
 	const form = await superValidate(request, zod(fixSchema));
 	if (!form.valid) {
 		console.log('validation fail');
@@ -86,6 +94,10 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 };
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
+	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 	try {
 		await deleteContract(locals.currentInstance.currentPrismaClient, {
 			id: parseInt(params.contractId || '0', 10)
