@@ -33,7 +33,7 @@
 		comment: z.string()
 	});
 
-	const { form, errors, constraints, enhance } = superForm(data, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data, {
 		SPA: true,
 		validators: fixSchema,
 		onUpdated: async ({ form }) => {
@@ -94,5 +94,5 @@
 			placeholder="Comment"><AnnotationSolid class="w-6 h-6 inline" /></TextInputComponent
 		>
 	</div>
-	<SubmitButtonComponent placeholder="Refund" styles="w-[50%] mx-auto block" />
+	<SubmitButtonComponent placeholder="Refund" styles="w-[50%] mx-auto block" loading={$delayed} />
 </form>

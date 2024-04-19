@@ -29,7 +29,7 @@
 		),
 		comment: z.string()
 	});
-	const { form, errors, constraints, enhance } = superForm(data.paymentInvoiceForm, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.paymentInvoiceForm, {
 		SPA: true,
 		validators: zod(fixSchema),
 		onUpdated: async ({ form }) => {
@@ -105,5 +105,6 @@
 	<SubmitButtonComponent
 		placeholder={!selectedInvoice ? 'Pay Older Invoice' : 'Pay invoice'}
 		styles="w-[50%] mx-auto block"
+		loading={$delayed}
 	/>
 </form>

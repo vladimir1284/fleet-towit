@@ -34,7 +34,7 @@
 		comment: z.string()
 	});
 
-	const { form, errors, constraints, enhance } = superForm(data, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data, {
 		SPA: true,
 		validators: fixSchema,
 		onUpdated: async ({ form }) => {
@@ -106,5 +106,6 @@
 	<SubmitButtonComponent
 		placeholder={!selectedInvoiceItem ? 'Create invoice' : 'Adjust invoice'}
 		styles="w-[50%] mx-auto block"
+		loading={$delayed}
 	/>
 </form>

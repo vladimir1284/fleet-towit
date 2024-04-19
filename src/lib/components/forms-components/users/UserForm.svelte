@@ -11,7 +11,6 @@
 	export let selectedUser;
 	export let tenantsList = [];
 
-	let loading = false;
 	const dispatch = createEventDispatcher();
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant.currentUserTenant.tenantId}/users`;
@@ -23,7 +22,7 @@
 		id: z.string().optional()
 	});
 
-	const { form, errors, constraints, enhance } = superForm(data.form, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.form, {
 		onSubmit: async (event) => {
 			$form.email = $form.email.trim();
 		},
@@ -88,6 +87,6 @@
 	<SubmitButtonComponent
 		placeholder={!selectedUser ? 'Create user' : 'Update user'}
 		styles="w-[50%] mx-auto block"
-		{loading}
+		{$delayed}
 	/>
 </form>

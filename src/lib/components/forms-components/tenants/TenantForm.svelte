@@ -16,7 +16,7 @@
 	let actionURL = '/api/tenants';
 	const dispatch = createEventDispatcher();
 
-	const { form, errors, constraints, enhance } = superForm(data.form, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -73,6 +73,7 @@
 			<SubmitButtonComponent
 				placeholder={!selectedTenant ? 'Create tenant' : 'Update tenant'}
 				styles="w-40"
+				loading={$delayed}
 			/>
 		</div>
 	</div>

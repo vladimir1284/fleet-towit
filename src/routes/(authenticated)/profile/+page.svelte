@@ -14,7 +14,7 @@
 
 	const actionUrl = '/api/tenants/users/profile';
 
-	const { form, errors, constraints, enhance } = superForm(data.form, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				console.log('Form is valid');
@@ -73,7 +73,7 @@
 				<EmailInputComponent placeholder="Type your email" {form} {errors} {constraints} />
 			</div>
 		</div>
-		<SubmitButtonComponent placeholder="Update" styles="max-w-1/10" />
+		<SubmitButtonComponent loading={$delayed} placeholder="Update" styles="max-w-1/10" />
 	</form>
 </Modal>
 

@@ -21,7 +21,7 @@
 	let actionURL = `/api/tenants/${$currentTenant?.id}/rentalPlan`;
 	console.log('actionURL  ', actionURL);
 
-	const { form, errors, constraints, enhance } = superForm(data.form, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -60,6 +60,7 @@
 			<SubmitButtonComponent
 				placeholder={!selectedPlan ? 'Create plan' : 'Update plan'}
 				styles="w-40"
+				loading={$delayed}
 			/>
 		</div>
 	</div>

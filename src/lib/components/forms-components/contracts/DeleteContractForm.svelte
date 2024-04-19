@@ -12,7 +12,7 @@
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant?.id}/contracts/${data}/stage`;
 
-	const { form, errors, constraints, enhance } = superForm(data.stageForm, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.stageForm, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -49,7 +49,7 @@
 		</div>
 		<div class="sm:col-span-2"></div>
 		<div class="flex sm:col-span-2 justify-center items-center">
-			<SubmitButtonComponent placeholder="Dismiss" styles="w-40" />
+			<SubmitButtonComponent placeholder="Dismiss" styles="w-40" loading={$delayed} />
 		</div>
 	</div>
 </form>

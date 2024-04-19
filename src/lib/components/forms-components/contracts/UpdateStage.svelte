@@ -14,7 +14,7 @@
 	const currentTenant = getContext('currentTenant');
 	let actionURL = `/api/tenants/${$currentTenant?.id}/contracts/${selectedContract.id}/stage`;
 
-	const { form, errors, constraints, enhance } = superForm(data.stageForm, {
+	const { form, errors, constraints, enhance, delayed } = superForm(data.stageForm, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
 				dispatch('formvalid', false);
@@ -70,6 +70,7 @@
 			<SubmitButtonComponent
 				placeholder={!selectedContract ? 'Create stage' : 'Update stage'}
 				styles="w-40"
+				loading={$delayed}
 			/>
 		</div>
 	</div>
