@@ -15,11 +15,6 @@ const noteSchema = z.object({
 });
 
 export const GET: RequestHandler = async ({ locals, params }) => {
-	const session = await locals.getSession();
-	if (!session?.user) {
-		return new Response('Forbidden', { status: 403 });
-	}
-
 	if (params.contractId) {
 		const notes = await getContractNotes(
 			locals.currentInstance.currentPrismaClient,
@@ -33,9 +28,6 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 
 export const POST: RequestHandler = async ({ request, params, locals }) => {
 	const session = await locals.getSession();
-	if (!session?.user) {
-		return new Response('Forbidden', { status: 403 });
-	}
 
 	const formData = await request.formData();
 	const form = await superValidate(formData, zod(noteSchema));
@@ -43,12 +35,10 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 
 	if (form.valid) {
 		let note = undefined;
-		console.log('ONFORMDATA: ', formData);
-		console.log('ONSERVER: ', form);
 
 		note = await pushNote(locals.currentInstance.currentPrismaClient, {
-			userId: session.user.id,
-			contractId: parseInt(params.contractId),
+			userId: session?.user?.id || '',
+			contractId: parseInt(params?.contractId),
 			id: form?.data.id,
 			body: form.data.body,
 			subject: form.data.subject,
@@ -85,10 +75,6 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 };
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
-	const session = await locals.getSession();
-	if (!session?.user) {
-		return new Response('Forbidden', { status: 403 });
-	}
 	try {
 		await deleteNote(
 			locals.currentInstance.currentPrismaClient,
