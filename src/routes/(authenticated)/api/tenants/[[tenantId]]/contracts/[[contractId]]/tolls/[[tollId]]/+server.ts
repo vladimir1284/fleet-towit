@@ -27,10 +27,6 @@ const tollSchema = z.object({
 });
 
 export const GET: RequestHandler = async ({ locals, params }) => {
-	const session = await locals.getSession();
-	if (!session?.user) {
-		return new Response('Forbidden', { status: 403 });
-	}
 	let contractId;
 
 	if (!params.contractId) {
@@ -50,10 +46,6 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 };
 
 export const POST: RequestHandler = async ({ locals, request, params }) => {
-	const session = await locals.getSession();
-	if (!session?.user) {
-		return new Response('Forbidden', { status: 403 });
-	}
 	const formData = await request.formData();
 	const form = await superValidate(formData, zod(tollSchema));
 	const file = formData.get('fileData');
@@ -131,10 +123,6 @@ export const POST: RequestHandler = async ({ locals, request, params }) => {
 };
 
 export const DELETE: RequestHandler = async ({ locals, params }) => {
-	const session = await locals.getSession();
-	if (!session?.user) {
-		return new Response('Forbidden', { status: 403 });
-	}
 	if (!params.tollId) {
 		return new Response('Invalid tollId', { status: 400 });
 	}

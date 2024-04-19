@@ -107,19 +107,30 @@ const handleAuth = (async (...args) => {
 // 	});
 // }
 const adminPaths = ['/admin'];
+const apiPaths = ['/api'];
 
 function isAdminPath(path) {
 	return adminPaths.some((adminPath) => path === adminPath || path.startsWith(adminPath + '/'));
 }
 
+function isApiPath(path) {
+	return apiPaths.some((apiPath) => path === apiPath || path.startsWith(apiPath + '/'));
+}
+
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 	const session = await event.locals.getSession();
+
+	if (!session?.user && isApiPath(new URL(event.request.url).pathname)) {
+		if (ENVIRONMENT == 'Production') {
+			return new Response('Forbidden', { status: 403 });
+		}
+	}
 
 	if (session) {
 		const currentUserData = session?.user.defaultTenantUser;
 		const adminTenant = await getAdminTenant();
 		const currentPrismaClient =
-			currentUserData?.tenantId == adminTenant?.id // currentUserData.TenantId is also correct.
+			currentUserData?.tenantId == adminTenant?.id
 				? bypassPrisma
 				: tenantPrisma(currentUserData?.tenantId);
 		event.locals.currentInstance = {
