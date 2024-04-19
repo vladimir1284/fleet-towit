@@ -115,8 +115,6 @@ function isAdminPath(path) {
 const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 	const session = await event.locals.getSession();
 
-	if 
-
 	if (session) {
 		const currentUserData = session?.user.defaultTenantUser;
 		const adminTenant = await getAdminTenant();
@@ -130,7 +128,11 @@ const handleGenericActionRequest: Handle = async ({ event, resolve }) => {
 			currentPrismaClient: currentPrismaClient
 		};
 
-		if ((!currentUserData?.tenant.isAdmin && currentUserData?.role !== 'ADMIN') && isAdminPath(new URL(event.request.url).pathname)) {
+		if (
+			!currentUserData?.tenant.isAdmin &&
+			currentUserData?.role !== 'ADMIN' &&
+			isAdminPath(new URL(event.request.url).pathname)
+		) {
 			throw redirect(302, '/dashboard');
 		}
 	}
