@@ -15,25 +15,55 @@
 	Inspections<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>
 <Dropdown>
-	<DropdownItem label="Inspection history" href="/inspections">Inspection history</DropdownItem>
-	<DropdownItem label="Forms" href="/inspections/forms">Forms</DropdownItem>
-	<DropdownItem label="Exception report" href="/inspections/exception-report"
-		>Exception report</DropdownItem
-	>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/inspections">
+			Inspection history
+		</NavLi>
+	</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/inspections/forms">
+			Forms
+		</NavLi>
+	</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/inspections/exception-report">
+			Exception report
+		</NavLi>
+	</DropdownItem>
 </Dropdown>
 
 <NavLi class={navStyle}>
 	Maintence<ChevronDownOutline class="w-3 h-3 ms-2 text-black-800 dark:text-white inline" />
 </NavLi>
 <Dropdown>
-	<DropdownItem label="Defects" href="/maintenance/defects">Defects</DropdownItem>
-	<DropdownItem label="Service tasks" href="/maintenance/service-tasks">Service tasks</DropdownItem>
-	<DropdownItem label="Service programs" href="/maintenance/service-programs"
-		>Service programs</DropdownItem
-	>
-	<DropdownItem label="Service schedule" href="/maintenance/service-schedule"
-		>Service schedule</DropdownItem
-	>
-	<DropdownItem label="Work orders" href="/maintenance/work-orders">Work orders</DropdownItem>
-	<DropdownItem label="Inventory" href="/maintenance/inventory">Inventory</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/maintenance/defects">
+			Defects
+		</NavLi>
+	</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/maintenance/service-tasks">
+			Service tasks
+		</NavLi>
+	</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/maintenance/service-programs">
+			Service programs
+		</NavLi>
+	</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/maintenance/service-schedule">
+			Service schedule
+		</NavLi>
+	</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/maintenance/work-orders">
+			Work orders
+		</NavLi>
+	</DropdownItem>
+	<DropdownItem>
+		<NavLi class={navStyle}  href="/maintenance/inventory">
+			Inventory
+		</NavLi>
+	</DropdownItem>
 </Dropdown>
