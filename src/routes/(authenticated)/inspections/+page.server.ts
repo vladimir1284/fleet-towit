@@ -18,11 +18,10 @@ const createInspectionSchema = z.object({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
-	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
 	return session;
 };
 
-export const load: PageServerLoad = async ({ locals, url }) => {
+export const load: PageServerLoad = async ({ locals, }) => {
 	const session = await verifySession(locals);
 
 	const form = await superValidate(zod(createInspectionSchema));
@@ -35,6 +34,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const results = await fetchInspections(locals.currentInstance.currentPrismaClient, {
 		tenantId: tenantUserId,
+		page_number: 1
 	});
 
 	const inspections = results.data;

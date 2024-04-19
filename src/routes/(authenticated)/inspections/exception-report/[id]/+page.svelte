@@ -3,7 +3,7 @@
 	import axios from 'axios';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
-	import { Checkbox, Button } from 'flowbite-svelte';
+	import { Checkbox, Button, Spinner } from 'flowbite-svelte';
 
 	export let data: PageData;
 
@@ -12,29 +12,16 @@
 	const year = data.inspection.createdAt.getFullYear();
 	const dateInspections = `${day}/${month}/${year}`;
 
+	let loadinPdf = false;
+
 	const makePdf = async () => {
 		try {
-            const response = await axios.get(`/api/inspections/pdf/${data.inspection.id}`, {
-                responseType: 'blob'
-            });
+			loadinPdf = true;
+			const response = await axios.get(`/api/inspections/pdf/${data.inspection.id}`, {
+				responseType: 'blob'
+			});
 
-            const url = URL.createObjectURL(new Blob([response.data]));
-            const element = document.createElement('a');
-            element.href = url;
-            element.setAttribute('download', 'inspection.pdf');
-            document.body.appendChild(element);
-            element.click();
-
-            document.body.removeChild(element);
-        } catch (error) {
-            console.error('Error downloading PDF:', error);
-        }
-
-		/*
-			const req = await fetch(`/api/inspections/pdf/${data.inspection.id}`);
-			const blob = await req.blob();
-
-			const url = URL.createObjectURL(blob);
+			const url = URL.createObjectURL(new Blob([response.data]));
 			const element = document.createElement('a');
 			element.href = url;
 			element.setAttribute('download', 'inspection.pdf');
@@ -42,8 +29,11 @@
 			element.click();
 
 			document.body.removeChild(element);
+		} catch (error) {
+			console.error('Error downloading PDF:', error);
+		}
 
-			*/
+		loadinPdf = false;
 	};
 
 	const parseDate = (date: string) => {
@@ -82,9 +72,16 @@
 	});
 </script>
 
-<section class="p-4 w-2/3">
+<section class="flex flex-col gap-4 p-4 w-2/3">
+	<Button class="w-max" on:click={makePdf}>
+		{#if loadinPdf}
+			<Spinner class="me-3" size="4" />Loading ...
+		{:else}
+			Download pdf
+		{/if}
+	</Button>
+
 	<div class="flex flex-col gap-4 bg-white rounded-lg shadow p-4 w-full">
-		<Button class="w-max" on:click={makePdf}>Download pdf</Button>
 		<div class="flex flex-wrap justify-between">
 			<h2 class="font-semibold">
 				Model: <span class="font-normal">{data.inspection.vehicle.model}</span>
@@ -123,9 +120,9 @@
 										{#each field.responses as response}
 											<div class="flex items-center gap-2">
 												{#if option.id === response.checkOptionId}
-													<Checkbox disabled checked /> {option.name}
+													<Checkbox disabled checked>{option.name}</Checkbox>
 												{:else}
-													<Checkbox disabled /> {option.name}
+													<Checkbox disabled>{option.name}</Checkbox>
 												{/if}
 											</div>
 										{/each}
@@ -179,7 +176,7 @@
 								<div>
 									{#each field.responses as response}
 										{#if response.content}
-											<img id={field.id} alt="Preview image" class="w-64" />
+											<img id={field.id} alt="preview" class="w-64" />
 										{:else}
 											-
 										{/if}

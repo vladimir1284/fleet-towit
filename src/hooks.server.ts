@@ -67,7 +67,7 @@ const handleAuth = (async (...args) => {
 				event.locals.session = session;
 				return session;
 			},
-			async redirect({ url, baseUrl }) {
+			async redirect({ baseUrl }) {
 				return baseUrl;
 			}
 		},

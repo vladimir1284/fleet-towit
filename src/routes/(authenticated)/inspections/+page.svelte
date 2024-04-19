@@ -13,7 +13,8 @@
 		Modal,
 		Label,
 		Select,
-		PaginationItem
+		PaginationItem,
+		Badge
 	} from 'flowbite-svelte';
 	import { ArrowLeftSolid, ArrowRightSolid } from 'flowbite-svelte-icons';
 
@@ -61,16 +62,25 @@
 				{#each data.inspections as inspection}
 					<TableBodyRow>
 						<TableBodyCell>{inspection.id}</TableBodyCell>
-						<TableBodyCell>{inspection.customForm.name}</TableBodyCell>
+						<TableBodyCell
+							>{inspection.customForm.name}
+
+							{#if !inspection.responses.length}
+								<Badge color="red">Incomplete</Badge>
+							{/if}
+						</TableBodyCell>
 						<TableBodyCell>
 							{inspection.createdAt.getDate()} /
 							{inspection.createdAt.getMonth() + 1} /
 							{inspection.createdAt.getFullYear()}
 						</TableBodyCell>
-						<TableBodyCell
-							><a href={`${$page.url.pathname}/exception-report/${inspection.id}`}>Read</a
-							></TableBodyCell
-						>
+						<TableBodyCell>
+							{#if !inspection.responses.length}
+								<a href={`${$page.url.pathname}/create/${inspection.id}`}>Complete</a>
+							{:else}
+								<a href={`${$page.url.pathname}/exception-report/${inspection.id}`}>Read</a>
+							{/if}
+						</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			{:else}
