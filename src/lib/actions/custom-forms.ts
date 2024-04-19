@@ -75,7 +75,11 @@ export const fetchCustomFormsByTenant = async (
 			isActive: true
 		},
 		include: {
-			cards: true
+			cards: {
+				include : {
+					fields : true
+				}
+			}
 		},
 		orderBy: {
 			createdAt: 'desc'
