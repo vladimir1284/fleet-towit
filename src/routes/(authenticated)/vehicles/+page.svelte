@@ -1,12 +1,13 @@
 <script lang="ts">
-	//import Table from '$lib/components/data-visualization/VehiclesTable.svelte';
 	import GenericTable from '$lib/components/data-visualization/GenericTable.svelte';
-	import { Button, Heading, P } from 'flowbite-svelte';
+	import { Heading, Card } from 'flowbite-svelte';
 	import type { PageData } from '../../$types';
 	import CreateVehicle from '$lib/components/modals/CreateVehicle.svelte';
 	import type { MoreDetailsButton } from '$lib/components/data-visualization/types';
-	import { TableSolid } from 'flowbite-svelte-icons';
-	import { SvelteComponent } from 'svelte';
+	import { EyeOutline } from 'flowbite-svelte-icons';
+
+	import { setContext } from 'svelte';
+	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 
@@ -23,7 +24,7 @@
 
 	let showCreateVehicle = false;
 	let moreDetailsButton: MoreDetailsButton = {
-		icon: TableSolid,
+		icon: EyeOutline,
 		text: 'More details'
 	};
 
@@ -39,19 +40,13 @@
 	};
 
 	const createVehicle = (data) => {};
+
+	// Vehicle creation context.
+	const { form } = data;
+	setContext('VehicleForm', writable(form));
 </script>
 
-<Heading tag="h1" class="text-center">Vehicles</Heading>
-<!--<Table data={tableData} rules={['capitalize', 'wordify']} {createButton} />-->
-<GenericTable
-	records={vehicles}
-	rules={['capitalize', 'wordify']}
-	create={() => {
-		showCreateVehicle = true;
-	}}
-	{moreDetailsButton}
-	excludeFields={['id', 'vin']}
-/>
+
 <CreateVehicle
 	show={showCreateVehicle}
 	{createVehicle}
@@ -59,3 +54,17 @@
 		showCreateVehicle = false;
 	}}
 />
+
+<Card size="xl" class="flex w-full max-h-[33rem] md:w-auto mt-5">
+	<GenericTable
+		records={vehicles}
+		rules={['capitalize', 'wordify']}
+		create={() => {
+			showCreateVehicle = true;
+		}}
+		{moreDetailsButton}
+		excludeFields={['id', 'vin']}
+	/>
+</Card>
+
+
