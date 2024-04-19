@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { enhance, applyAction } from '$app/forms';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button, Input, Label, Checkbox, Radio, Textarea, Modal, Helper } from 'flowbite-svelte';
+	import { Button, Input, Label, Radio, Textarea, Modal, Helper } from 'flowbite-svelte';
 	import * as signaturePad from 'signature_pad';
 	import Preview from '$lib/components/inspections/Preview.svelte';
 

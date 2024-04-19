@@ -76,8 +76,8 @@ export const fetchCustomFormsByTenant = async (
 		},
 		include: {
 			cards: {
-				include : {
-					fields : true
+				include: {
+					fields: true
 				}
 			}
 		},

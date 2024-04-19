@@ -20,8 +20,10 @@
 		Label,
 		Input,
 		PaginationItem,
-		Tooltip
+		Tooltip,
+		Badge
 	} from 'flowbite-svelte';
+	import CheckBoxItem from '$lib/components/checkboxs/CheckBoxItem.svelte';
 	import {
 		ArrowLeftSolid,
 		ArrowRightSolid,
@@ -30,11 +32,14 @@
 		FileImportOutline
 	} from 'flowbite-svelte-icons';
 
-	let searchTerm = '';
 	let createFormModal = false;
 
-	const previous = () => goto(`/inspections/forms?page=${data.pagination.prev_page}`);
-	const next = () => goto(`/inspections/forms?page=${data.pagination.next_page}`);
+	const previous = () => {
+		goto(`/inspections/forms?page=${data.pagination.prev_page}`);
+	};
+	const next = () => {
+		goto(`/inspections/forms?page=${data.pagination.next_page}`);
+	};
 
 	function removeData(obj) {
 		if (!obj || typeof obj !== 'object') {
@@ -45,7 +50,7 @@
 
 		for (const key in obj) {
 			if (Object.prototype.hasOwnProperty.call(obj, key)) {
-				if (['id', 'createdAt', 'formId', 'isActive', 'tenantId' , "cardId"].includes(key)) {
+				if (['id', 'createdAt', 'formId', 'isActive', 'tenantId', 'cardId'].includes(key)) {
 					continue;
 				}
 				newObj[key] = typeof obj[key] === 'object' ? removeData(obj[key]) : obj[key];
@@ -68,6 +73,17 @@
 		element.click();
 		document.body.removeChild(element);
 	};
+
+	let isSelectExportForms = false;
+	let formsToExport = [];
+
+	const toggleForm = (form) => {
+		if (formsToExport.find((el) => el.id === form.id)) {
+			formsToExport = formsToExport.filter((el) => el.id !== form.id);
+		} else {
+			formsToExport = [...formsToExport, form];
+		}
+	};
 </script>
 
 <section class="flex flex-col w-full sm:w-2/3 p-4 gap-4">
@@ -76,10 +92,25 @@
 	</div>
 
 	<div class="flex justify-end gap-4">
-		<Button color="light" >Import Form</Button>
-		<Button  size="sm" color="light" on:click={()=> exportForm(data.customForms)} >Export all forms</Button>
-	</div>
+		<Button color="light">Import Form</Button>
 
+		<Button
+			size="sm"
+			color="light"
+			on:click={() => {
+				isSelectExportForms = !isSelectExportForms;
+
+				if (!isSelectExportForms) formsToExport.length = 0;
+			}}>{isSelectExportForms ? 'Cancel' : 'Export forms'}</Button
+		>
+
+		{#if isSelectExportForms}
+			<Button size="sm" color="blue" on:click={() => exportForm(formsToExport)}>
+				Export
+				<Badge class="ml-2">{formsToExport.length}</Badge>
+			</Button>
+		{/if}
+	</div>
 
 	<!-- pagination buttons -->
 	<div class="flex space-x-3 rtl:space-x-reverse">
@@ -98,14 +129,15 @@
 		{/if}
 	</div>
 
-
-
 	<Table>
 		<TableHead>
 			<TableHeadCell>Form Name</TableHeadCell>
 			<TableHeadCell>Cards</TableHeadCell>
 			<TableHeadCell>Created</TableHeadCell>
 			<TableHeadCell>Action</TableHeadCell>
+			{#if isSelectExportForms}
+				<TableHeadCell>Select</TableHeadCell>
+			{/if}
 		</TableHead>
 		<TableBody>
 			{#each data.customForms as form}
@@ -131,6 +163,11 @@
 							<Tooltip>Export form as file</Tooltip>
 						</div>
 					</TableBodyCell>
+					{#if isSelectExportForms}
+						<TableBodyCell>
+							<CheckBoxItem {formsToExport} {form} {toggleForm} />
+						</TableBodyCell>
+					{/if}
 				</TableBodyRow>
 			{/each}
 		</TableBody>
