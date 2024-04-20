@@ -70,6 +70,7 @@
 							on:click={() => {
 								refundModal = true;
 							}}
+							disabled
 						>
 							Make Refund
 						</GradientButton>

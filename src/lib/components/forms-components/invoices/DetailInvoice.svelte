@@ -127,11 +127,12 @@
 					<div>
 						<GradientButton
 							color="purple"
-							disabled={currentInvoice.balance > 0 ? '' : 'disabled'}
+							disabled={true}
 							on:click={() => {
 								makePaymentModal = true;
 							}}>Make Payment</GradientButton
 						>
+						<!--  disabled  ==> currentInvoice.balance > 0 ? '' : 'disabled' -->
 					</div>
 					<div>
 						<GradientButton color="green" on:click={openInvoiceHTML}>
@@ -177,7 +178,7 @@
 										class="cursor-pointer font-semibold underline"
 										on:click={() => {
 											selectedInvoiceItem = item;
-											editModal = true;
+											// editModal = true;
 										}}
 										>Adjust<span />
 									</span>

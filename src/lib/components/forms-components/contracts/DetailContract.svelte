@@ -24,11 +24,14 @@
 	export let contractNotesList: Array<object> = [];
 
 	const currentTenant = getContext('currentTenant');
-	let firstFilter: boolean = true;
-	let stagesFilter: boolean = true;
-	let notesFilter: boolean = true;
-	let invoicesFilter: boolean = true;
-	let paymentsFilter: boolean = true;
+
+	let filters: object = {
+		initial: true,
+		stages: true,
+		notes: true,
+		invoices: true,
+		payments: true
+	};
 
 	let timelineData = [];
 	let editClient: boolean = false;
@@ -38,14 +41,29 @@
 	const reListTimeline = () => {
 		timelineData = [];
 
-		if (paymentsFilter) timelineData = [...timelineData, ...contractPaymentsList];
-		if (invoicesFilter) timelineData = [...timelineData, ...contractInvoicesList];
-		if (notesFilter) timelineData = [...timelineData, ...contractNotesList];
-		if (stagesFilter) timelineData = [...timelineData, ...contractStagesList];
+		const { initial, ...otherFilters } = filters;
+		const anySelected = !Object.values(otherFilters).includes(true);
+		if (anySelected) {
+			for (let filter in filters) {
+				filters[filter] = true;
+			}
+		}
 
-		
+		if (filters.payments) timelineData = [...timelineData, ...contractPaymentsList];
+		if (filters.invoices) timelineData = [...timelineData, ...contractInvoicesList];
+		if (filters.notes) timelineData = [...timelineData, ...contractNotesList];
+		if (filters.stages) timelineData = [...timelineData, ...contractStagesList];
+
+		if (filters.initial) {
+			for (let filter in filters) {
+				filters[filter] = false;
+			}
+		}
+
 		// ordenar el array timelineData según su fecha
-		timelineData.sort((a, b) => new Date(b.date || b.createdDate) - new Date(a.date || b.createdDate));
+		timelineData.sort(
+			(a, b) => new Date(b.date || b.createdDate) - new Date(a.date || b.createdDate)
+		);
 	};
 
 	async function updateContractData() {
@@ -84,20 +102,16 @@
 
 <Modal bind:open={editClient} size="xs" title="Update Client">
 	<ClientForm
-		data={data}
+		{data}
 		selectedClient={selectedContract.client}
 		on:formvalid={handleCloseEditClientModal}
 	/>
 </Modal>
 <Modal bind:open={updateStage} title="Update Stage" size="xs">
-	<UpdateStage
-		data={data}
-		{selectedContract}
-		on:formvalid={handleCloseUpdateStageModal}
-	/>
+	<UpdateStage {data} {selectedContract} on:formvalid={handleCloseUpdateStageModal} />
 </Modal>
 <Modal bind:open={makePaymentModal} size="xs" title="Pay Last Pending Invoie">
-	<PaymentInvoiceForm data={data} on:formvalid={reListTimeline} />
+	<PaymentInvoiceForm {data} on:formvalid={reListTimeline} />
 </Modal>
 
 <div id="contractDetails" class="w-full">
@@ -114,60 +128,60 @@
 		</div>
 		<div class="min-w-[25%] flex justify-center pt-3">
 			<ButtonComponent
-				color={stagesFilter ? 'purple' : 'light'}
+				color={filters.stages ? 'purple' : 'light'}
 				size="xs"
 				styles="py-1 mx-1"
 				outline
 				pill
 				placeholder="stage"
 				onClick={() => {
-					stagesFilter = !stagesFilter;
+					filters.stages = !filters.stages;
 					reListTimeline();
 				}}
 			/>
 
 			<ButtonComponent
-				color={notesFilter ? 'green' : 'light'}
+				color={filters.notes ? 'green' : 'light'}
 				size="xs"
 				styles="py-1 mx-1"
 				outline
 				pill
 				placeholder="notes"
 				onClick={() => {
-					notesFilter = !notesFilter;
+					filters.notes = !filters.notes;
 					reListTimeline();
 				}}
 			/>
 
 			<ButtonComponent
-				color={invoicesFilter ? 'blue' : 'light'}
+				color={filters.invoices ? 'blue' : 'light'}
 				size="xs"
 				styles="py-1 mx-1"
 				outline
 				pill
 				placeholder="invoices"
 				onClick={() => {
-					invoicesFilter = !invoicesFilter;
+					filters.invoices = !filters.invoices;
 					reListTimeline();
 				}}
 			/>
 
 			<ButtonComponent
-				color={paymentsFilter ? 'red' : 'light'}
+				color={filters.payments ? 'red' : 'light'}
 				size="xs"
 				styles="py-1 mx-1"
 				outline
 				pill
 				placeholder="payments"
 				onClick={() => {
-					paymentsFilter = !paymentsFilter;
+					filters.payments = !filters.payments;
 					reListTimeline();
 				}}
 			/>
 		</div>
 	</div>
 	<div class="flex flex-row justify-between h-[35em] overflow-y-auto">
-		<div class="flex-row p-1 mb-8 lg:mb-12">
+		<div class="min-w-[75%] flex-row p-1 mb-8 lg:mb-12">
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<FeatureDefault>
 					<FeatureItem>
@@ -249,7 +263,7 @@
 				</FeatureDefault>
 			</div>
 		</div>
-		<div class="grow overflow-y-scroll h-full w-auto px-3.5 pt-2">
+		<div class="min-w-[25%] grow overflow-y-scroll h-full w-auto px-3.5 pt-2">
 			<ContractTimeline sessionData={data} {timelineData} on:reListTimeline={reListTimeline} />
 		</div>
 	</div>
