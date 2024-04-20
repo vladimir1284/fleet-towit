@@ -125,7 +125,7 @@ devDependencies:
     specifier: ^1.0.0
     version: 1.0.0
   '@playwright/test':
-    specifier: ^1.28.1
+    specifier: ^1.40.1
     version: 1.40.1
   '@sveltejs/adapter-auto':
     specifier: ^3.0.0

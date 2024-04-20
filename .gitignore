@@ -30,3 +30,8 @@ prisma/migrations/*
 yarn.lock
 yarn-error.log
 yarn.lock
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+\nplaywright/.auth
