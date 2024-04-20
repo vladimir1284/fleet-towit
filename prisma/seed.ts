@@ -11,7 +11,7 @@ const prisma = bypassPrisma;
 
 async function main() {
 	try {
-		await prisma.$executeRaw`TRUNCATE TABLE "User", "Tenant", "Vehicle", "Client", "Inspection", "RentalPlan", "Contract", "Tracker" CASCADE;`;
+		await prisma.$executeRaw`TRUNCATE TABLE "Account", "Session", "VerificationToken", "User", "Tenant", "Vehicle", "Client", "Inspection", "RentalPlan", "Contract", "Tracker" CASCADE;`;
 		console.log('Db clean.');
 	} catch (error) {
 		console.error(`Error on clean db: ${error.message}`);
