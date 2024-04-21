@@ -20,7 +20,8 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'@killbill': '/src/killbill'
+			'@killbill': '/src/killbill',
+			".prisma/client/index-browser": "./node_modules/.prisma/client/index-browser.js"
 		}
 	}
 });

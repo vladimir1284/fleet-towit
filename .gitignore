@@ -26,6 +26,7 @@ build/*
 prisma/dbml/schema.dbml
 src/lib/zod/index.ts
 prisma/migrations/*
+prisma/generated/*
 .vscode/settings.json
 yarn.lock
 yarn-error.log
