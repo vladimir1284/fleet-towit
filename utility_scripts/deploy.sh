@@ -15,6 +15,7 @@ git pull
 # Echo message for restoring the .env file 
 echo "Restoring the environment..." 
 cp ../.env .
+cp ../.env.local .
 
 # Echo message for installing dependencies
 echo "Installing dependencies..."
