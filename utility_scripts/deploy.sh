@@ -27,7 +27,7 @@ npx prisma migrate deploy
 
 # Echo message for running database seeding
 echo "Running database seeding..."
-npx prisma generate
+npx prisma generate --generator client
 npx prisma db seed
 
 # Echo message for building the code
