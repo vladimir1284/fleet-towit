@@ -1,2 +1,2 @@
 export * from './constants';
-export * as prismaHelpers from './prisma.helpers';
+export * as prismaHelpers from '$lib/shared/prisma.helpers';

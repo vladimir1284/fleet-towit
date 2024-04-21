@@ -1,8 +1,6 @@
 import debug from 'debug';
 import { randomInt, randomBytes } from 'crypto';
 
-import type { ExtendedBypassPrismaClient } from '../../src/lib/prisma';
-
 // Create custom logger on seed level.
 const seedLogger = debug('app:seed');
 
@@ -12,7 +10,7 @@ const NUMBER_OF_PARTS_PER_TENANT = 10;
 
 const units = ['Foot', 'Gallon', 'Inch', 'Pound', 'Quart', 'Set'];
 
-const seedParts = async (prisma: ExtendedBypassPrismaClient, tenantsId: number[]) => {
+const seedParts = async (prisma, tenantsId: number[]) => {
 	// Parts.
 	seedLogger('Seeding parts data...');
 	for (const tenantId of tenantsId) {

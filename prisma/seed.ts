@@ -1,5 +1,5 @@
 import { createTenantUser } from '../src/lib/actions/admin';
-import { bypassPrisma } from '../src/lib/prisma';
+import { bypassPrisma } from '$lib/prisma';
 import { Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
 import seedClients from './seeders/clients.seed';

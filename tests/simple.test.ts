@@ -1,7 +1,7 @@
 // test/sample.test.ts
 
 import { expect, test, vi } from 'vitest';
-import { bypassPrisma, tenantPrisma, prisma } from '../src/lib/prisma';
+import { bypassPrisma, tenantPrisma, prisma } from '$lib/prisma';
 import type { Prisma, PrismaPromise } from '@prisma/client';
 
 let tenant: any;
