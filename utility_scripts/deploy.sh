@@ -1,21 +1,35 @@
 #!/bin/bash
 
-# Echo message for changing directory 
-echo "Changing directory to 'fleet-towit'..." 
-cd fleet-towit 
- 
-# Echo message for pulling latest changes from git 
-echo "Pulling latest changes from git..." 
-git pull 
- 
-# Echo message for installing dependencies 
-echo "Installing dependencies..." 
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Echo message for changing directory
+echo "Changing directory to 'fleet-towit...'"
+cd fleet-towit
+
+# Echo message for pulling latest changes from git
+echo "Pulling latest changes from git..."
+git stash -a # Stash all server changes
+git pull
+
+# Echo message for installing dependencies
+echo "Installing dependencies..."
 pnpm install
- 
-# Echo message for running database migration 
-echo "Running database migration..." 
+
+# Echo message for running database migration
+echo "Running database migration..."
 npx prisma migrate dev
 
-# Echo message for restarting the server 
-echo "restarting the server..." 
+# Check if the migration was successful
+echo "Database migration successful."
+
+# Echo message for building the code
+echo "Building the project..."
+pnpm build
+
+# Check if the build was successful
+echo "Project build successful."
+
+# Echo message for restarting the server
+echo "Restarting the server..."
 pm2 restart fleet
