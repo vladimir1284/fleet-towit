@@ -20,6 +20,13 @@ cp ../.env .
 echo "Installing dependencies..."
 pnpm install
 
+# Echo message for building the code
+echo "Building the project..."
+pnpm build
+
+# Check if the build was successful
+echo "Project build successful."
+
 # Echo message for running database migration
 echo "Running database migration..."
 npx prisma migrate deploy
@@ -30,13 +37,6 @@ npx prisma db seed
 
 # Check if the migration was successful
 echo "Database migration successful."
-
-# Echo message for building the code
-echo "Building the project..."
-pnpm build
-
-# Check if the build was successful
-echo "Project build successful."
 
 # Echo message for restarting the server
 echo "Restarting the server..."
