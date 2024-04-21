@@ -22,7 +22,7 @@ pnpm install
 
 # Echo message for running database migration
 echo "Running database migration..."
-npx prisma migrate dev
+npx prisma migrate deploy
 
 # Check if the migration was successful
 echo "Database migration successful."
