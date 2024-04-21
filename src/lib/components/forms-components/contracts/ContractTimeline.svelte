@@ -1,7 +1,7 @@
 <script async lang="ts">
 	//@ts-nocheck
 	import { Timeline, TimelineItem } from 'flowbite-svelte';
-	import { reqInvoiceApi, reqPaymentApi } from '@killbill/requests';
+	import { reqInvoiceApi, reqPaymentApi } from '$lib/killbill/requests';
 	import { Modal } from 'flowbite-svelte';
 	import {
 		FileInvoiceSolid,
@@ -16,7 +16,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import DetailInvoice from '$lib/components/forms-components/invoices/DetailInvoice.svelte';
 	import NoteCard from '../notes/NoteCard.svelte';
-	import type { Invoice, Payment } from '@killbill/api/models';
+	import type { Invoice, Payment } from '$lib/killbill/api/models';
 
 	const dispatch = createEventDispatcher();
 	export let timelineData: any = [];

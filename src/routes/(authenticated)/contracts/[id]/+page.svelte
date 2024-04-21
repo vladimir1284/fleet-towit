@@ -1,17 +1,15 @@
 <script async lang="ts">
-    //@ts-nocheck
-    import axios from 'axios';
+	//@ts-nocheck
+	import axios from 'axios';
 	import type { PageData } from './$types';
 	import { onMount, getContext } from 'svelte';
-	import { customReqInvoiceApi, customReqPaymentApi } from '@killbill/custom-requests';
+	import { customReqInvoiceApi, customReqPaymentApi } from '$lib/killbill/custom-requests';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
-
 
 	const currentTenant = getContext('currentTenant');
 
 	export let data: PageData;
 	export let selectedContract: any = data.contract;
-	console.log(selectedContract);
 
 	let loading: boolean = true;
 
@@ -78,14 +76,7 @@
 				audit: 'MINIMAL'
 			});
 			contractPaymentsList = payments.map(
-				({
-					paymentId,
-					authAmount,
-					purchasedAmount,
-					refundedAmount,
-					transactions,
-					auditLogs
-				}) => {
+				({ paymentId, authAmount, purchasedAmount, refundedAmount, transactions, auditLogs }) => {
 					const lastTransaction =
 						transactions.length > 0 ? transactions[transactions.length - 1] : {};
 					const auditLog = auditLogs.length > 0 ? auditLogs[auditLogs.length - 1] : {};
@@ -143,7 +134,6 @@
 			console.error('Error getting notes:', error);
 		}
 	}
-
 </script>
 
 {#if loading}

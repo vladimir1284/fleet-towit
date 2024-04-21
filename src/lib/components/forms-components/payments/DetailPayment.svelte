@@ -13,7 +13,7 @@
 	} from 'flowbite-svelte';
 	import PaymentRefundForm from './PaymentRefundForm.svelte';
 	import { formatStringDate } from '$lib/helpers/dates';
-	import { reqInvoiceApi, reqPaymentApi } from '@killbill/requests';
+	import { reqInvoiceApi, reqPaymentApi } from '$lib/killbill/requests';
 
 	export let data: any;
 	export let currentPayment: any = undefined;

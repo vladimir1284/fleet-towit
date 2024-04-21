@@ -28,7 +28,7 @@ const prisma = new PrismaClient();
 import { getAdminTenant } from '$lib/actions/admin';
 import { bypassPrisma, tenantPrisma } from '$lib/prisma';
 import { building } from '$app/environment';
-import { syncKillBill } from './killbill/killbill';
+import { syncKillBill } from '$lib/killbill/killbill';
 
 if (KILLBILL === true) {
 	console.log('Kill Bill initial sync!');

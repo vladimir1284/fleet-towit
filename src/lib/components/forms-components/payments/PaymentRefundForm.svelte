@@ -7,7 +7,7 @@
 	import SubmitButtonComponent from '$lib/components/buttons/SubmitButtonComponent.svelte';
 	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
-	import { reqPaymentApi } from '@killbill/requests';
+	import { reqPaymentApi } from '$lib/killbill/requests';
 	import { AnnotationSolid } from 'flowbite-svelte-icons';
 
 	export let data;

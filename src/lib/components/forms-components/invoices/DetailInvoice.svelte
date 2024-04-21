@@ -13,7 +13,7 @@
 	} from 'flowbite-svelte';
 	import InvoiceForm from './InvoiceForm.svelte';
 	import PaymentInvoiceForm from '../payments/PaymentInvoiceForm.svelte';
-	import { reqInvoiceApi } from '@killbill/requests';
+	import { reqInvoiceApi } from '$lib/killbill/requests';
 	import { formatStringDate } from '$lib/helpers/dates';
 	import html2pdf from 'html2pdf.js';
 	import { createEventDispatcher } from 'svelte';

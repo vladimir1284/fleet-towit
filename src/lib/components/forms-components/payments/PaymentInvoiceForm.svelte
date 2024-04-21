@@ -2,7 +2,7 @@
 	// @ts-nocheck
 	import { z } from 'zod';
 	import { createEventDispatcher } from 'svelte';
-	import { reqInvoiceApi } from '@killbill/requests';
+	import { reqInvoiceApi } from '$lib/killbill/requests';
 	import { zod } from 'sveltekit-superforms/adapters';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { AnnotationSolid } from 'flowbite-svelte-icons';

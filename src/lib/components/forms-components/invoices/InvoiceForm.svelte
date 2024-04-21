@@ -6,9 +6,9 @@
 	import SubmitButtonComponent from '../../buttons/SubmitButtonComponent.svelte';
 	import TextInputComponent from '$lib/components/inputs/TextInputComponent.svelte';
 	import AmountInputComponent from '$lib/components/inputs/AmountInputComponent.svelte';
-	import { reqInvoiceApi } from '@killbill/requests';
+	import { reqInvoiceApi } from '$lib/killbill/requests';
 	import { AnnotationSolid } from 'flowbite-svelte-icons';
-	// import { InvoiceItem } from '@killbill/api/models/InvoiceItem';
+	// import { InvoiceItem } from '$lib/killbill/api/models/InvoiceItem';
 	import { onMount } from 'svelte';
 
 	export let data;

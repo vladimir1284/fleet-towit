@@ -14,7 +14,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"$lib/*": ["src/lib/*"],
-			"@killbill/*": ["src/killbill/*"]
+			"@killbill/*": ["src/lib/killbill/*"]
 		}
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
