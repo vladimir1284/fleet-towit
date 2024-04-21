@@ -12,6 +12,7 @@
 		"format": "prettier --write .",
 		"test:integration": "playwright test",
 		"test:unit": "vitest",
+		"prepare": "svelte-kit sync",
 		"migrate": "npx prisma migrate dev --name",
 		"reseed": "npx prisma generate && npx prisma db push --force-reset && npx prisma db seed"
 	},
