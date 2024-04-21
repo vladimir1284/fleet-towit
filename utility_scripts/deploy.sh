@@ -24,15 +24,15 @@ pnpm install
 # Echo message for running database migration
 echo "Running database migration..."
 npx prisma migrate deploy
-
-# Echo message for running database seeding
-echo "Running database seeding..."
 npx prisma generate --generator client
-npx prisma db seed
 
 # Echo message for building the code
 echo "Building the project..."
 pnpm build
+
+# Echo message for running database seeding
+echo "Running database seeding..."
+npx prisma db seed
 
 # Check if the build was successful
 echo "Project build successful."
