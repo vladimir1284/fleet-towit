@@ -21,20 +21,21 @@ cp ../.env.local .
 echo "Installing dependencies..."
 pnpm install
 
-# Echo message for building the code
-echo "Building the project..."
-pnpm build
-
-# Check if the build was successful
-echo "Project build successful."
-
 # Echo message for running database migration
 echo "Running database migration..."
 npx prisma migrate deploy
 
 # Echo message for running database seeding
 echo "Running database seeding..."
+npx prisma migrate generate
 npx prisma db seed
+
+# Echo message for building the code
+echo "Building the project..."
+pnpm build
+
+# Check if the build was successful
+echo "Project build successful."
 
 # Check if the migration was successful
 echo "Database migration successful."
