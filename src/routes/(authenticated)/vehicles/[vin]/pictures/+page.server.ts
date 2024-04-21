@@ -1,6 +1,4 @@
 //@ts-nocheck
-
-import path from 'path';
 import type { PageServerLoad } from '../../$types';
 import { PrismaClient } from '@prisma/client';
 //import { TableSolid, ImageSolid, BookSolid, ChartSolid, EyeSolid } from 'flowbite-svelte-icons'

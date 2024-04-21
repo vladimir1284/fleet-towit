@@ -1,4 +1,5 @@
 <script async lang="ts">
+	//@ts-nocheck
 	import { Timeline, TimelineItem } from 'flowbite-svelte';
 	import { reqInvoiceApi, reqPaymentApi } from '@killbill/requests';
 	import { Modal } from 'flowbite-svelte';
@@ -166,10 +167,7 @@
 						{#if data.refund_balance}
 							Refund Balance : <strong> ${data.refund_balance}</strong><br />
 						{/if}
-					{:else if data.note_id}{:else}{/if}
-
-					{#if data.reason}Reason: {data.reason} <br />{/if}
-					{#if data.comments}Comment: {data.comments}{/if}
+					{/if}
 				</p>
 			</TimelineItem>
 		{:else}

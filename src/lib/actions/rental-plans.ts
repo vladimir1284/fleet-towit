@@ -1,4 +1,4 @@
-import { Periodicity, PrismaClient } from '@prisma/client';
+import type { Periodicity, PrismaClient } from '@prisma/client';
 
 type createRentalPlanType = { name: string; amount: number; periodicity: Periodicity };
 type updateRentalPlanType = createRentalPlanType & { id: number };

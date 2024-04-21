@@ -1,6 +1,3 @@
-//@ts-nocheck
-
-import path from 'path';
 import type { PageServerLoad } from '../../$types';
 import { PrismaClient } from '@prisma/client';
 //import { TableSolid, ImageSolid, BookSolid, ChartSolid, EyeSolid } from 'flowbite-svelte-icons'
@@ -66,7 +63,6 @@ export const load: PageServerLoad = async () => {
 			details
 		};
 	} catch (error) {
-		//@ts-expect-error This expects any error
 		console.log(error);
 	}
 };

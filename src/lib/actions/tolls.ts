@@ -1,4 +1,4 @@
-import { PrismaClient, TollDueStage } from '@prisma/client';
+import type { PrismaClient, TollDueStage } from '@prisma/client';
 
 type createTollType = {
 	amount: number;
