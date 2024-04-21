@@ -11,6 +11,10 @@ cd fleet-towit
 echo "Pulling latest changes from git..."
 git stash -a # Stash all server changes
 git pull
+ 
+# Echo message for restoring the .env file 
+echo "Restoring the environment..." 
+cp ../.env .
 
 # Echo message for installing dependencies
 echo "Installing dependencies..."
