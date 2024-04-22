@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Checkbox } from 'flowbite-svelte';
+	import { Button, Input, Label, Checkbox, Radio, Textarea, Modal } from 'flowbite-svelte';
 
 	export let form;
-	export let data: any;
-	export let showPreview: any;
+	export let data;
+	export let showPreview;
 
 	const parseDate = (date: string) => {
 		const dateParsed = new Date(date);
@@ -47,7 +47,7 @@
 									src={$form[`field_${field.id}`]
 										? URL.createObjectURL($form[`field_${field.id}`])
 										: undefined}
-									alt="Preview"
+									alt="Image preview"
 								/>
 							</div>
 							<!-- SIGNATURE -->

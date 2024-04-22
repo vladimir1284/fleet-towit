@@ -198,7 +198,7 @@
 												src={$form[`field_${field.id}`]
 													? URL.createObjectURL($form[`field_${field.id}`])
 													: undefined}
-												alt="preview"
+												alt="Image preview"
 											/>
 										</div>
 									{:else if field.type == data.FormFieldType.SIGNATURE}

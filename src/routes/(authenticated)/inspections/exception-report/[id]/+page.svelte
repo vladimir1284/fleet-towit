@@ -176,7 +176,7 @@
 								<div>
 									{#each field.responses as response}
 										{#if response.content}
-											<img id={field.id} alt="preview" class="w-64" />
+											<img id={field.id} alt="Preview image" class="w-64" />
 										{:else}
 											-
 										{/if}
