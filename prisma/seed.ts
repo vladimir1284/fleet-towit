@@ -1,11 +1,13 @@
-import { Role, PrismaClient } from '@prisma/client';
+import { createTenantUser } from '../src/lib/actions/admin';
+import { bypassPrisma } from '../src/lib/prisma';
+import { Role } from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
 import seedClients from './seeders/clients.seed';
 import seedInspection from './seeders/inspections.seed';
 import seedRentalPlans from './seeders/rentalPlan.seed';
 import seedContract from './seeders/contracts.seed';
 import seedTracker from './seeders/trackers.seed';
-const prisma = new PrismaClient();
+const prisma = bypassPrisma;
 
 async function main() {
 	try {
@@ -17,16 +19,16 @@ async function main() {
 	}
 
 	const usersData = [
-		{ email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN },
-		{ email: 'gsg2604@gmail.com', userRole: Role.ADMIN },
-		{ email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN },
-		{ email: 'raulodev@gmail.com', userRole: Role.ADMIN },
-		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN },
-		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN },
-		{ email: 'towithouston@gmail.com', userRole: Role.ADMIN },
-		{ email: 'albertolicea00@icloud.com', userRole: Role.ADMIN },
-		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN },
-		{ email: 'anayvisarrieta@gmail.com', userRole: Role.ADMIN }
+		{ email: 'luis.ulloa75360@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'gsg2604@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'vladimir.rdguez@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'raulodev@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'ymansfarroll@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'julioguillermo0802@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'towithouston@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'albertolicea00@icloud.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'javiercastrolop@gmail.com', userRole: Role.ADMIN, is_default: true },
+		{ email: 'anayvisarrieta@gmail.com', userRole: Role.ADMIN, is_default: true }
 		// Add more users as needed
 	];
 	const tenantsData = {
@@ -71,19 +73,12 @@ async function main() {
 
 	for (const userData of usersData) {
 		const array = [tenantId, testTenantId];
-		for (let index = 0; index < array.length; index++) {
-			const { email, userRole } = userData;
-			const user = await prisma.user.findUnique({ where: { email: email } });
-			if (user) {
-				await prisma.tenantUser.create({
-					data: {
-						userId: user.id,
-						tenantId: array[index],
-						role: userRole,
-						is_default: index === 0
-					}
-				});
+		for (const [index, tenantId] of array.entries()) {
+			let { email, userRole, is_default } = userData;
+			if (index === 1) {
+				is_default = false;
 			}
+			await createTenantUser({ email, tenantId: tenantId, userRole, is_default });
 		}
 	}
 
