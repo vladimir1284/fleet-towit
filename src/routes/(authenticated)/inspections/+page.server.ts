@@ -18,23 +18,27 @@ const createInspectionSchema = z.object({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
+	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/dashboard');
 	return session;
 };
 
-export const load: PageServerLoad = async ({ locals, }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const session = await verifySession(locals);
 
 	const form = await superValidate(zod(createInspectionSchema));
 
 	const tenantUserId = session.user.defaultTenantUser.tenantId;
 
-	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles(locals.currentInstance.currentPrismaClient, {
-		tenantId: tenantUserId
-	});
+	const { listCustomForm, listVehicles } = await fetchListFormsAndVehicles(
+		locals.currentInstance.currentPrismaClient,
+		{
+			tenantId: tenantUserId
+		}
+	);
 
 	const results = await fetchInspections(locals.currentInstance.currentPrismaClient, {
 		tenantId: tenantUserId,
-		page_number: 1
+		page_number: Number(url.searchParams.get('page')) || 1
 	});
 
 	const inspections = results.data;

@@ -37,6 +37,9 @@ interface Inspections extends Inspection {
 
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const session = await locals.getSession();
+	if (!session?.user) {
+		return new Response('Forbidden', { status: 403 });
+	}
 
 	if (!params.id) {
 		throw error(404, {

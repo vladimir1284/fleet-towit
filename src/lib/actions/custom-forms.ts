@@ -229,6 +229,7 @@ export const renameCustomForm = async (
 export const addCardToForm = async (
 	instance: PrismaClient,
 	{
+		tenantId,
 		cardName,
 		formId,
 		fields

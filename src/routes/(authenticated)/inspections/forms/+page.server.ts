@@ -13,6 +13,7 @@ const createFormSchema = z.object({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const verifySession = async (locals: any) => {
 	const session = await locals.getSession();
+	if (!session?.user) throw redirect(TEMPORARY_REDIRECT_STATUS, '/signin');
 	return session;
 };
 
