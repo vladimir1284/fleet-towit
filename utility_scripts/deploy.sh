@@ -19,20 +19,20 @@ cp ../.env.local .
 
 # Echo message for installing dependencies
 echo "Installing dependencies..."
-pnpm install
+yarn install
 
 # Echo message for running database migration
 echo "Running database migration..."
-npx prisma migrate deploy
-npx prisma generate --generator client
+yarn prisma migrate deploy
+yarn prisma generate --generator client
 
 # Echo message for building the code
 echo "Building the project..."
-pnpm build
+yarn build
 
 # Echo message for running database seeding
 echo "Running database seeding..."
-npx prisma db seed
+yarn prisma db seed
 
 # Check if the build was successful
 echo "Project build successful."
