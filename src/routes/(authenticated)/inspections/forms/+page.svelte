@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { goto } from '$app/navigation';
-	import type { CustomForm } from '@prisma/client';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { superForm } from 'sveltekit-superforms/client';
+	import axios from 'axios';
+	import type { CustomForm } from '@prisma/client';
 
 	export let data: PageData;
 
@@ -21,9 +22,9 @@
 		Input,
 		PaginationItem,
 		Tooltip,
-		Badge
+		Badge,
+		Spinner
 	} from 'flowbite-svelte';
-	import CheckBoxItem from '$lib/components/checkboxs/CheckBoxItem.svelte';
 	import {
 		ArrowLeftSolid,
 		ArrowRightSolid,
@@ -31,6 +32,7 @@
 		FileExportOutline,
 		FileImportOutline
 	} from 'flowbite-svelte-icons';
+	import CheckBoxItem from '$lib/components/checkboxs/CheckBoxItem.svelte';
 
 	let createFormModal = false;
 
@@ -67,7 +69,7 @@
 
 		const element = document.createElement('a');
 		element.href = url;
-		element.setAttribute('download', `form.ladatec.json`);
+		element.setAttribute('download', `${Math.floor(Date.now() / 1000)}.ladatec-forms.json`);
 
 		document.body.appendChild(element);
 		element.click();
@@ -84,6 +86,32 @@
 			formsToExport = [...formsToExport, form];
 		}
 	};
+
+	let isImportingForm = false;
+	const importForm = (event) => {
+		const file = event.target.files?.item(0);
+
+		if (file) {
+			isImportingForm = true;
+			const reader = new FileReader();
+
+			reader.onload = async function (e) {
+				const content = e.target.result;
+				try {
+					await axios.post('/api/custom-forms/import-form', {
+						form: content
+					});
+					invalidateAll();
+				} catch (error) {
+					console.error('Error al importar el archivo JSON:', error);
+				}
+			};
+
+			reader.readAsText(file);
+
+			isImportingForm = false;
+		}
+	};
 </script>
 
 <section class="flex flex-col w-full sm:w-2/3 p-4 gap-4">
@@ -92,7 +120,20 @@
 	</div>
 
 	<div class="flex justify-end gap-4">
-		<Button color="light">Import Form</Button>
+		<Button color="light" on:click={() => document.getElementById('select-form').click()}>
+			{#if isImportingForm}
+				<Spinner class="me-3" size="4" /> Importing...
+			{:else}
+				Import Form
+			{/if}
+		</Button>
+		<input
+			id="select-form"
+			on:change={importForm}
+			type="file"
+			accept=".ladatec-forms.json"
+			class="hidden"
+		/>
 
 		<Button
 			size="sm"
@@ -105,7 +146,17 @@
 		>
 
 		{#if isSelectExportForms}
-			<Button size="sm" color="blue" on:click={() => exportForm(formsToExport)}>
+			<Button
+				size="sm"
+				color="blue"
+				on:click={() => {
+					if (formsToExport.length > 0) {
+						exportForm(formsToExport);
+						formsToExport.length = 0;
+						isSelectExportForms = false;
+					}
+				}}
+			>
 				Export
 				<Badge class="ml-2">{formsToExport.length}</Badge>
 			</Button>

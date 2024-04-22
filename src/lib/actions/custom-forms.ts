@@ -1,4 +1,3 @@
-import { tenantPrisma } from '$lib/prisma';
 import { FormFieldType } from '@prisma/client';
 import type { Card, CustomForm, CustomField, CheckOption, PrismaClient } from '@prisma/client';
 import { Page } from '$lib/pagination';
