@@ -3,6 +3,7 @@
 export * from './AccountApi';
 export * from './AdminApi';
 export * from './BundleApi';
+export * from './ClockApi';
 export * from './CatalogApi';
 export * from './CreditApi';
 export * from './CustomFieldApi';

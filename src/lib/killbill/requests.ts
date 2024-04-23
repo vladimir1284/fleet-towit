@@ -5,6 +5,7 @@ import {
 	AdminApi,
 	BundleApi,
 	CatalogApi,
+	ClockApi,
 	CreditApi,
 	CustomFieldApi,
 	ExportApi,
@@ -29,25 +30,8 @@ import type {} from '@prisma/client';
 
 import { Configuration } from './api/runtime';
 import { Config, apiConfig, pris } from './config';
-import { getTenantKS } from './tenants/tenants';
+import { getTenantKS } from './tenants/key';
 import { loadFromSessionStorage } from '$lib/store/context-store';
-
-// funcion de prueba mientras el tenant sea necesario y el xstate machine no me funcione
-function getCurrentTenantBySessionStorage(): object {
-	const currentTenantItem = sessionStorage.getItem('currentTenant');
-
-	if (currentTenantItem) return JSON.parse(currentTenantItem);
-	return {
-		id: -1,
-		role: 'fake',
-		tenantId: -1,
-		userId: '-1',
-		is_default: true,
-		email: 'fake',
-		isAdmin: false,
-		name: 'fake'
-	};
-}
 
 /**
  * Initializes an API instance based on the provided constructor.
@@ -58,8 +42,7 @@ function getCurrentTenantBySessionStorage(): object {
 async function initializeApi<T>(apiConstructor: new (config: Configuration) => T): Promise<T> {
 	return new apiConstructor(apiConfig);
 
-	// const currentTenant: any | null = loadFromSessionStorage('currentTenant');
-	const currentTenant: any | null = getCurrentTenantBySessionStorage();
+	const currentTenant: any | null = loadFromSessionStorage('currentTenant');
 
 	const tenant: any | null = await pris.tenant.findFirst({
 		where: {
@@ -79,6 +62,7 @@ async function initializeApi<T>(apiConstructor: new (config: Configuration) => T
 export const reqAccountApi: AccountApi = await initializeApi(AccountApi);
 export const reqAdminApi: AdminApi = await initializeApi(AdminApi);
 export const reqBundleApi: BundleApi = await initializeApi(BundleApi);
+export const reqClockApi: ClockApi = await initializeApi(ClockApi);
 export const reqCatalogApi: CatalogApi = await initializeApi(CatalogApi);
 export const reqCreditApi: CreditApi = await initializeApi(CreditApi);
 export const reqCustomFieldApi: CustomFieldApi = await initializeApi(CustomFieldApi);
