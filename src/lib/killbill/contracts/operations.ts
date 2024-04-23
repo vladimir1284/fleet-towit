@@ -1,5 +1,4 @@
 import type { Prisma } from '@prisma/client';
-import { getSubscriptionApi } from './api';
 import { pris } from '../config';
 import { syncSubscription, unsubscribe } from './subscriptions';
 import { ResponseError } from '../api/runtime';
@@ -12,10 +11,7 @@ async function deleteContract(args: Prisma.ContractDeleteArgs) {
 	});
 	if (!contract) return;
 
-	const subscriptionApi = getSubscriptionApi();
-	if (!subscriptionApi) return;
-
-	await unsubscribe(subscriptionApi, contract);
+	await unsubscribe(contract);
 }
 
 async function updateContract(args: Prisma.ContractUpdateArgs) {
@@ -26,10 +22,7 @@ async function updateContract(args: Prisma.ContractUpdateArgs) {
 	});
 	if (!contract) return;
 
-	const subscriptionApi = getSubscriptionApi();
-	if (!subscriptionApi) return;
-
-	await syncSubscription(subscriptionApi, contract);
+	await syncSubscription(contract);
 }
 
 async function createContract(args: Prisma.ContractCreateArgs) {
@@ -43,10 +36,7 @@ async function createContract(args: Prisma.ContractCreateArgs) {
 	});
 	if (!contract) return;
 
-	const subscriptionApi = getSubscriptionApi();
-	if (!subscriptionApi) return;
-
-	await syncSubscription(subscriptionApi, contract);
+	await syncSubscription(contract);
 }
 
 export async function contractsOperations(operation: string, args: any) {
@@ -64,7 +54,10 @@ export async function contractsOperations(operation: string, args: any) {
 		}
 	} catch (e) {
 		if (e instanceof ResponseError) {
-			console.log(await e.response.json());
+			const contentType = e.response.headers.get('content-type');
+			if (contentType && contentType.includes('application/json')) {
+				console.log(await e.response.json());
+			} else console.log(await e.response.text());
 		}
 		console.log(e);
 	}

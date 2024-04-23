@@ -1,8 +1,10 @@
 import type { Prisma } from '@prisma/client';
 import { pris } from '../config';
-import { getAccountApi } from './api';
-import { getAccountKey } from '../tools/tools';
-import { AccountFromClient } from './clients';
+import { reqAccountApi } from '../requests';
+import { getAccountKey } from './key';
+import { AccountFromClient } from './tools';
+
+const xKillbillCreatedBy = 'admin';	// TODO ver que se hace con esto, fijo o el currentUser
 
 async function deleteClient(args: Prisma.ClientDeleteArgs) {
 	const id = args.where.id;
@@ -13,16 +15,13 @@ async function deleteClient(args: Prisma.ClientDeleteArgs) {
 	});
 	if (!client) return;
 
-	const accountApi = await getAccountApi(client.tenantId);
-	if (!accountApi) return;
-
-	const account = await accountApi.getAccountByKey({
+	const account = await reqAccountApi.getAccountByKey({
 		externalKey: getAccountKey(client.id)
 	});
 
-	await accountApi.closeAccountRaw({
+	await reqAccountApi.closeAccountRaw({
 		accountId: account.accountId!,
-		xKillbillCreatedBy: 'admin'
+		xKillbillCreatedBy
 	});
 }
 
@@ -35,19 +34,16 @@ async function updateClient(args: Prisma.ClientUpdateArgs) {
 	});
 	if (!client) return;
 
-	const accountApi = await getAccountApi(client.tenantId);
-	if (!accountApi) return;
-
-	const account = await accountApi.getAccountByKey({
+	const account = await reqAccountApi.getAccountByKey({
 		externalKey: getAccountKey(client.id)
 	});
 
 	const newAccount = AccountFromClient(client);
 
-	await accountApi.updateAccountRaw({
+	await reqAccountApi.updateAccountRaw({
 		accountId: account.accountId!,
 		body: newAccount,
-		xKillbillCreatedBy: 'admin'
+		xKillbillCreatedBy
 	});
 }
 
@@ -64,14 +60,11 @@ async function createClient(args: Prisma.ClientCreateArgs) {
 	});
 	if (!client) return;
 
-	const accountApi = await getAccountApi(client.tenantId);
-	if (!accountApi) return;
-
 	const newAccount = AccountFromClient(client);
 
-	await accountApi.createAccountRaw({
+	await reqAccountApi.createAccountRaw({
 		body: newAccount,
-		xKillbillCreatedBy: 'admin' // TODO use the authenticated user that triggered the action
+		xKillbillCreatedBy
 	});
 }
 

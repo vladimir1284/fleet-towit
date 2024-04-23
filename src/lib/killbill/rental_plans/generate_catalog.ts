@@ -1,7 +1,9 @@
 import type { RentalPlan } from '@prisma/client';
 import { create } from 'xmlbuilder2';
+import { getPlanName } from './tools';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
+const CATALOG_NAME = 'CatalogXML'; // TODO make catalogName with tenantName === TenantNameCatalog
 const VALID_PERIODS = [
 	'DAILY',
 	'WEEKLY',
@@ -98,7 +100,7 @@ export function generateCatalog(
 	// - catalog name
 	// - recurring billing mode
 	catalog.ele('effectiveDate').txt(getEffectiveDate());
-	catalog.ele('catalogName').txt(`${product_name}Catalog`);
+	catalog.ele('catalogName').txt(CATALOG_NAME); // `${product_name}Catalog`
 	catalog.ele('recurringBillingMode').txt('IN_ADVANCE');
 
 	// Currency
@@ -125,7 +127,8 @@ export function generateCatalog(
 	rentalPlans.forEach((plan) => {
 		const periodicity = getPeriod(plan.periodicity);
 		const amount = plan.amount.toFixed(2);
-		pushPlan(plans, pricePlans, plan.name, amount, periodicity, currency, product_name);
+		const planName = getPlanName(plan.name);
+		pushPlan(plans, pricePlans, planName, amount, periodicity, currency, product_name);
 	});
 
 	// Get xml and return it

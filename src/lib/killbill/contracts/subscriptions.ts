@@ -1,14 +1,16 @@
+// import { ResponseError } from '../api/runtime';
 import type { Contract } from '@prisma/client';
-import type { SubscriptionApi } from '../api/apis';
+import { reqSubscriptionApi } from '../requests';
 import { pris } from '../config';
-import { getAccountApi } from '../clients/api';
-import { getAccountKey } from '../tools/tools';
+import { reqAccountApi } from '../requests';
+import { getAccountKey } from '../clients/key';
+import { getPlanName } from '../rental_plans/tools';
+import { getSubscriptionId } from './tools';
+import { getSubscriptionKey } from './key';
 
-function getSubscriptionKey(contract: Contract): string {
-	return `TestSubscription-${contract.id}-${contract.clientId}-${contract.rentalPlanId}-${contract.vehicleId}`;
-}
+const xKillbillCreatedBy = 'admin';	// TODO ver que se hace con esto, fijo o el currentUser
 
-export async function subscribe(api: SubscriptionApi, contract: Contract) {
+export async function subscribe(contract: Contract) {
 	const stage = await pris.stageUpdate.findFirst({
 		where: {
 			id: contract.stageId
@@ -32,67 +34,66 @@ export async function subscribe(api: SubscriptionApi, contract: Contract) {
 	});
 	if (!plan) return;
 
-	const accountApi = await getAccountApi(client.tenantId);
-	if (!accountApi) return;
-
-	const account = await accountApi.getAccountByKey({
+	const account = await reqAccountApi.getAccountByKey({
 		externalKey: getAccountKey(client.id)
 	});
 
-	await api.createSubscriptionRaw({
-		xKillbillCreatedBy: 'admin',
-		body: {
-			externalKey: getSubscriptionKey(contract),
-			accountId: account.accountId,
-			planName: plan.name
-			// priceList: 'DEFAULT',
-			// productName: 'Rental',
-			// billingPeriod: plan.periodicity
-		}
-	});
-}
-
-export async function unsubscribe(api: SubscriptionApi, contract: Contract) {
-	const subscription = await api.getSubscriptionByKey({
-		externalKey: getSubscriptionKey(contract)
-	});
-	if (!subscription || !subscription.subscriptionId) return;
-
-	await api.cancelSubscriptionPlanRaw({
-		xKillbillCreatedBy: 'admin',
-		subscriptionId: subscription.subscriptionId
-	});
-}
-
-export async function cancelUnsubscription(api: SubscriptionApi, contract: Contract) {
-	const subscription = await api.getSubscriptionByKey({
-		externalKey: getSubscriptionKey(contract)
-	});
-	if (!subscription || !subscription.subscriptionId) return;
-
-	await api.uncancelSubscriptionPlanRaw({
-		xKillbillCreatedBy: 'admin',
-		subscriptionId: subscription.subscriptionId
-	});
-}
-
-export async function activateSubscription(api: SubscriptionApi, contract: Contract) {
-	try {
-		await cancelUnsubscription(api, contract);
-	} catch (e) {
-		await subscribe(api, contract);
+	const subscriptionId: string | null = await getSubscriptionId(contract);
+	if (!subscriptionId) {
+		// TODO ver porq esto no esta mandando todo el body (como el state que lo pone como CANCELED cuando es ACTIVE)
+		await reqSubscriptionApi.createSubscriptionRaw({
+			xKillbillCreatedBy,
+			body: {
+				externalKey: getSubscriptionKey(contract),
+				accountId: account.accountId,
+				planName: getPlanName(plan.name)
+				// priceList: 'DEFAULT',
+				// productName: 'Rental',
+				// billingPeriod: plan.periodicity
+			}
+		});
+	} else {
+		// TODO ver si es posible update la suscripcion ya que en este catch es que la suscripcion ya existe (o hacer solo un return;)
 	}
 }
 
-export async function syncSubscription(api: SubscriptionApi, contract: Contract) {
+export async function unsubscribe(contract: Contract) {
+	const subscriptionId: string | null = await getSubscriptionId(contract);
+	if (!subscriptionId) return;
+
+	await reqSubscriptionApi.cancelSubscriptionPlanRaw({
+		xKillbillCreatedBy,
+		subscriptionId
+	});
+}
+
+export async function cancelUnsubscription(contract: Contract) {
+	const subscriptionId: string | null = await getSubscriptionId(contract);
+	if (!subscriptionId) return;
+
+	await reqSubscriptionApi.uncancelSubscriptionPlanRaw({
+		xKillbillCreatedBy,
+		subscriptionId
+	});
+}
+
+export async function activateSubscription(contract: Contract) {
+	try {
+		await cancelUnsubscription(contract);
+	} catch (e) {
+		await subscribe(contract);
+	}
+}
+
+export async function syncSubscription(contract: Contract) {
 	const stage = await pris.stageUpdate.findFirst({
 		where: {
 			id: contract.stageId
 		}
 	});
 	if (stage && stage.stage === 'ACTIVE') {
-		await activateSubscription(api, contract);
+		await activateSubscription(contract);
 	} else {
-		await unsubscribe(api, contract);
+		await unsubscribe(contract);
 	}
 }
