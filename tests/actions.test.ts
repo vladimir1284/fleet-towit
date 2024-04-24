@@ -10,8 +10,9 @@ import {
 } from '$lib/actions/admin';
 import { expect, test } from 'vitest';
 import { bypassPrisma } from '$lib/prisma';
-import { Role } from '@prisma/client';
+import pkg from '@prisma/client';
 
+const { Role } = pkg;
 let tenant: any;
 let user: any;
 

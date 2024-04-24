@@ -1,6 +1,5 @@
-import { Role } from '@prisma/client';
 import { bypassPrisma } from '$lib/prisma';
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, Role } from '@prisma/client';
 
 type createTenantUserType = { role: Role; tenantId: number; email: string };
 type updateTenantUserType = createTenantUserType & { id: number };

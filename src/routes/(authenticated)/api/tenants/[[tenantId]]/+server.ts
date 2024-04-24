@@ -11,12 +11,13 @@ import {
 	getTenantUser,
 	getTenantOwner
 } from '$lib/actions/admin';
-import { Role } from '@prisma/client';
+import pkg from '@prisma/client';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { RequestHandler } from '@sveltejs/kit';
 import { actionResult } from 'sveltekit-superforms';
 import { superValidate } from 'sveltekit-superforms/server';
 
+const { Role } = pkg;
 const fixSchema = z.object({
 	ownerId: z.number().optional(),
 	name: z.string(),

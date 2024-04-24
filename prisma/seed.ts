@@ -1,6 +1,6 @@
 import { createTenantUser } from '../src/lib/actions/admin';
 import { bypassPrisma } from '../src/lib/prisma';
-import { Role } from '@prisma/client';
+import pkg from '@prisma/client';
 import seedVehicles from './seeders/vehicle.seed';
 import seedClients from './seeders/clients.seed';
 import seedInspection from './seeders/inspections.seed';
@@ -8,6 +8,7 @@ import seedRentalPlans from './seeders/rentalPlan.seed';
 import seedContract from './seeders/contracts.seed';
 import seedTracker from './seeders/trackers.seed';
 const prisma = bypassPrisma;
+const { Role } = pkg;
 
 async function main() {
 	try {

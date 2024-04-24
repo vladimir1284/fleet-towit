@@ -10,13 +10,17 @@
 	export let data;
 
 	let show = false;
-	let useMagicLink = true;
+	let useMagicLink = false;
 	let loading = false;
 
 	const { form, errors, constraints, enhance } = superForm(data.form, {
 		onUpdated: async ({ form }) => {
 			if (form.valid) {
-				signIn('email', { email: form.data.email, callbackUrl: '/dashboard' });
+				if(useMagicLink){
+					signIn('email', { email: form.data.email, callbackUrl: '/dashboard' });
+				}else{
+					signIn('credentials', { email: form.data.email, password: form.data.password, callbackUrl: '/dashboard' })
+				}
 			} else {
 				loading = false;
 			}
@@ -71,7 +75,7 @@
 			onClick={() => {
 				try {
 					loading = true;
-					signIn('google');
+					signIn('google', { callbackUrl: '/dashboard', redirect: false });
 				} catch (error) {
 					loading = false;
 				}

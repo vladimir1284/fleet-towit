@@ -1,4 +1,6 @@
-import { PrismaClient, Role } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+const { Role } = pkg;
 
 type createUserType = { tenantId: number; email: string; role?: Role };
 

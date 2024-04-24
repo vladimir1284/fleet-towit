@@ -6,7 +6,7 @@ import {
 	updateDefaultTenantUser,
 	deleteTenantUser
 } from '$lib/actions/tenantUsers';
-import { Role } from '@prisma/client';
+import pkg from '@prisma/client';
 import { bypassPrisma } from '$lib/prisma';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { RequestHandler } from '@sveltejs/kit';
@@ -14,6 +14,7 @@ import { sendWelcomeEmail } from '$lib/actions/emails';
 import { actionResult } from 'sveltekit-superforms/server';
 import { superValidate } from 'sveltekit-superforms/server';
 
+const { Role } = pkg;
 const fixSchema = z.object({
 	role: z.enum(['STAFF', 'ADMIN', 'OWNER']),
 	email: z.string().email(),

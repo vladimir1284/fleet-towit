@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-//@ts-nocheck
+//@ts-ignore
 import { sequence } from '@sveltejs/kit/hooks';
 import { handleErrorWithSentry } from '@sentry/sveltekit';
 // import * as Sentry from '@sentry/sveltekit';
 import { type Handle } from '@sveltejs/kit';
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/core/providers/google';
+import Credentials from '@auth/core/providers/credentials';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -30,20 +30,25 @@ import { bypassPrisma, tenantPrisma } from '$lib/prisma';
 import { building } from '$app/environment';
 import { syncKillBill } from './killbill/killbill';
 
+/*
 if (KILLBILL === true) {
 	console.log('Kill Bill initial sync!');
 	if (!building) {
 		syncKillBill();
 	}
 }
-
+*/
 const handleAuth = (async (...args) => {
 	const [{ event }] = args;
 	return SvelteKitAuth({
 		callbacks: {
-			async signIn({ user }) {
+			async signIn({ account, user }) {
+				if (account?.provider === 'google') {
+					return true;
+				}
 				const guest = await prisma.user.findFirst({ where: { email: user.email } });
 				if (guest) {
+					console.log('Authorized: ', user);
 					return true;
 				} else {
 					console.log('Unauthorized: ', user);
@@ -53,7 +58,17 @@ const handleAuth = (async (...args) => {
 					// return '/unauthorized'
 				}
 			},
-			async session({ session, user }) {
+			jwt({ token, user }) {
+				console.log(user);
+				if (user) {
+					// User is available during sign-in
+					token.id = user.id;
+				}
+				return token;
+			},
+			async session({ session, token }) {
+				console.log(token, 'candle');
+				const user = token
 				const tenantUsers = await getTenantUsers({ id: user.id });
 				const defaultTenantUser = tenantUsers.find((tenantUser) => tenantUser.is_default);
 				session.user = {
@@ -67,7 +82,13 @@ const handleAuth = (async (...args) => {
 				event.locals.session = session;
 				return session;
 			},
-			async redirect({ baseUrl }) {
+			async redirect({ url, baseUrl }) {
+				/* Allows relative callback URLs
+				if (url.startsWith('/')) return `${baseUrl}${url}`;
+
+				// Allows callback URLs on the same origin
+				if (new URL(url).origin === baseUrl) return url;
+				*/
 				return baseUrl;
 			}
 		},
@@ -88,15 +109,39 @@ const handleAuth = (async (...args) => {
 					}
 				},
 				from: EMAIL_FROM
+			}),
+			Credentials({
+				credentials: {
+					email: {},
+					password: {}
+				},
+				authorize: async (credentials) => {
+					let user = null;
+					//const pwHash = saltAndHashPassword(credentials.password);
+					const pwHash = credentials.password;
+					user = await prisma.user.findFirst({
+						where: {
+							email: credentials.email,
+							pwHash: pwHash
+						}
+					});
+					if (!user) {
+						throw new Error('User not found.');
+					}
+					return user;
+				}
 			})
 		],
 		pages: {
 			signIn: '/signin',
-			error: '/error', // Error code passed in query string as ?error=
+			//error: '/error', // Error code passed in query string as ?error=
 			verifyRequest: '/verifyRequest'
 		},
 		trustHost: true,
-		secret: AUTH_SECRET
+		secret: AUTH_SECRET,
+		session: {
+			strategy: 'jwt'
+		}
 	})(...args);
 }) satisfies Handle;
 
@@ -109,11 +154,11 @@ const handleAuth = (async (...args) => {
 const adminPaths = ['/admin'];
 const apiPaths = ['/api'];
 
-function isAdminPath(path) {
+function isAdminPath(path: string) {
 	return adminPaths.some((adminPath) => path === adminPath || path.startsWith(adminPath + '/'));
 }
 
-function isApiPath(path) {
+function isApiPath(path: string) {
 	return apiPaths.some((apiPath) => path === apiPath || path.startsWith(apiPath + '/'));
 }
 

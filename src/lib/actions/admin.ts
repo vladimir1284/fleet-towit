@@ -1,6 +1,6 @@
 import { bypassPrisma } from '$lib/prisma';
-import { Role } from '@prisma/client';
-
+import pkg from '@prisma/client';
+const { Role } = pkg;
 type createTenantType = { name: string; email?: string | null };
 type createUserType = { email: string; tenantId: number; userRole?: Role; is_default?: boolean };
 type editTenantType = createTenantType & { tenantId: number };
