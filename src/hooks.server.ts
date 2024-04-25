@@ -41,6 +41,7 @@ if (KILLBILL === true) {
 const handleAuth = (async (...args) => {
 	const [{ event }] = args;
 	return SvelteKitAuth({
+		debug: true,
 		callbacks: {
 			async signIn({ account, user }) {
 				if (account?.provider === 'google') {
@@ -68,7 +69,7 @@ const handleAuth = (async (...args) => {
 			},
 			async session({ session, token }) {
 				console.log(token, 'candle');
-				const user = token
+				const user = token;
 				const tenantUsers = await getTenantUsers({ id: user.id });
 				const defaultTenantUser = tenantUsers.find((tenantUser) => tenantUser.is_default);
 				session.user = {
@@ -118,11 +119,11 @@ const handleAuth = (async (...args) => {
 				authorize: async (credentials) => {
 					let user = null;
 					//const pwHash = saltAndHashPassword(credentials.password);
-					const pwHash = credentials.password;
+					// const pwHash = credentials.password;
 					user = await prisma.user.findFirst({
 						where: {
-							email: credentials.email,
-							pwHash: pwHash
+							email: credentials.email
+							// pwHash: pwHash
 						}
 					});
 					if (!user) {
