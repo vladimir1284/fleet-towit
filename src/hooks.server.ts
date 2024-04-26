@@ -31,7 +31,7 @@ import { building } from '$app/environment';
 import { syncKillBill } from '$lib/killbill/sync';
 
 if (KILLBILL) {
-	if (building) {
+	if (!building) {
 		syncKillBill();
 	}
 }

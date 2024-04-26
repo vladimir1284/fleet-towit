@@ -11,20 +11,12 @@ import { Configuration, type ConfigurationParameters } from './api/runtime';
 const KILLBILL_BASE_URL = 'http://killbill.towithouston.com';
 const KILLBILL_USERNAME = 'admin';
 const KILLBILL_PASSWORD = 'password';
+
+// NOTE: put your tenat's info here (only for develop) do not make commit of this line
 const KILLBILL_API_KEY = 't_test';
 const KILLBILL_API_SECRET = 'CzjU~009BxA\\';
-
-// export const config = {
-// 	basePath: KILLBILL_BASE_URL,
-// 	apiKey: (name: string) => {
-// 		// X-Killbill-ApiKey
-// 		// X-Killbill-ApiSecret
-// 		if (name == 'X-Killbill-ApiSecret') return KILLBILL_API_SECRET;
-// 		return KILLBILL_API_KEY;
-// 	},
-// 	username: KILLBILL_USERNAME,
-// 	password: KILLBILL_PASSWORD
-// };
+// const KILLBILL_API_KEY = 'TestT-prueba5';
+// const KILLBILL_API_SECRET = 'Secret-prueba5';
 
 export class Config implements ConfigurationParameters {
 	constructor(

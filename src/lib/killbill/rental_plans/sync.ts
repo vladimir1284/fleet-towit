@@ -20,9 +20,15 @@ export async function syncRentalPlans() {
 		if (e instanceof ResponseError) {
 			const contentType = e.response.headers.get('content-type');
 			if (contentType && contentType.includes('application/json')) {
-				console.log(await e.response.json());
+				const error = await e.response.json();
+				if (error.message.startsWith('Invalid catalog for tenant : ') && error.code == 2080) {
+					console.log(
+						`Error 2080: ${error.message} (MAYBE : Generated catalog's name does not match the name of the tenant to which it points)`
+					);
+				} else console.log(error);
 			} else console.log(await e.response.text());
+		} else {
+			console.log(e);
 		}
-		console.log(e);
 	}
 }
