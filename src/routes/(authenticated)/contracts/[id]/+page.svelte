@@ -4,6 +4,7 @@
 	import type { PageData } from './$types';
 	import { onMount, getContext } from 'svelte';
 	import { customReqInvoiceApi, customReqPaymentApi } from '$lib/killbill/custom-requests';
+	import { reqAccountApi } from '$lib/killbill/requests';
 	import DetailContract from '$lib/components/forms-components/contracts/DetailContract.svelte';
 
 	const currentTenant = getContext('currentTenant');
@@ -33,6 +34,17 @@
 	});
 
 	async function getInvoicesList(contract: object, limit = 100) {
+		/*
+		const response = await fetch(
+			`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/invoices?limit=${limit}`
+		);
+		if (!response.ok) {
+			throw new Error(`Error getting invoices: ${response.statusText}`);
+		}
+
+		contractInvoicesList = await response.json();
+		console.log(contractInvoicesList);
+		*/
 		try {
 			const invoices = await customReqInvoiceApi.getLatestInvoices({
 				limit: limit,
@@ -69,6 +81,17 @@
 	}
 
 	async function getPaymentsList(contract: object, limit = 100) {
+		/* 
+			const response = await fetch(
+				`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/payments?limit=${limit}`
+			);
+			if (!response.ok) {
+				throw new Error(`Error getting payments: ${response.statusText}`);
+			}
+
+			contractPaymentsList = await invoices.json();
+			console.log(contractPaymentsList);
+			*/
 		try {
 			// await reqAccountApi.getPaymentsForAccount({ accountId: '20b5a43d-246b-42c3-949f-f4f6dba392f0' });  // TODO listar los payments del account de la suscription
 			const payments = await customReqPaymentApi.getLatestPayments({
@@ -109,17 +132,16 @@
 	}
 
 	async function getStagesList(contract: any, limit = 100) {
-		try {
-			const stages = await fetch(
-				`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage?limit=${limit}`
-			);
-			contractStagesList = await stages.json();
+		const response = await fetch(
+			`/api/tenants/${$currentTenant.id}/contracts/${contract.id}/stage?limit=${limit}`
+		);
+		if (!response.ok) {
+			throw new Error(`Error getting stage changes: ${response.statusText}`);
+		}
+		contractStagesList = await response.json();
 
-			if (limit && contractStagesList.length > limit) {
-				contractStagesList = contractStagesList.slice(0, limit);
-			}
-		} catch (error) {
-			console.error('Error getting stage changes:', error);
+		if (limit && contractStagesList.length > limit) {
+			contractStagesList = contractStagesList.slice(0, limit);
 		}
 	}
 
