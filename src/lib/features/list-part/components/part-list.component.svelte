@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let parts: Part[];
+	export let parts;
 	import {
 		Table,
 		TableBody,
@@ -10,7 +10,7 @@
 		Checkbox
 	} from 'flowbite-svelte';
 
-	import type { Part } from '@prisma/client';
+	// import type { Part } from '@prisma/client';
 	import { PART_TABLE_HEADERS } from '../helpers/constants';
 </script>
 
