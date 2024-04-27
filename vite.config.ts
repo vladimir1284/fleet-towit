@@ -24,8 +24,8 @@ export default defineConfig({
 		alias: {
 			'@killbill': '/src/killbill',
 			'.prisma/client/index-browser': prismaClientPath.replace(
-				'@prisma/client/default.js',
-				'.prisma/client/index-browser.js'
+				'.prisma/client/index-browser.js',
+				'@prisma/client/default.js'
 			)
 		}
 	}
